@@ -78,7 +78,8 @@ BEGIN
   -- Count contacts not yet unlocked by this user
   SELECT COUNT(*) INTO v_available_count
   FROM contacts c
-  WHERE c.event_id = p_event_id
+  JOIN contact_events ce ON ce.contact_id = c.id
+  WHERE ce.event_id = p_event_id
     AND NOT EXISTS (
       SELECT 1 FROM customer_contact_access cca
       WHERE cca.user_id = v_user_id
@@ -103,7 +104,9 @@ BEGIN
   INSERT INTO customer_contact_access (user_id, contact_id, event_id)
   SELECT v_user_id, c.id, p_event_id
   FROM contacts c
-  WHERE c.event_id = p_event_id
+  JOIN contact_events ce ON ce.contact_id = c.id
+  LEFT JOIN contact_emails em ON em.contact_id = c.id AND em.is_primary = true
+  WHERE ce.event_id = p_event_id
     AND NOT EXISTS (
       SELECT 1 FROM customer_contact_access cca
       WHERE cca.user_id = v_user_id
@@ -111,7 +114,7 @@ BEGIN
         AND cca.event_id = p_event_id
     )
   ORDER BY
-    (CASE WHEN c.email IS NOT NULL AND c.email != '' THEN 0 ELSE 1 END),
+    (CASE WHEN em.email IS NOT NULL AND em.email != '' THEN 0 ELSE 1 END),
     c.post_date DESC NULLS LAST
   LIMIT v_actual_count;
 
@@ -150,16 +153,18 @@ DECLARE
 BEGIN
   v_user_id := auth.uid();
 
-  -- Total contacts for this event
-  SELECT COUNT(*) INTO v_total
-  FROM contacts WHERE event_id = p_event_id;
+  -- Total contacts for this event (via junction table)
+  SELECT COUNT(DISTINCT ce.contact_id) INTO v_total
+  FROM contact_events ce
+  WHERE ce.event_id = p_event_id;
 
-  -- Contacts with verified email
-  SELECT COUNT(*) INTO v_with_email
-  FROM contacts
-  WHERE event_id = p_event_id
-    AND email IS NOT NULL
-    AND email != '';
+  -- Contacts with verified email (via junction + emails table)
+  SELECT COUNT(DISTINCT ce.contact_id) INTO v_with_email
+  FROM contact_events ce
+  JOIN contact_emails em ON em.contact_id = ce.contact_id AND em.is_primary = true
+  WHERE ce.event_id = p_event_id
+    AND em.email IS NOT NULL
+    AND em.email != '';
 
   -- If authenticated, get user-specific data
   IF v_user_id IS NOT NULL THEN
