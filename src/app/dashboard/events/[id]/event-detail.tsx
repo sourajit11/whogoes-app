@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -62,14 +62,32 @@ export default function EventDetail({
   const [unlockStatus, setUnlockStatus] = useState<EventUnlockStatus | null>(
     initialUnlockStatus
   );
-  // Slider value: default to min(balance, remaining, 20)
+  // Slider value: intervals of 10, with remainder for the last step
   const maxSlider = Math.min(
     credits,
     unlockStatus?.remaining_count ?? event.total_contacts
   );
-  const [sliderValue, setSliderValue] = useState(
-    Math.min(maxSlider, 20)
-  );
+
+  // Build step values: [10, 20, 30, ..., max]
+  const sliderSteps = useMemo(() => {
+    if (maxSlider <= 0) return [];
+    if (maxSlider <= 10) return [maxSlider];
+    const steps: number[] = [];
+    for (let i = 10; i < maxSlider; i += 10) {
+      steps.push(i);
+    }
+    steps.push(maxSlider);
+    return steps;
+  }, [maxSlider]);
+
+  const getDefaultIndex = useCallback(() => {
+    if (sliderSteps.length === 0) return 0;
+    const idx = sliderSteps.findIndex((s) => s >= 20);
+    return idx >= 0 ? idx : sliderSteps.length - 1;
+  }, [sliderSteps]);
+
+  const [sliderIndex, setSliderIndex] = useState(getDefaultIndex);
+  const sliderValue = sliderSteps[sliderIndex] ?? maxSlider;
 
   const router = useRouter();
   const supabase = createClient();
@@ -89,11 +107,10 @@ export default function EventDetail({
     fetchPreview();
   }, [event.event_id, supabase]);
 
-  // Update slider max when credits or unlock status changes
+  // Update slider index when credits or unlock status changes
   useEffect(() => {
-    const newMax = Math.min(credits, remainingCount);
-    setSliderValue((prev) => Math.min(prev, newMax) || Math.min(newMax, 20));
-  }, [credits, remainingCount]);
+    setSliderIndex((prev) => Math.min(prev, sliderSteps.length - 1) || getDefaultIndex());
+  }, [sliderSteps, getDefaultIndex]);
 
   // Sort preview: email contacts first, then by post_date desc
   const sortedPreviews = useMemo(() => {
@@ -418,13 +435,13 @@ export default function EventDetail({
                         How many contacts to unlock?
                       </label>
                       <div className="mt-2 flex items-center gap-4">
-                        <span className="text-xs text-zinc-400">1</span>
+                        <span className="text-xs text-zinc-400">{sliderSteps[0] ?? 1}</span>
                         <input
                           type="range"
-                          min={1}
-                          max={maxSlider}
-                          value={sliderValue}
-                          onChange={(e) => setSliderValue(Number(e.target.value))}
+                          min={0}
+                          max={sliderSteps.length - 1}
+                          value={sliderIndex}
+                          onChange={(e) => setSliderIndex(Number(e.target.value))}
                           className="h-2 flex-1 cursor-pointer appearance-none rounded-full bg-zinc-200 accent-emerald-600 dark:bg-zinc-700"
                         />
                         <span className="text-xs text-zinc-400">{maxSlider}</span>
@@ -552,10 +569,9 @@ function ContactRow({ contact: c }: { contact: ContactPreview }) {
             href={c.post_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex text-[#0A66C2] transition-opacity hover:opacity-70"
-            title="View LinkedIn post"
+            className="text-sm font-medium text-blue-600 transition-colors hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
           >
-            <LinkedInIcon className="h-4.5 w-4.5" />
+            View Post
           </a>
         ) : (
           <span className="text-zinc-300 dark:text-zinc-600">{"\u2014"}</span>

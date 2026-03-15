@@ -44,7 +44,7 @@ function LoginForm() {
             WhoGoes
           </h1>
           <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-            Event intent data platform
+            Trade show & event attendee data with proof
           </p>
         </div>
 

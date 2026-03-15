@@ -29,6 +29,7 @@ const themeScript = `
     }
   })();
 `;
+// Default is light: no 'dark' class on <html> means light theme
 
 export default function RootLayout({
   children,

@@ -30,6 +30,9 @@ BEGIN
   VALUES (NEW.id, 20)
   ON CONFLICT (user_id) DO NOTHING;
   RETURN NEW;
+EXCEPTION WHEN OTHERS THEN
+  -- Never block user creation if credits insert fails
+  RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 

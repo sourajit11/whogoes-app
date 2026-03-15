@@ -3,6 +3,37 @@
 -- Run this in Supabase SQL Editor AFTER 01-tables.sql
 -- ============================================
 
+-- RPC: get_customer_credits
+-- Returns the current user's credit balance.
+-- Auto-creates a credits row with 20 credits if one doesn't exist (fallback for trigger failure).
+CREATE OR REPLACE FUNCTION get_customer_credits()
+RETURNS INTEGER
+LANGUAGE plpgsql SECURITY DEFINER
+AS $$
+DECLARE
+  v_user_id UUID;
+  v_balance INTEGER;
+BEGIN
+  v_user_id := auth.uid();
+  IF v_user_id IS NULL THEN
+    RETURN 0;
+  END IF;
+
+  SELECT balance INTO v_balance FROM customer_credits WHERE user_id = v_user_id;
+
+  IF v_balance IS NULL THEN
+    -- Credits row missing (trigger may have failed); create it now
+    INSERT INTO customer_credits (user_id, balance)
+    VALUES (v_user_id, 20)
+    ON CONFLICT (user_id) DO NOTHING;
+    RETURN 20;
+  END IF;
+
+  RETURN v_balance;
+END;
+$$;
+
+
 -- RPC: unlock_event_contacts
 -- Unlocks a specified number of contacts from an event.
 -- Contacts are prioritized: email-verified first, then most recent post_date.
@@ -23,10 +54,13 @@ BEGIN
     RETURN json_build_object('success', false, 'message', 'Not authenticated');
   END IF;
 
-  -- Get current balance
+  -- Get current balance (auto-create if missing)
   SELECT balance INTO v_balance FROM customer_credits WHERE user_id = v_user_id;
   IF v_balance IS NULL THEN
-    RETURN json_build_object('success', false, 'message', 'No credits account found');
+    INSERT INTO customer_credits (user_id, balance)
+    VALUES (v_user_id, 20)
+    ON CONFLICT (user_id) DO NOTHING;
+    SELECT balance INTO v_balance FROM customer_credits WHERE user_id = v_user_id;
   END IF;
 
   IF v_balance <= 0 THEN

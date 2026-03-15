@@ -231,7 +231,7 @@ function TableRow({
           {contact.company_name ?? "—"}
         </td>
 
-        {/* Source (LinkedIn post icon) */}
+        {/* Source (View Post link) */}
         <td className="px-3 py-3.5">
           {contact.post_url ? (
             <a
@@ -239,10 +239,9 @@ function TableRow({
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="inline-flex text-[#0A66C2] transition-opacity hover:opacity-70"
-              title="View LinkedIn post"
+              className="text-sm font-medium text-blue-600 transition-colors hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
             >
-              <LinkedInIcon className="h-4 w-4" />
+              View Post
             </a>
           ) : (
             <span className="text-zinc-300 dark:text-zinc-600">—</span>
