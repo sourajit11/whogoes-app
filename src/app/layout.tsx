@@ -22,10 +22,10 @@ export const metadata: Metadata = {
 const themeScript = `
   (function() {
     var t = localStorage.getItem('whogoes-theme');
-    if (t === 'light') {
-      document.documentElement.classList.remove('dark');
-    } else {
+    if (t === 'dark') {
       document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
     }
   })();
 `;
@@ -36,7 +36,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
