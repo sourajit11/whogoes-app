@@ -1,35 +1,44 @@
 -- ============================================
 -- WhoGoes - Unlock Credits System RPCs
 -- Run this in Supabase SQL Editor AFTER 01-tables.sql
+--
+-- Credit system uses TWO tables:
+--   user_signups:  free trial credits (20 on signup)
+--   customers:     paid credits (from purchases)
+--   Total credits = user_signups.free_credits + customers.credits_balance
 -- ============================================
 
 -- RPC: get_customer_credits
--- Returns the current user's credit balance.
--- Auto-creates a credits row with 20 credits if one doesn't exist (fallback for trigger failure).
+-- Returns the current user's total credit balance (free + paid).
+-- Lazily creates a user_signups row with 20 free credits if one doesn't exist.
 CREATE OR REPLACE FUNCTION get_customer_credits()
 RETURNS INTEGER
 LANGUAGE plpgsql SECURITY DEFINER
 AS $$
 DECLARE
   v_user_id UUID;
-  v_balance INTEGER;
+  v_free INTEGER;
+  v_paid INTEGER;
 BEGIN
   v_user_id := auth.uid();
   IF v_user_id IS NULL THEN
     RETURN 0;
   END IF;
 
-  SELECT balance INTO v_balance FROM customer_credits WHERE user_id = v_user_id;
-
-  IF v_balance IS NULL THEN
-    -- Credits row missing (trigger may have failed); create it now
-    INSERT INTO customer_credits (user_id, balance)
+  -- Get free credits (lazy-create if missing)
+  SELECT free_credits INTO v_free FROM user_signups WHERE user_id = v_user_id;
+  IF v_free IS NULL THEN
+    INSERT INTO user_signups (user_id, free_credits)
     VALUES (v_user_id, 20)
     ON CONFLICT (user_id) DO NOTHING;
-    RETURN 20;
+    v_free := 20;
   END IF;
 
-  RETURN v_balance;
+  -- Get paid credits (may not exist if user hasn't purchased)
+  SELECT credits_balance INTO v_paid FROM customers WHERE user_id = v_user_id;
+  v_paid := COALESCE(v_paid, 0);
+
+  RETURN v_free + v_paid;
 END;
 $$;
 
@@ -38,15 +47,20 @@ $$;
 -- Unlocks a specified number of contacts from an event.
 -- Contacts are prioritized: email-verified first, then most recent post_date.
 -- Creates a subscription automatically if one doesn't exist.
+-- Deducts from free credits first, then paid credits.
 CREATE OR REPLACE FUNCTION unlock_event_contacts(p_event_id UUID, p_count INTEGER)
 RETURNS JSON
 LANGUAGE plpgsql SECURITY DEFINER
 AS $$
 DECLARE
   v_user_id UUID;
-  v_balance INTEGER;
+  v_free INTEGER;
+  v_paid INTEGER;
+  v_total_balance INTEGER;
   v_available_count INTEGER;
   v_actual_count INTEGER;
+  v_deduct_free INTEGER;
+  v_deduct_paid INTEGER;
   v_new_balance INTEGER;
 BEGIN
   v_user_id := auth.uid();
@@ -54,16 +68,22 @@ BEGIN
     RETURN json_build_object('success', false, 'message', 'Not authenticated');
   END IF;
 
-  -- Get current balance (auto-create if missing)
-  SELECT balance INTO v_balance FROM customer_credits WHERE user_id = v_user_id;
-  IF v_balance IS NULL THEN
-    INSERT INTO customer_credits (user_id, balance)
+  -- Get free credits (lazy-create if missing)
+  SELECT free_credits INTO v_free FROM user_signups WHERE user_id = v_user_id;
+  IF v_free IS NULL THEN
+    INSERT INTO user_signups (user_id, free_credits)
     VALUES (v_user_id, 20)
     ON CONFLICT (user_id) DO NOTHING;
-    SELECT balance INTO v_balance FROM customer_credits WHERE user_id = v_user_id;
+    v_free := 20;
   END IF;
 
-  IF v_balance <= 0 THEN
+  -- Get paid credits
+  SELECT credits_balance INTO v_paid FROM customers WHERE user_id = v_user_id;
+  v_paid := COALESCE(v_paid, 0);
+
+  v_total_balance := v_free + v_paid;
+
+  IF v_total_balance <= 0 THEN
     RETURN json_build_object(
       'success', false,
       'message', 'No credits remaining',
@@ -91,8 +111,8 @@ BEGIN
     RETURN json_build_object('success', false, 'message', 'No more contacts to unlock');
   END IF;
 
-  -- Unlock the minimum of: requested, available, balance
-  v_actual_count := LEAST(p_count, v_available_count, v_balance);
+  -- Unlock the minimum of: requested, available, total balance
+  v_actual_count := LEAST(p_count, v_available_count, v_total_balance);
 
   -- Create subscription if not exists
   INSERT INTO customer_event_subscriptions (user_id, event_id)
@@ -118,12 +138,30 @@ BEGIN
     c.post_date DESC NULLS LAST
   LIMIT v_actual_count;
 
-  -- Deduct credits
-  UPDATE customer_credits
-  SET balance = balance - v_actual_count, updated_at = now()
-  WHERE user_id = v_user_id;
+  -- Deduct credits: free first, then paid
+  v_deduct_free := LEAST(v_actual_count, v_free);
+  v_deduct_paid := v_actual_count - v_deduct_free;
 
-  SELECT balance INTO v_new_balance FROM customer_credits WHERE user_id = v_user_id;
+  -- Update free credits
+  IF v_deduct_free > 0 THEN
+    UPDATE user_signups
+    SET free_credits = free_credits - v_deduct_free, updated_at = now()
+    WHERE user_id = v_user_id;
+  END IF;
+
+  -- Update paid credits (only if needed and row exists)
+  IF v_deduct_paid > 0 THEN
+    UPDATE customers
+    SET credits_balance = credits_balance - v_deduct_paid, updated_at = now()
+    WHERE user_id = v_user_id;
+  END IF;
+
+  -- Calculate new total balance
+  SELECT COALESCE(us.free_credits, 0) + COALESCE(c.credits_balance, 0)
+  INTO v_new_balance
+  FROM user_signups us
+  LEFT JOIN customers c ON c.user_id = us.user_id
+  WHERE us.user_id = v_user_id;
 
   RETURN json_build_object(
     'success', true,
@@ -172,9 +210,14 @@ BEGIN
     FROM customer_contact_access
     WHERE user_id = v_user_id AND event_id = p_event_id;
 
-    SELECT COALESCE(balance, 0) INTO v_balance
-    FROM customer_credits
-    WHERE user_id = v_user_id;
+    -- Total balance = free + paid
+    SELECT COALESCE(us.free_credits, 0) + COALESCE(c.credits_balance, 0)
+    INTO v_balance
+    FROM user_signups us
+    LEFT JOIN customers c ON c.user_id = us.user_id
+    WHERE us.user_id = v_user_id;
+
+    v_balance := COALESCE(v_balance, 0);
 
     SELECT EXISTS(
       SELECT 1 FROM customer_event_subscriptions
