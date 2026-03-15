@@ -32,9 +32,17 @@ export async function updateSession(request: NextRequest) {
   // Public routes that don't require authentication
   const isPublicRoute =
     request.nextUrl.pathname.startsWith("/login") ||
+    request.nextUrl.pathname.startsWith("/register") ||
     request.nextUrl.pathname.startsWith("/auth") ||
     request.nextUrl.pathname === "/dashboard/events" ||
     request.nextUrl.pathname.startsWith("/dashboard/events/");
+
+  // Admin routes always require authentication
+  if (!user && request.nextUrl.pathname.startsWith("/admin")) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    return NextResponse.redirect(url);
+  }
 
   // Redirect unauthenticated users to login (except public routes)
   if (!user && !isPublicRoute) {
@@ -43,9 +51,9 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Redirect authenticated users away from login page
+  // Redirect authenticated users away from login/register page
   // Respect ?redirect= param if present (e.g., from public event page)
-  if (user && request.nextUrl.pathname.startsWith("/login")) {
+  if (user && (request.nextUrl.pathname.startsWith("/login") || request.nextUrl.pathname.startsWith("/register"))) {
     const url = request.nextUrl.clone();
     url.pathname = request.nextUrl.searchParams.get("redirect") || "/dashboard";
     url.search = "";
