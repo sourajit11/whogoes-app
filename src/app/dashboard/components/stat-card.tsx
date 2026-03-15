@@ -1,7 +1,7 @@
 interface StatCardProps {
   label: string;
   value: number | string;
-  accent?: "emerald" | "blue";
+  accent?: "emerald" | "blue" | "indigo";
   subtitle?: string;
 }
 
@@ -22,7 +22,9 @@ export default function StatCard({
             ? "text-emerald-600 dark:text-emerald-400"
             : accent === "blue"
               ? "text-blue-600 dark:text-blue-400"
-              : "text-zinc-900 dark:text-zinc-50"
+              : accent === "indigo"
+                ? "text-indigo-600 dark:text-indigo-400"
+                : "text-zinc-900 dark:text-zinc-50"
         }`}
       >
         {typeof value === "number" ? value.toLocaleString() : value}
