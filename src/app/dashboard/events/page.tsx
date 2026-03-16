@@ -11,6 +11,10 @@ export default async function EventsPage() {
 
   const { data: events } = await supabase.rpc("get_all_browsable_events");
 
+  // Fetch slugs to enable /events/[slug] navigation
+  const { data: slugs } = await supabase.from("events").select("id, slug");
+  const slugMap = new Map((slugs ?? []).map((s: { id: string; slug: string }) => [s.id, s.slug]));
+
   // Only fetch credits if authenticated
   let credits = 0;
   if (user) {
@@ -28,9 +32,15 @@ export default async function EventsPage() {
     ...new Set(eventsArr.map((e) => e.event_region).filter(Boolean)),
   ].sort() as string[];
 
+  // Merge slugs into events for /events/[slug] navigation
+  const eventsWithSlugs = (events ?? []).map((e: { event_id: string }) => ({
+    ...e,
+    event_slug: slugMap.get(e.event_id) ?? undefined,
+  }));
+
   return (
     <EventsBrowser
-      initialEvents={events ?? []}
+      initialEvents={eventsWithSlugs}
       credits={credits ?? 0}
       years={years as number[]}
       regions={regions as string[]}
