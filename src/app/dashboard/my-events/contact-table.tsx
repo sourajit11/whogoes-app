@@ -9,6 +9,9 @@ interface ContactTableProps {
   sortKey: SortKey;
   sortDir: SortDir;
   onSort: (key: SortKey) => void;
+  selectedIds?: Set<string>;
+  onToggleSelect?: (id: string) => void;
+  onToggleAll?: (ids: string[]) => void;
 }
 
 function formatPostDate(dateStr: string | null): string {
@@ -46,11 +49,13 @@ const SORTABLE_COLUMNS: { key: SortKey; label: string }[] = [
   { key: "email", label: "Email" },
 ];
 
-// Total columns: #(1) + status(1) + Name + Title + PersonLI + Company + Source + PostDate + Location + CompanyDomain + CompanyLI + Industry + Size + Email = 14
-const TOTAL_COLS = 14;
+// Total columns: checkbox(1) + #(1) + status(1) + Name + Title + PersonLI + Company + Source + PostDate + Location + CompanyDomain + CompanyLI + Industry + Size + Email = 15
+const TOTAL_COLS = 15;
 
-export default function ContactTable({ contacts, startIndex = 0, sortKey, sortDir, onSort }: ContactTableProps) {
+export default function ContactTable({ contacts, startIndex = 0, sortKey, sortDir, onSort, selectedIds, onToggleSelect, onToggleAll }: ContactTableProps) {
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
+  const allIds = contacts.map((c) => c.contact_id);
+  const allSelected = allIds.length > 0 && selectedIds ? allIds.every((id) => selectedIds.has(id)) : false;
 
   if (contacts.length === 0) {
     return (
@@ -88,6 +93,16 @@ export default function ContactTable({ contacts, startIndex = 0, sortKey, sortDi
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-zinc-100 bg-zinc-50/80 dark:border-zinc-800 dark:bg-zinc-900/50">
+              {/* Checkbox */}
+              <th className="w-10 px-3 py-3">
+                <input
+                  type="checkbox"
+                  checked={allSelected}
+                  onChange={() => onToggleAll?.(allIds)}
+                  className="h-3.5 w-3.5 cursor-pointer rounded border-zinc-300 text-emerald-600 focus:ring-emerald-500 dark:border-zinc-600"
+                  title="Select all"
+                />
+              </th>
               {/* Row number */}
               <th className="w-10 whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                 #
@@ -142,6 +157,8 @@ export default function ContactTable({ contacts, startIndex = 0, sortKey, sortDi
                 rowNumber={startIndex + index + 1}
                 isExpanded={expandedRow === contact.contact_id}
                 totalCols={TOTAL_COLS}
+                isSelected={selectedIds?.has(contact.contact_id) ?? false}
+                onToggleSelect={() => onToggleSelect?.(contact.contact_id)}
                 onToggle={() =>
                   setExpandedRow(
                     expandedRow === contact.contact_id
@@ -163,12 +180,16 @@ function TableRow({
   rowNumber,
   isExpanded,
   totalCols,
+  isSelected,
+  onToggleSelect,
   onToggle,
 }: {
   contact: Contact;
   rowNumber: number;
   isExpanded: boolean;
   totalCols: number;
+  isSelected: boolean;
+  onToggleSelect: () => void;
   onToggle: () => void;
 }) {
   const hasExtra =
@@ -181,9 +202,31 @@ function TableRow({
         onClick={hasExtra ? onToggle : undefined}
         className={`transition-colors hover:bg-zinc-50/70 dark:hover:bg-zinc-900/30 ${hasExtra ? "cursor-pointer" : ""}`}
       >
-        {/* Row number */}
+        {/* Checkbox */}
+        <td className="px-3 py-3.5" onClick={(e) => e.stopPropagation()}>
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={onToggleSelect}
+            className="h-3.5 w-3.5 cursor-pointer rounded border-zinc-300 text-emerald-600 focus:ring-emerald-500 dark:border-zinc-600"
+          />
+        </td>
+
+        {/* Row number + expand indicator */}
         <td className="whitespace-nowrap px-3 py-3.5 text-xs font-medium text-zinc-400 dark:text-zinc-500">
-          {rowNumber}
+          <span className="inline-flex items-center gap-1">
+            {rowNumber}
+            {hasExtra && (
+              <svg
+                className={`h-3 w-3 text-zinc-400 transition-transform ${isExpanded ? "rotate-90" : ""}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            )}
+          </span>
         </td>
 
         {/* Status dot */}

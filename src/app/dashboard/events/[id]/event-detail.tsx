@@ -272,6 +272,21 @@ export default function EventDetail({
             </div>
           )}
         </div>
+
+        {/* Unlock progress bar */}
+        {unlockedCount > 0 && (
+          <div className="mt-3">
+            <div className="h-2 w-full rounded-full bg-zinc-200 dark:bg-zinc-800">
+              <div
+                className="h-full rounded-full bg-emerald-500 transition-all"
+                style={{ width: `${(unlockedCount / totalContacts) * 100}%` }}
+              />
+            </div>
+            <p className="mt-1 text-xs text-zinc-400">
+              {((unlockedCount / totalContacts) * 100).toFixed(0)}% unlocked
+            </p>
+          </div>
+        )}
       </div>
 
       {/* "What you're missing" banner - shows after partial unlock */}
@@ -301,7 +316,7 @@ export default function EventDetail({
         </h2>
         <p className="mt-1 text-sm text-zinc-400">
           {unlockedCount > 0
-            ? `Showing ${FREE_PREVIEW_COUNT} preview contacts. You've unlocked ${unlockedCount.toLocaleString()} — view them in My Events.`
+            ? `Showing ${FREE_PREVIEW_COUNT} preview contacts. You've unlocked ${unlockedCount.toLocaleString()} — view them in Unlocked Events.`
             : "Preview of contacts associated with this event"}
         </p>
 
@@ -381,7 +396,7 @@ export default function EventDetail({
                         href={`/dashboard/my-events?event=${event.event_id}`}
                         className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
                       >
-                        View in My Events
+                        View Unlocked Contacts
                       </Link>
                       {remainingCount > 0 && credits > 0 && (
                         <button

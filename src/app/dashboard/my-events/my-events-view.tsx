@@ -34,6 +34,7 @@ export default function MyEventsView({
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [eventSearch, setEventSearch] = useState("");
   const [eventFilter, setEventFilter] = useState<"all" | "active" | "completed">("all");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const supabase = createClient();
   const selectedEvent = subscribedEvents.find(
@@ -154,15 +155,54 @@ export default function MyEventsView({
   const newCount = contacts.filter((c) => !c.is_downloaded).length;
   const processedCount = contacts.filter((c) => c.is_downloaded).length;
 
+  const selectedContacts = filteredContacts.filter((c) =>
+    selectedIds.has(c.contact_id)
+  );
+
+  function handleContactsDownloaded(downloadedIds: string[]) {
+    setContacts((prev) =>
+      prev.map((c) =>
+        downloadedIds.includes(c.contact_id)
+          ? { ...c, is_downloaded: true, downloaded_at: new Date().toISOString() }
+          : c
+      )
+    );
+  }
+
+  function handleToggleSelect(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }
+
+  function handleToggleAll(ids: string[]) {
+    setSelectedIds((prev) => {
+      const allSelected = ids.every((id) => prev.has(id));
+      const next = new Set(prev);
+      if (allSelected) {
+        ids.forEach((id) => next.delete(id));
+      } else {
+        ids.forEach((id) => next.add(id));
+      }
+      return next;
+    });
+  }
+
   if (subscribedEvents.length === 0) {
     return (
       <div className="mx-auto max-w-7xl px-6 py-8">
         <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Subscribed Events
+          Unlocked Events
         </h1>
         <EmptyState
-          title="No subscribed events"
-          description="Subscribe to events to start accessing contact data."
+          title="No unlocked events"
+          description="Unlock events to start accessing contact data."
           icon={
             <svg
               className="h-8 w-8 text-zinc-400"
@@ -195,10 +235,10 @@ export default function MyEventsView({
     return (
       <div className="mx-auto max-w-7xl px-6 py-8">
         <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Subscribed Events
+          Unlocked Events
         </h1>
         <p className="mt-1 text-sm text-zinc-400">
-          View and download contacts from your subscribed events
+          View and download contacts from your unlocked events
         </p>
 
         {/* Filters */}
@@ -249,6 +289,7 @@ export default function MyEventsView({
                   setActiveTab("all");
                   setSearchQuery("");
                   setPage(0);
+                  setSelectedIds(new Set());
                 }}
                 className="cursor-pointer rounded-2xl border border-zinc-200 bg-white p-5 text-left shadow-sm transition-all hover:border-zinc-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
               >
@@ -297,12 +338,34 @@ export default function MyEventsView({
                   )}
                 </div>
 
+                {/* Unlock progress bar */}
+                {(() => {
+                  const unlocked = event.new_contacts + event.processed_contacts;
+                  const pct = event.total_contacts > 0 ? (unlocked / event.total_contacts) * 100 : 0;
+                  const remaining = event.total_contacts - unlocked;
+                  return (
+                    <>
+                      <div className="mt-3 h-1.5 w-full rounded-full bg-zinc-200 dark:bg-zinc-700">
+                        <div
+                          className="h-full rounded-full bg-emerald-500 transition-all"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                      <p className="mt-1.5 text-xs text-zinc-400">
+                        {remaining > 0
+                          ? `${remaining.toLocaleString()} more available`
+                          : "All contacts unlocked"}
+                      </p>
+                    </>
+                  );
+                })()}
+
                 {/* Unlock More link for partially unlocked events */}
                 {(event.new_contacts + event.processed_contacts) < event.total_contacts && (
                   <Link
                     href={`/dashboard/events/${event.event_id}`}
                     onClick={(e) => e.stopPropagation()}
-                    className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-emerald-600 transition-colors hover:text-emerald-500 dark:text-emerald-400"
+                    className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-emerald-600 transition-colors hover:text-emerald-500 dark:text-emerald-400"
                   >
                     <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -312,8 +375,8 @@ export default function MyEventsView({
                 )}
 
                 {(event.new_contacts + event.processed_contacts) >= event.total_contacts && (
-                  <div className="mt-3 text-xs text-zinc-400">
-                    Subscribed {new Date(event.subscribed_at).toLocaleDateString("en-US", {
+                  <div className="mt-2 text-xs text-zinc-400">
+                    Unlocked {new Date(event.subscribed_at).toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",
                       year: "numeric",
@@ -342,7 +405,7 @@ export default function MyEventsView({
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
         </svg>
-        Back to Subscribed Events
+        Back to Unlocked Events
       </button>
 
       <h1 className="mt-3 text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
@@ -464,6 +527,26 @@ export default function MyEventsView({
             </div>
           )}
 
+          {/* Unlock More Banner */}
+          {selectedEvent && contacts.length < selectedEvent.total_contacts && (
+            <div className="mt-4 flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50/50 px-5 py-4 dark:border-emerald-800/50 dark:bg-emerald-900/10">
+              <div>
+                <p className="text-sm font-medium text-emerald-800 dark:text-emerald-300">
+                  {(selectedEvent.total_contacts - contacts.length).toLocaleString()} more contacts available for this event
+                </p>
+                <p className="mt-0.5 text-xs text-emerald-600/70 dark:text-emerald-400/60">
+                  Unlock more contacts to expand your lead list
+                </p>
+              </div>
+              <Link
+                href={`/dashboard/events/${selectedEvent.event_id}`}
+                className="shrink-0 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
+              >
+                Unlock →
+              </Link>
+            </div>
+          )}
+
           {/* Tabs */}
           <div className="mt-4 flex items-center gap-2">
             {(["all", "new", "processed"] as TabFilter[]).map((tab) => {
@@ -479,6 +562,7 @@ export default function MyEventsView({
                   onClick={() => {
                     setActiveTab(tab);
                     setPage(0);
+                    setSelectedIds(new Set());
                   }}
                   className={`cursor-pointer rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
                     activeTab === tab
@@ -544,6 +628,9 @@ export default function MyEventsView({
               eventName={selectedEvent?.event_name ?? "contacts"}
               eventId={selectedEventId}
               activeTab={activeTab}
+              selectedContacts={selectedContacts}
+              onDownloaded={handleContactsDownloaded}
+              onClearSelection={() => setSelectedIds(new Set())}
             />
           </div>
 
@@ -563,6 +650,9 @@ export default function MyEventsView({
                 }
                 setPage(0);
               }}
+              selectedIds={selectedIds}
+              onToggleSelect={handleToggleSelect}
+              onToggleAll={handleToggleAll}
             />
           </div>
 

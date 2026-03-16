@@ -36,7 +36,7 @@ export default function Overview({
           subtitle="Actively collecting data"
         />
         <StatCard
-          label="My Subscriptions"
+          label="Unlocked Events"
           value={overview.subscribed_events}
           accent="blue"
         />
@@ -50,7 +50,7 @@ export default function Overview({
       <div className="mt-10">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-            My Subscribed Events
+            My Unlocked Events
           </h2>
           {subscribedEvents.length > 0 && (
             <Link
@@ -64,8 +64,8 @@ export default function Overview({
 
         {subscribedEvents.length === 0 ? (
           <EmptyState
-            title="No subscribed events yet"
-            description="Browse events to find and subscribe to event intent data."
+            title="No unlocked events yet"
+            description="Browse events to find and unlock event intent data."
             icon={
               <svg
                 className="h-8 w-8 text-zinc-400"

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { exportContactsCSV } from "@/lib/utils/csv-export";
 import type { Contact } from "@/types";
@@ -11,6 +10,9 @@ interface DownloadControlsProps {
   eventName: string;
   eventId: string;
   activeTab: string;
+  selectedContacts?: Contact[];
+  onDownloaded?: (ids: string[]) => void;
+  onClearSelection?: () => void;
 }
 
 export default function DownloadControls({
@@ -18,31 +20,43 @@ export default function DownloadControls({
   eventName,
   eventId,
   activeTab,
+  selectedContacts,
+  onDownloaded,
+  onClearSelection,
 }: DownloadControlsProps) {
   const [downloading, setDownloading] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const supabase = createClient();
-  const router = useRouter();
 
   if (contacts.length === 0) return null;
 
   const newContacts = contacts.filter((c) => !c.is_downloaded);
 
-  async function handleDownload(mode: "new" | "all") {
+  async function handleDownload(mode: "new" | "all" | "selected") {
     setDownloading(true);
     setMenuOpen(false);
 
-    const toDownload = mode === "new" ? newContacts : contacts;
+    const toDownload =
+      mode === "selected"
+        ? (selectedContacts ?? [])
+        : mode === "new"
+          ? newContacts
+          : contacts;
     if (toDownload.length === 0) {
       setDownloading(false);
       return;
     }
 
-    const filename = `${eventName}_${mode === "new" ? "new_leads" : "all_contacts"}`;
+    const suffix =
+      mode === "selected"
+        ? "selected"
+        : mode === "new"
+          ? "new_leads"
+          : "all_contacts";
+    const filename = `${eventName}_${suffix}`;
     exportContactsCSV(toDownload, filename);
 
     // Mark downloaded contacts
-    const contactIds = toDownload.map((c) => c.contact_id);
     const undownloaded = toDownload
       .filter((c) => !c.is_downloaded)
       .map((c) => c.contact_id);
@@ -52,7 +66,14 @@ export default function DownloadControls({
         p_event_id: eventId,
         p_contact_ids: undownloaded,
       });
-      router.refresh();
+    }
+
+    // Update parent state instead of router.refresh()
+    const allDownloadedIds = toDownload.map((c) => c.contact_id);
+    onDownloaded?.(allDownloadedIds);
+
+    if (mode === "selected") {
+      onClearSelection?.();
     }
 
     setDownloading(false);
@@ -128,6 +149,15 @@ export default function DownloadControls({
             onClick={() => setMenuOpen(false)}
           />
           <div className="absolute right-0 z-20 mt-1 w-56 rounded-lg border border-zinc-200 bg-white py-1 shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
+            {selectedContacts && selectedContacts.length > 0 && (
+              <button
+                onClick={() => handleDownload("selected")}
+                className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              >
+                <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+                Download Selected ({selectedContacts.length})
+              </button>
+            )}
             {newContacts.length > 0 && (
               <button
                 onClick={() => handleDownload("new")}

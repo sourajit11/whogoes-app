@@ -54,7 +54,7 @@ const NAV_ITEMS = [
   },
   {
     href: "/dashboard/my-events",
-    label: "Subscribed Events",
+    label: "Unlocked Events",
     icon: (
       <svg
         className="h-5 w-5"
