@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import EventsBrowser from "@/app/dashboard/events/events-browser";
 import type { BrowsableEvent } from "@/types";
 
@@ -55,8 +56,9 @@ export default async function PublicEventsPage() {
   // Fetch browsable events via existing RPC
   const { data: events } = await supabase.rpc("get_all_browsable_events");
 
-  // Fetch slug mapping from events table (the RPC doesn't include slug)
-  const { data: slugs } = await supabase
+  // Fetch slug mapping using admin client (anon key can't read events table due to RLS)
+  const adminClient = createAdminClient();
+  const { data: slugs } = await adminClient
     .from("events")
     .select("id, slug");
 

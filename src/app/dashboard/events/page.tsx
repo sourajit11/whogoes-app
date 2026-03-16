@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import EventsBrowser from "./events-browser";
 
 export default async function EventsPage() {
@@ -11,8 +12,9 @@ export default async function EventsPage() {
 
   const { data: events } = await supabase.rpc("get_all_browsable_events");
 
-  // Fetch slugs to enable /events/[slug] navigation
-  const { data: slugs } = await supabase.from("events").select("id, slug");
+  // Fetch slugs using admin client (anon key can't read events table due to RLS)
+  const adminClient = createAdminClient();
+  const { data: slugs } = await adminClient.from("events").select("id, slug");
   const slugMap = new Map((slugs ?? []).map((s: { id: string; slug: string }) => [s.id, s.slug]));
 
   // Only fetch credits if authenticated

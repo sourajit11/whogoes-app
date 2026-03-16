@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import type { BrowsableEvent } from "@/types";
 
 interface EventsBrowserProps {
@@ -21,7 +21,6 @@ export default function EventsBrowser({
   const [selectedRegion, setSelectedRegion] = useState<string>("");
   const [minContacts, setMinContacts] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
-  const router = useRouter();
 
   const filteredEvents = useMemo(() => {
     let result = initialEvents;
@@ -64,14 +63,14 @@ export default function EventsBrowser({
     return result;
   }, [initialEvents, selectedYear, selectedRegion, minContacts, searchQuery]);
 
-  function handleCardClick(event: BrowsableEvent) {
+  function getEventHref(event: BrowsableEvent): string {
     if (event.is_subscribed) {
-      router.push(`/dashboard/my-events?event=${event.event_id}`);
-    } else if (event.event_slug) {
-      router.push(`/events/${event.event_slug}`);
-    } else {
-      router.push(`/dashboard/events/${event.event_id}`);
+      return `/dashboard/my-events?event=${event.event_id}`;
     }
+    if (event.event_slug) {
+      return `/events/${event.event_slug}`;
+    }
+    return `/dashboard/events/${event.event_id}`;
   }
 
   return (
@@ -164,7 +163,7 @@ export default function EventsBrowser({
             <EventCard
               key={event.event_id}
               event={event}
-              onClick={() => handleCardClick(event)}
+              href={getEventHref(event)}
             />
           ))}
         </div>
@@ -175,15 +174,15 @@ export default function EventsBrowser({
 
 function EventCard({
   event,
-  onClick,
+  href,
 }: {
   event: BrowsableEvent;
-  onClick: () => void;
+  href: string;
 }) {
   return (
-    <button
-      onClick={onClick}
-      className="group cursor-pointer rounded-2xl border border-zinc-200 bg-white p-5 text-left shadow-sm transition-all hover:border-zinc-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700 w-full"
+    <Link
+      href={href}
+      className="group cursor-pointer rounded-2xl border border-zinc-200 bg-white p-5 text-left shadow-sm transition-all hover:border-zinc-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700 w-full block"
     >
       {/* Header: name + badges */}
       <div className="flex items-start justify-between gap-3">
@@ -280,6 +279,6 @@ function EventCard({
           </svg>
         </div>
       </div>
-    </button>
+    </Link>
   );
 }

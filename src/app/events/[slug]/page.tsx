@@ -20,7 +20,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!event) return { title: "Event Not Found" };
 
   const title = `${event.event_name} Attendee List — ${event.total_contacts.toLocaleString()} Verified Contacts`;
-  const description = `Get the ${event.event_name} ${event.event_year} attendee list. ${event.total_contacts.toLocaleString()} contacts with LinkedIn proof${
+  const nameIncludesYear = event.event_name.includes(String(event.event_year));
+  const eventLabel = nameIncludesYear
+    ? event.event_name
+    : `${event.event_name} ${event.event_year}`;
+  const description = `Get the ${eventLabel} attendee list. ${event.total_contacts.toLocaleString()} contacts with LinkedIn proof${
     event.contacts_with_email > 0
       ? `, ${event.contacts_with_email.toLocaleString()} with verified email`
       : ""
