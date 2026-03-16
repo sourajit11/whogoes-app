@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import type { SubscribedEvent, Contact, SortKey, SortDir } from "@/types";
+import type { SubscribedEvent, Contact, SortKey, SortDir, UnlockResult } from "@/types";
 import ContactTable from "./contact-table";
 import DownloadControls from "./download-controls";
 import EmptyState from "../components/empty-state";
@@ -35,6 +35,12 @@ export default function MyEventsView({
   const [eventSearch, setEventSearch] = useState("");
   const [eventFilter, setEventFilter] = useState<"all" | "active" | "completed">("all");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showUnlockPanel, setShowUnlockPanel] = useState(false);
+  const [credits, setCredits] = useState<number | null>(null);
+  const [unlocking, setUnlocking] = useState(false);
+  const [unlockError, setUnlockError] = useState<string | null>(null);
+  const [unlockSuccess, setUnlockSuccess] = useState<string | null>(null);
+  const [sliderIndex, setSliderIndex] = useState(0);
 
   const supabase = createClient();
   const selectedEvent = subscribedEvents.find(
@@ -102,6 +108,33 @@ export default function MyEventsView({
       fetchContacts();
     }
   }, [selectedEventId, fetchContacts]);
+
+  // Fetch credits for inline unlock
+  useEffect(() => {
+    async function fetchCredits() {
+      const { data } = await supabase.rpc("get_customer_credits");
+      setCredits(data ?? 0);
+    }
+    fetchCredits();
+  }, [supabase]);
+
+  // Computed values for inline unlock slider
+  const remainingForEvent = selectedEvent
+    ? selectedEvent.total_contacts - contacts.length
+    : 0;
+
+  const maxUnlock = Math.min(credits ?? 0, remainingForEvent);
+
+  const unlockSliderSteps = useMemo(() => {
+    if (maxUnlock <= 0) return [];
+    if (maxUnlock <= 10) return [maxUnlock];
+    const steps: number[] = [];
+    for (let i = 10; i < maxUnlock; i += 10) steps.push(i);
+    steps.push(maxUnlock);
+    return steps;
+  }, [maxUnlock]);
+
+  const unlockSliderValue = unlockSliderSteps[sliderIndex] ?? maxUnlock;
 
   const filteredContacts = useMemo(() => {
     let result = contacts;
@@ -192,6 +225,46 @@ export default function MyEventsView({
       }
       return next;
     });
+  }
+
+  async function handleUnlockMore() {
+    if (unlockSliderValue <= 0 || !selectedEventId) return;
+    setUnlocking(true);
+    setUnlockError(null);
+    setUnlockSuccess(null);
+
+    const { data, error: rpcError } = await supabase.rpc("unlock_event_contacts", {
+      p_event_id: selectedEventId,
+      p_count: unlockSliderValue,
+    });
+
+    if (rpcError) {
+      setUnlockError(rpcError.message);
+      setUnlocking(false);
+      return;
+    }
+
+    const result = data as UnlockResult;
+    if (!result.success) {
+      setUnlockError(result.message);
+      setUnlocking(false);
+      return;
+    }
+
+    setCredits(result.new_balance ?? 0);
+    setUnlockSuccess(
+      `${result.contacts_unlocked} contacts unlocked! ${result.new_balance} credits remaining.`
+    );
+    window.dispatchEvent(new CustomEvent("credits-updated"));
+
+    // Re-fetch contacts to include newly unlocked ones
+    await fetchContacts();
+
+    setShowUnlockPanel(false);
+    setUnlocking(false);
+
+    // Auto-clear success message after 5 seconds
+    setTimeout(() => setUnlockSuccess(null), 5000);
   }
 
   if (subscribedEvents.length === 0) {
@@ -290,6 +363,9 @@ export default function MyEventsView({
                   setSearchQuery("");
                   setPage(0);
                   setSelectedIds(new Set());
+                  setShowUnlockPanel(false);
+                  setUnlockSuccess(null);
+                  setUnlockError(null);
                 }}
                 className="cursor-pointer rounded-2xl border border-zinc-200 bg-white p-5 text-left shadow-sm transition-all hover:border-zinc-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
               >
@@ -362,16 +438,26 @@ export default function MyEventsView({
 
                 {/* Unlock More link for partially unlocked events */}
                 {(event.new_contacts + event.processed_contacts) < event.total_contacts && (
-                  <Link
-                    href={`/dashboard/events/${event.event_id}`}
-                    onClick={(e) => e.stopPropagation()}
-                    className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-emerald-600 transition-colors hover:text-emerald-500 dark:text-emerald-400"
+                  <span
+                    role="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedEventId(event.event_id);
+                      setActiveTab("all");
+                      setSearchQuery("");
+                      setPage(0);
+                      setSelectedIds(new Set());
+                      setShowUnlockPanel(true);
+                      setUnlockSuccess(null);
+                      setUnlockError(null);
+                    }}
+                    className="mt-2 inline-flex cursor-pointer items-center gap-1 text-xs font-medium text-emerald-600 transition-colors hover:text-emerald-500 dark:text-emerald-400"
                   >
                     <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
                     Unlock more contacts
-                  </Link>
+                  </span>
                 )}
 
                 {(event.new_contacts + event.processed_contacts) >= event.total_contacts && (
@@ -513,37 +599,152 @@ export default function MyEventsView({
               {contacts.length < selectedEvent.total_contacts && (
                 <>
                   <span className="text-zinc-300 dark:text-zinc-600">·</span>
-                  <Link
-                    href={`/dashboard/events/${selectedEvent.event_id}`}
-                    className="inline-flex items-center gap-1 font-medium text-emerald-600 transition-colors hover:text-emerald-500 dark:text-emerald-400"
+                  <button
+                    onClick={() => {
+                      setShowUnlockPanel(!showUnlockPanel);
+                      setUnlockError(null);
+                      const idx = unlockSliderSteps.findIndex((s) => s >= 20);
+                      setSliderIndex(idx >= 0 ? idx : unlockSliderSteps.length - 1);
+                    }}
+                    className="inline-flex cursor-pointer items-center gap-1 font-medium text-emerald-600 transition-colors hover:text-emerald-500 dark:text-emerald-400"
                   >
                     <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
                     Unlock more
-                  </Link>
+                  </button>
                 </>
               )}
             </div>
           )}
 
-          {/* Unlock More Banner */}
-          {selectedEvent && contacts.length < selectedEvent.total_contacts && (
-            <div className="mt-4 flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50/50 px-5 py-4 dark:border-emerald-800/50 dark:bg-emerald-900/10">
-              <div>
-                <p className="text-sm font-medium text-emerald-800 dark:text-emerald-300">
-                  {(selectedEvent.total_contacts - contacts.length).toLocaleString()} more contacts available for this event
-                </p>
-                <p className="mt-0.5 text-xs text-emerald-600/70 dark:text-emerald-400/60">
-                  Unlock more contacts to expand your lead list
-                </p>
+          {/* Unlock success toast */}
+          {unlockSuccess && (
+            <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800 dark:bg-emerald-900/20">
+              <div className="flex items-center gap-2 text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                {unlockSuccess}
               </div>
-              <Link
-                href={`/dashboard/events/${selectedEvent.event_id}`}
-                className="shrink-0 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
-              >
-                Unlock →
-              </Link>
+            </div>
+          )}
+
+          {/* Unlock More Panel */}
+          {selectedEvent && contacts.length < selectedEvent.total_contacts && !unlockSuccess && (
+            <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50/50 px-5 py-4 dark:border-emerald-800/50 dark:bg-emerald-900/10">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-emerald-800 dark:text-emerald-300">
+                    {remainingForEvent.toLocaleString()} more contacts available
+                  </p>
+                  <p className="mt-0.5 text-xs text-emerald-600/70 dark:text-emerald-400/60">
+                    Unlock more contacts to expand your lead list
+                  </p>
+                </div>
+                {!showUnlockPanel && (
+                  <button
+                    onClick={() => {
+                      setShowUnlockPanel(true);
+                      setUnlockError(null);
+                      const idx = unlockSliderSteps.findIndex((s) => s >= 20);
+                      setSliderIndex(idx >= 0 ? idx : unlockSliderSteps.length - 1);
+                    }}
+                    className="shrink-0 cursor-pointer rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
+                  >
+                    Unlock
+                  </button>
+                )}
+              </div>
+
+              {/* Expanded inline unlock controls */}
+              {showUnlockPanel && credits !== null && credits > 0 && (
+                <div className="mx-auto mt-4 max-w-lg">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                    How many contacts to unlock?
+                  </label>
+                  <div className="mt-2 flex items-center gap-4">
+                    <span className="text-xs text-zinc-400">{unlockSliderSteps[0] ?? 1}</span>
+                    <input
+                      type="range"
+                      min={0}
+                      max={unlockSliderSteps.length - 1}
+                      value={sliderIndex}
+                      onChange={(e) => setSliderIndex(Number(e.target.value))}
+                      className="h-2 flex-1 cursor-pointer appearance-none rounded-full bg-zinc-200 accent-emerald-600 dark:bg-zinc-700"
+                    />
+                    <span className="text-xs text-zinc-400">{maxUnlock}</span>
+                  </div>
+                  <p className="mt-1 text-center text-lg font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
+                    {unlockSliderValue} contact{unlockSliderValue !== 1 ? "s" : ""}
+                  </p>
+
+                  {/* Cost breakdown */}
+                  <div className="mt-3 rounded-xl bg-white p-3 ring-1 ring-zinc-200 dark:bg-zinc-800/50 dark:ring-zinc-700">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-zinc-500">Cost</span>
+                      <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                        {unlockSliderValue} credit{unlockSliderValue !== 1 ? "s" : ""}
+                      </span>
+                    </div>
+                    <div className="mt-1 flex items-center justify-between text-sm">
+                      <span className="text-zinc-500">Your balance</span>
+                      <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                        {credits} credit{credits !== 1 ? "s" : ""}
+                      </span>
+                    </div>
+                    <div className="mt-1 flex items-center justify-between border-t border-zinc-100 pt-1 text-sm dark:border-zinc-700">
+                      <span className="text-zinc-500">After unlock</span>
+                      <span className={`font-semibold ${
+                        credits - unlockSliderValue <= 5
+                          ? "text-amber-600 dark:text-amber-400"
+                          : "text-emerald-600 dark:text-emerald-400"
+                      }`}>
+                        {credits - unlockSliderValue} remaining
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Action buttons */}
+                  <div className="mt-3 flex gap-2">
+                    <button
+                      onClick={handleUnlockMore}
+                      disabled={unlocking || unlockSliderValue <= 0}
+                      className="flex-1 cursor-pointer rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {unlocking ? "Unlocking..." : `Unlock ${unlockSliderValue} Contact${unlockSliderValue !== 1 ? "s" : ""}`}
+                    </button>
+                    <button
+                      onClick={() => setShowUnlockPanel(false)}
+                      className="cursor-pointer rounded-lg border border-zinc-200 px-4 py-2.5 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+
+                  {unlockError && (
+                    <p className="mt-2 text-center text-sm text-red-600 dark:text-red-400">{unlockError}</p>
+                  )}
+                </div>
+              )}
+
+              {/* No credits state */}
+              {showUnlockPanel && credits !== null && credits <= 0 && (
+                <div className="mt-4 text-center">
+                  <p className="text-sm text-zinc-500">You have no credits remaining.</p>
+                  <button
+                    onClick={() => window.dispatchEvent(new CustomEvent("open-buy-credits"))}
+                    className="mt-2 cursor-pointer rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
+                  >
+                    Get More Credits
+                  </button>
+                </div>
+              )}
+
+              {/* Credits still loading */}
+              {showUnlockPanel && credits === null && (
+                <p className="mt-4 text-center text-sm text-zinc-400">Loading...</p>
+              )}
             </div>
           )}
 

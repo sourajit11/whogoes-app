@@ -95,7 +95,7 @@ const NAV_ITEMS = [
 
 export default function Sidebar({
   userEmail,
-  credits,
+  credits: initialCredits,
   newLeadCount,
 }: SidebarProps) {
   const pathname = usePathname();
@@ -104,6 +104,7 @@ export default function Sidebar({
   const { theme, setTheme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [showBuyCredits, setShowBuyCredits] = useState(false);
+  const [currentCredits, setCurrentCredits] = useState(initialCredits);
 
   // Listen for external "open buy credits" events (e.g., from event detail page)
   useEffect(() => {
@@ -113,6 +114,18 @@ export default function Sidebar({
     window.addEventListener("open-buy-credits", handleOpenBuyCredits);
     return () => window.removeEventListener("open-buy-credits", handleOpenBuyCredits);
   }, []);
+
+  // Re-fetch credits when other components dispatch "credits-updated"
+  useEffect(() => {
+    async function handleCreditsUpdated() {
+      const { data } = await supabase.rpc("get_customer_credits");
+      if (data !== null) {
+        setCurrentCredits(data);
+      }
+    }
+    window.addEventListener("credits-updated", handleCreditsUpdated);
+    return () => window.removeEventListener("credits-updated", handleCreditsUpdated);
+  }, [supabase]);
 
   function isActive(href: string, exact?: boolean) {
     if (exact) return pathname === href;
@@ -161,10 +174,10 @@ export default function Sidebar({
       {/* Credits + Theme + User */}
       <div className="border-t border-zinc-200 p-4 dark:border-zinc-800">
         {/* Low credits warning */}
-        {credits <= 5 && credits > 0 && (
+        {currentCredits <= 5 && currentCredits > 0 && (
           <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-900/20">
             <p className="text-xs font-medium text-amber-700 dark:text-amber-400">
-              Only {credits} credit{credits !== 1 ? "s" : ""} left
+              Only {currentCredits} credit{currentCredits !== 1 ? "s" : ""} left
             </p>
             <button
               onClick={() => setShowBuyCredits(true)}
@@ -175,7 +188,7 @@ export default function Sidebar({
           </div>
         )}
 
-        {credits === 0 && (
+        {currentCredits === 0 && (
           <div className="mb-3 rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-900/20">
             <p className="text-xs font-medium text-red-700 dark:text-red-400">
               No credits remaining
@@ -196,16 +209,16 @@ export default function Sidebar({
               Credits
             </span>
             <span className={`text-lg font-bold tabular-nums ${
-              credits === 0
+              currentCredits === 0
                 ? "text-red-600 dark:text-red-400"
-                : credits <= 5
+                : currentCredits <= 5
                   ? "text-amber-600 dark:text-amber-400"
                   : "text-zinc-900 dark:text-white"
             }`}>
-              {credits}
+              {currentCredits}
             </span>
           </div>
-          {credits > 5 && (
+          {currentCredits > 5 && (
             <button
               onClick={() => setShowBuyCredits(true)}
               className="mt-2 w-full cursor-pointer rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-emerald-500"
