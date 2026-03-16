@@ -67,6 +67,8 @@ export default function EventsBrowser({
   function handleCardClick(event: BrowsableEvent) {
     if (event.is_subscribed) {
       router.push(`/dashboard/my-events?event=${event.event_id}`);
+    } else if (event.event_slug) {
+      router.push(`/events/${event.event_slug}`);
     } else {
       router.push(`/dashboard/events/${event.event_id}`);
     }

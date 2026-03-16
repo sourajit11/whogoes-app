@@ -12,6 +12,7 @@ export interface BrowsableEvent {
   event_region: string | null;
   event_location: string | null;
   event_start_date: string | null;
+  event_slug?: string;
   is_active: boolean;
   total_contacts: number;
   contacts_with_email: number;

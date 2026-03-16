@@ -126,7 +126,7 @@ export default function EventDetail({
 
   async function handleUnlock() {
     if (!isAuthenticated) {
-      router.push(`/login?redirect=/dashboard/events/${event.event_id}`);
+      router.push(`/login?redirect=/events/${event.event_slug ?? event.event_id}`);
       return;
     }
 
@@ -153,8 +153,9 @@ export default function EventDetail({
       return;
     }
 
-    // Update local state
+    // Update local state and notify sidebar
     setCredits(result.new_balance ?? 0);
+    window.dispatchEvent(new CustomEvent("credits-updated"));
     setSuccessMsg(
       `${result.contacts_unlocked} contacts unlocked! ${result.new_balance} credits remaining.`
     );
@@ -190,7 +191,7 @@ export default function EventDetail({
     <div className="mx-auto max-w-7xl px-6 py-8">
       {/* Back link */}
       <Link
-        href="/dashboard/events"
+        href="/events"
         className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-400 transition-colors hover:text-zinc-700 dark:hover:text-zinc-300"
       >
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -423,7 +424,7 @@ export default function EventDetail({
                       Sign up free to unlock contacts. You get 20 credits on us.
                     </p>
                     <Link
-                      href={`/login?redirect=/dashboard/events/${event.event_id}`}
+                      href={`/login?redirect=/events/${event.event_slug ?? event.event_id}`}
                       className="mt-4 inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-emerald-500 hover:shadow-md active:scale-[0.98]"
                     >
                       <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

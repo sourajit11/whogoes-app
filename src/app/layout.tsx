@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/lib/theme-provider";
+import { GoogleAnalytics } from "@/components/analytics";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -14,8 +15,27 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "WhoGoes — Event Intent Data",
-  description: "Discover who is attending events with verified contact data",
+  title: {
+    default: "WhoGoes — Trade Show & Event Attendee Lists With Proof",
+    template: "%s | WhoGoes",
+  },
+  description:
+    "Outreach-ready trade show & conference attendee lists with LinkedIn proof. Browse 1,200+ events free.",
+  metadataBase: new URL("https://app.whogoes.co"),
+  openGraph: {
+    type: "website",
+    siteName: "WhoGoes",
+    url: "https://app.whogoes.co",
+    title: "WhoGoes — Trade Show & Event Attendee Lists With Proof",
+    description:
+      "Outreach-ready trade show & conference attendee lists with LinkedIn proof. Browse 1,200+ events free.",
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION || undefined,
+  },
 };
 
 // Inline script to prevent flash of wrong theme
@@ -44,6 +64,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <GoogleAnalytics />
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
