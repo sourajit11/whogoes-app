@@ -73,7 +73,9 @@ export default async function DashboardLayout({
       <main className="relative flex-1 overflow-y-auto">
         <div className="pointer-events-none sticky top-0 z-30 flex justify-end px-6 py-4">
           <a
-            href="#"
+            href="https://calendly.com/hello-whogoes/30min"
+            target="_blank"
+            rel="noopener noreferrer"
             className="pointer-events-auto inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-emerald-500 hover:shadow-md active:scale-[0.98]"
           >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

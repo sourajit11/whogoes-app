@@ -21,6 +21,7 @@ export default function EventsBrowser({
   const [selectedRegion, setSelectedRegion] = useState<string>("");
   const [minContacts, setMinContacts] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("");
 
   const filteredEvents = useMemo(() => {
     let result = initialEvents;
@@ -36,6 +37,11 @@ export default function EventsBrowser({
         (e) => e.total_contacts >= Number(minContacts)
       );
     }
+    if (statusFilter === "active") {
+      result = result.filter((e) => e.is_active);
+    } else if (statusFilter === "completed") {
+      result = result.filter((e) => !e.is_active);
+    }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter(
@@ -45,10 +51,9 @@ export default function EventsBrowser({
       );
     }
 
-    // Sort: 1) Active first, 2) Most contacts, 3) Nearest date to today
+    // Sort: 1) Most contacts (highest first), 2) Nearest date to today
     const now = Date.now();
     result = [...result].sort((a, b) => {
-      if (a.is_active !== b.is_active) return a.is_active ? -1 : 1;
       if (a.total_contacts !== b.total_contacts)
         return b.total_contacts - a.total_contacts;
       const dateA = a.event_start_date
@@ -61,7 +66,7 @@ export default function EventsBrowser({
     });
 
     return result;
-  }, [initialEvents, selectedYear, selectedRegion, minContacts, searchQuery]);
+  }, [initialEvents, selectedYear, selectedRegion, minContacts, searchQuery, statusFilter]);
 
   function getEventHref(event: BrowsableEvent): string {
     if (event.is_subscribed) {
@@ -143,6 +148,16 @@ export default function EventsBrowser({
           <option value="50">50+ contacts</option>
           <option value="100">100+ contacts</option>
           <option value="200">200+ contacts</option>
+        </select>
+
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 shadow-sm focus:border-zinc-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+        >
+          <option value="">All Status</option>
+          <option value="active">Active</option>
+          <option value="completed">Completed</option>
         </select>
 
         <span className="ml-auto text-sm text-zinc-400">

@@ -191,7 +191,7 @@ export default function EventDetail({
     <div className="mx-auto max-w-7xl px-6 py-8">
       {/* Back link */}
       <Link
-        href="/events"
+        href={isAuthenticated ? "/dashboard/events" : "/events"}
         className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-400 transition-colors hover:text-zinc-700 dark:hover:text-zinc-300"
       >
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
