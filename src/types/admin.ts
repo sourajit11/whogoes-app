@@ -7,8 +7,11 @@ export interface AdminCustomer {
   credit_balance: number;
   contacts_unlocked: number;
   total_paid_amount: number;
+  total_purchased_credits: number;
+  last_payment_at: string | null;
   subscribed_events: number;
   last_activity: string | null;
+  last_package: string | null;
 }
 
 export interface AdminBusinessStats {
@@ -75,4 +78,48 @@ export interface AdminCustomerUnlock {
   contact_name: string | null;
   contact_email: string | null;
   charged_at: string;
+}
+
+export interface AdminPayment {
+  id: string;
+  amount_usd: number;
+  credits: number;
+  package_name: string | null;
+  status: string;
+  created_at: string;
+  paid_at: string | null;
+}
+
+// --- CEO Dashboard types ---
+
+export type TimeRange = "today" | "7d" | "4w" | "3m" | "all";
+
+export interface DailySignup {
+  date: string;
+  count: number;
+}
+
+export interface DailyRevenue {
+  date: string;
+  revenue: number;
+  transactions: number;
+  paying_users: number;
+  credits_sold: number;
+}
+
+export interface DailyCredits {
+  date: string;
+  credits_consumed: number;
+}
+
+export interface DailyActiveUsers {
+  date: string;
+  active_users: number;
+}
+
+export interface DashboardData {
+  daily_signups: DailySignup[];
+  daily_revenue: DailyRevenue[];
+  daily_credits: DailyCredits[];
+  daily_active_users: DailyActiveUsers[];
 }

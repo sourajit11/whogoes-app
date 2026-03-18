@@ -24,6 +24,7 @@ interface SimpleChartProps {
   color?: string;
   type?: "bar" | "line" | "area";
   height?: number;
+  formatYAxis?: (value: number) => string;
 }
 
 export default function SimpleChart({
@@ -31,6 +32,7 @@ export default function SimpleChart({
   color = "#6366f1",
   type = "bar",
   height = 256,
+  formatYAxis,
 }: SimpleChartProps) {
   if (data.length === 0) {
     return (
@@ -59,6 +61,7 @@ export default function SimpleChart({
     tick: { fontSize: 11, fill: "#a1a1aa" },
     axisLine: false,
     tickLine: false,
+    ...(formatYAxis ? { tickFormatter: formatYAxis } : {}),
   };
 
   const gridProps = {

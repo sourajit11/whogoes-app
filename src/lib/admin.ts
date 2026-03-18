@@ -15,7 +15,6 @@ export async function isAdmin(): Promise<boolean> {
   } = await supabase.auth.getUser();
   if (!user?.email) return false;
   const adminEmails = getAdminEmails();
-  console.log("[admin] checking:", user.email, "against:", adminEmails);
   return adminEmails.includes(user.email.toLowerCase());
 }
 

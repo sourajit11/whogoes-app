@@ -22,12 +22,19 @@ export default async function AdminCustomerDetailPage({
     .eq("user_id", id)
     .single();
 
-  // Get paid credits (from customers)
+  // Get paid credits + totals (from customers)
   const { data: customer } = await admin
     .from("customers")
-    .select("credits_balance")
+    .select("credits_balance, total_paid_amount, total_purchased_credits")
     .eq("user_id", id)
     .single();
+
+  // Get payment history
+  const { data: payments } = await admin
+    .from("payments")
+    .select("id, amount_usd, credits, package_name, status, created_at, paid_at")
+    .eq("user_id", id)
+    .order("created_at", { ascending: false });
 
   // Get subscribed events
   const { data: subscriptions } = await admin
@@ -67,6 +74,19 @@ export default async function AdminCustomerDetailPage({
       signedUpAt={user.created_at}
       freeCredits={signup?.free_credits ?? 0}
       paidCredits={customer?.credits_balance ?? 0}
+      totalPaidAmount={customer?.total_paid_amount ?? 0}
+      totalPurchasedCredits={customer?.total_purchased_credits ?? 0}
+      payments={
+        payments?.map((p) => ({
+          id: p.id,
+          amount_usd: p.amount_usd,
+          credits: p.credits,
+          package_name: p.package_name,
+          status: p.status,
+          created_at: p.created_at,
+          paid_at: p.paid_at,
+        })) ?? []
+      }
       subscriptions={
         subscriptions?.map((s) => {
           const evt = s.events as unknown as { name: string } | null;
