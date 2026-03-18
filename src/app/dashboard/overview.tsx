@@ -20,7 +20,7 @@ export default function Overview({
         Dashboard
       </h1>
       <p className="mt-1 text-sm text-zinc-400">
-        Overview of your event intent data
+        Overview of your event attendee data
       </p>
 
       {/* Stats */}
@@ -65,7 +65,7 @@ export default function Overview({
         {subscribedEvents.length === 0 ? (
           <EmptyState
             title="No unlocked events yet"
-            description="Browse events to find and unlock event intent data."
+            description="Browse events to find and unlock attendee data."
             icon={
               <svg
                 className="h-8 w-8 text-zinc-400"

@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useTheme } from "@/lib/theme-provider";
+import BuyCreditsModal from "./buy-credits-modal";
 
 interface SidebarProps {
   userEmail: string;
@@ -87,6 +88,25 @@ const NAV_ITEMS = [
           strokeLinejoin="round"
           strokeWidth={1.5}
           d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
+        />
+      </svg>
+    ),
+  },
+  {
+    href: "/dashboard/billing",
+    label: "Billing",
+    icon: (
+      <svg
+        className="h-5 w-5"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={1.5}
+          d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
         />
       </svg>
     ),
@@ -291,25 +311,10 @@ export default function Sidebar({
 
       {/* Buy Credits Modal */}
       {showBuyCredits && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="mx-4 w-full max-w-sm rounded-xl border border-zinc-200 bg-white p-6 shadow-xl dark:border-zinc-700 dark:bg-zinc-900">
-            <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-              Buy Credits
-            </h3>
-            <p className="mt-2 text-sm text-zinc-500">
-              To purchase additional credits, please contact our sales team.
-            </p>
-            <p className="mt-3 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-              sales@shootday.com
-            </p>
-            <button
-              onClick={() => setShowBuyCredits(false)}
-              className="mt-4 w-full cursor-pointer rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-zinc-700 dark:hover:bg-zinc-600"
-            >
-              Close
-            </button>
-          </div>
-        </div>
+        <BuyCreditsModal
+          userEmail={userEmail}
+          onClose={() => setShowBuyCredits(false)}
+        />
       )}
     </div>
   );
