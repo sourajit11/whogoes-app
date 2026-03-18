@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
@@ -40,6 +40,13 @@ function LoginForm() {
 
   // Redirect to the page user came from, or dashboard
   const redirectTo = searchParams.get("redirect") || "/dashboard";
+
+  // Redirect if already authenticated (defense-in-depth alongside middleware)
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) router.replace(redirectTo);
+    });
+  }, [supabase, router, redirectTo]);
 
   async function handleGoogleSignIn() {
     const { error } = await supabase.auth.signInWithOAuth({

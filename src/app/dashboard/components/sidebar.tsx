@@ -351,7 +351,7 @@ export default function Sidebar({
 
       {/* Mobile sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 border-r border-zinc-200 bg-white transition-transform md:hidden dark:border-zinc-800 dark:bg-zinc-900 ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 overflow-y-auto border-r border-zinc-200 bg-white transition-transform md:hidden dark:border-zinc-800 dark:bg-zinc-900 ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -359,7 +359,7 @@ export default function Sidebar({
       </aside>
 
       {/* Desktop sidebar */}
-      <aside className="hidden w-64 shrink-0 border-r border-zinc-200 bg-white md:block dark:border-zinc-800 dark:bg-zinc-900">
+      <aside className="hidden w-64 shrink-0 overflow-y-auto border-r border-zinc-200 bg-white md:block dark:border-zinc-800 dark:bg-zinc-900">
         {sidebarContent}
       </aside>
     </>
