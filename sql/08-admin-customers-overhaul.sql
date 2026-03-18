@@ -52,10 +52,9 @@ LEFT JOIN LATERAL (
 ORDER BY u.created_at DESC;
 
 
--- 2. New RPC: Atomically add credits to a user
--- Unlike admin_adjust_credits which SETS the balance,
--- this ADDS to the existing balance (or creates the row if needed).
--- Admin-granted credits do NOT count as purchases (total_purchased_credits unchanged).
+-- 2. New RPC: Atomically add FREE credits to a user
+-- Admin-granted credits go to user_signups.free_credits (not customers.credits_balance).
+-- This ensures they show as "Free Credits" and are consumed first by the unlock RPC.
 CREATE OR REPLACE FUNCTION admin_add_credits(
   p_user_id UUID,
   p_credits_to_add INTEGER
@@ -64,24 +63,24 @@ RETURNS JSON
 LANGUAGE plpgsql SECURITY DEFINER
 AS $$
 DECLARE
-  v_new_balance INTEGER;
+  v_new_free INTEGER;
 BEGIN
   IF p_credits_to_add <= 0 THEN
     RETURN json_build_object('success', false, 'message', 'Credits to add must be positive');
   END IF;
 
-  INSERT INTO customers (user_id, credits_balance, total_purchased_credits, total_paid_amount)
-  VALUES (p_user_id, p_credits_to_add, 0, 0)
+  INSERT INTO user_signups (user_id, free_credits)
+  VALUES (p_user_id, p_credits_to_add)
   ON CONFLICT (user_id) DO UPDATE SET
-    credits_balance = customers.credits_balance + p_credits_to_add,
+    free_credits = user_signups.free_credits + p_credits_to_add,
     updated_at = now()
-  RETURNING credits_balance INTO v_new_balance;
+  RETURNING free_credits INTO v_new_free;
 
   RETURN json_build_object(
     'success', true,
-    'message', format('%s credits added', p_credits_to_add),
+    'message', format('%s free credits added', p_credits_to_add),
     'credits_added', p_credits_to_add,
-    'new_balance', v_new_balance
+    'new_balance', v_new_free
   );
 END;
 $$;
