@@ -10,9 +10,10 @@ export default async function EventsPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Use admin client for public data — anon key can fail for unauthenticated users
+  // Use user's supabase client so auth.uid() works inside RPC (for is_subscribed)
+  // Admin client would lose user context and is_subscribed would always be false
   const adminClient = createAdminClient();
-  const { data: events, error: eventsError } = await adminClient.rpc("get_all_browsable_events");
+  const { data: events, error: eventsError } = await supabase.rpc("get_all_browsable_events");
   if (eventsError) {
     console.error("Failed to fetch browsable events:", eventsError.message);
   }
