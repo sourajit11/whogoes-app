@@ -20,6 +20,8 @@ export function exportContactsCSV(contacts: Contact[], filename: string) {
     "Company Website",
     "Company Industry",
     "Company Size",
+    "Company Headquarters",
+    "Company Founded Year",
     "Status",
   ];
 
@@ -40,6 +42,8 @@ export function exportContactsCSV(contacts: Contact[], filename: string) {
     c.company_website ?? "",
     c.company_industry ?? "",
     c.company_size ?? "",
+    c.company_headquarters ?? "",
+    c.company_founded_year?.toString() ?? "",
     c.is_downloaded ? "Processed" : "New",
   ]);
 

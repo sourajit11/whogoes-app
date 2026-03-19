@@ -48,6 +48,8 @@ export interface ContactPreview {
   company_linkedin_url: string | null;
   company_industry: string | null;
   company_size: string | null;
+  company_headquarters: string | null;
+  company_founded_year: number | null;
   email: string | null;
   contact_linkedin_url: string | null;
 }
@@ -71,6 +73,9 @@ export interface Contact {
   company_website: string | null;
   company_industry: string | null;
   company_size: string | null;
+  company_headquarters: string | null;
+  company_founded_year: number | null;
+  company_description: string | null;
   post_url: string | null;
   post_content: string | null;
   post_date: string | null;

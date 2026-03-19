@@ -10,10 +10,12 @@ export default async function EventsPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { data: events } = await supabase.rpc("get_all_browsable_events");
-
-  // Fetch slugs using admin client (anon key can't read events table due to RLS)
+  // Use admin client for public data — anon key can fail for unauthenticated users
   const adminClient = createAdminClient();
+  const { data: events, error: eventsError } = await adminClient.rpc("get_all_browsable_events");
+  if (eventsError) {
+    console.error("Failed to fetch browsable events:", eventsError.message);
+  }
   const { data: slugs } = await adminClient.from("events").select("id, slug");
   const slugMap = new Map((slugs ?? []).map((s: { id: string; slug: string }) => [s.id, s.slug]));
 
@@ -46,6 +48,7 @@ export default async function EventsPage() {
       credits={credits ?? 0}
       years={years as number[]}
       regions={regions as string[]}
+      isAuthenticated={!!user}
     />
   );
 }

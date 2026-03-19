@@ -9,6 +9,7 @@ interface EventsBrowserProps {
   credits: number;
   years: number[];
   regions: string[];
+  isAuthenticated?: boolean;
 }
 
 export default function EventsBrowser({
@@ -16,6 +17,7 @@ export default function EventsBrowser({
   credits,
   years,
   regions,
+  isAuthenticated,
 }: EventsBrowserProps) {
   const [selectedYear, setSelectedYear] = useState<string>("");
   const [selectedRegion, setSelectedRegion] = useState<string>("");
@@ -72,6 +74,11 @@ export default function EventsBrowser({
     if (event.is_subscribed) {
       return `/dashboard/my-events?event=${event.event_id}`;
     }
+    // Authenticated users stay in dashboard layout (where sidebar credits update)
+    if (isAuthenticated) {
+      return `/dashboard/events/${event.event_id}`;
+    }
+    // Unauthenticated users go to SEO-friendly public route
     if (event.event_slug) {
       return `/events/${event.event_slug}`;
     }

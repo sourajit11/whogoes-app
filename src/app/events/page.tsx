@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import EventsBrowser from "@/app/dashboard/events/events-browser";
 import type { BrowsableEvent } from "@/types";
@@ -51,13 +50,14 @@ function EventsListJsonLd({
 }
 
 export default async function PublicEventsPage() {
-  const supabase = await createClient();
-
-  // Fetch browsable events via existing RPC
-  const { data: events } = await supabase.rpc("get_all_browsable_events");
-
-  // Fetch slug mapping using admin client (anon key can't read events table due to RLS)
+  // Use admin client for all queries — anon key fails for unauthenticated users (no cookies)
   const adminClient = createAdminClient();
+
+  const { data: events, error: eventsError } = await adminClient.rpc("get_all_browsable_events");
+  if (eventsError) {
+    console.error("Failed to fetch browsable events:", eventsError.message);
+  }
+
   const { data: slugs } = await adminClient
     .from("events")
     .select("id, slug");
@@ -92,6 +92,7 @@ export default async function PublicEventsPage() {
         credits={0}
         years={years}
         regions={regions}
+        isAuthenticated={false}
       />
     </>
   );

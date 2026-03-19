@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
 import EventDetail from "./event-detail";
 
@@ -15,8 +16,9 @@ export default async function EventDetailPage({ params }: Props) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Fetch event info (public - works without auth via anon key)
-  const { data: events } = await supabase.rpc("get_all_browsable_events");
+  // Use admin client for public data — anon key can fail for unauthenticated users
+  const adminClient = createAdminClient();
+  const { data: events } = await adminClient.rpc("get_all_browsable_events");
   const event = (events ?? []).find(
     (e: { event_id: string }) => e.event_id === id
   );
@@ -44,6 +46,7 @@ export default async function EventDetailPage({ params }: Props) {
       credits={credits}
       isAuthenticated={!!user}
       unlockStatus={unlockStatus}
+      userEmail={user?.email ?? undefined}
     />
   );
 }

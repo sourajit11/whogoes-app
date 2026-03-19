@@ -49,8 +49,8 @@ const SORTABLE_COLUMNS: { key: SortKey; label: string }[] = [
   { key: "email", label: "Email" },
 ];
 
-// Total columns: checkbox(1) + #(1) + status(1) + Name + Title + PersonLI + Company + Source + PostDate + Location + CompanyDomain + CompanyLI + Industry + Size + Email = 15
-const TOTAL_COLS = 15;
+// Total columns: checkbox(1) + #(1) + status(1) + Name + Title + PersonLI + Company + Source + PostDate + Location + CompanyDomain + CompanyLI + Industry + Size + HQ + Founded + Email = 17
+const TOTAL_COLS = 17;
 
 export default function ContactTable({ contacts, startIndex = 0, sortKey, sortDir, onSort, selectedIds, onToggleSelect, onToggleAll }: ContactTableProps) {
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
@@ -144,6 +144,14 @@ export default function ContactTable({ contacts, startIndex = 0, sortKey, sortDi
               {/* Size */}
               <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                 Size
+              </th>
+              {/* HQ */}
+              <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                HQ
+              </th>
+              {/* Founded */}
+              <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                Founded
               </th>
               {/* Email — sortable */}
               <SortableHeader col={SORTABLE_COLUMNS[4]} />
@@ -344,6 +352,16 @@ function TableRow({
         {/* Size */}
         <td className="whitespace-nowrap px-3 py-3.5 text-zinc-400">
           {contact.company_size ?? "—"}
+        </td>
+
+        {/* HQ */}
+        <td className="whitespace-nowrap px-3 py-3.5 text-zinc-400">
+          {contact.company_headquarters ?? "—"}
+        </td>
+
+        {/* Founded Year */}
+        <td className="whitespace-nowrap px-3 py-3.5 text-zinc-400">
+          {contact.company_founded_year ?? "—"}
         </td>
 
         {/* Email */}

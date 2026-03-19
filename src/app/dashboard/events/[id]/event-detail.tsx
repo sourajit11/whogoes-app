@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import BuyCreditsModal from "@/app/dashboard/components/buy-credits-modal";
 import type {
   BrowsableEvent,
   ContactPreview,
@@ -16,6 +17,7 @@ interface EventDetailProps {
   credits: number;
   isAuthenticated: boolean;
   unlockStatus: EventUnlockStatus | null;
+  userEmail?: string;
 }
 
 const FREE_PREVIEW_COUNT = 5;
@@ -52,6 +54,7 @@ export default function EventDetail({
   credits: initialCredits,
   isAuthenticated,
   unlockStatus: initialUnlockStatus,
+  userEmail,
 }: EventDetailProps) {
   const [previews, setPreviews] = useState<ContactPreview[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,6 +62,7 @@ export default function EventDetail({
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [credits, setCredits] = useState(initialCredits);
+  const [showBuyCredits, setShowBuyCredits] = useState(false);
   const [unlockStatus, setUnlockStatus] = useState<EventUnlockStatus | null>(
     initialUnlockStatus
   );
@@ -111,6 +115,18 @@ export default function EventDetail({
   useEffect(() => {
     setSliderIndex((prev) => Math.min(prev, sliderSteps.length - 1) || getDefaultIndex());
   }, [sliderSteps, getDefaultIndex]);
+
+  // Refresh credits when purchase completes (from BuyCreditsModal)
+  useEffect(() => {
+    async function handleCreditsUpdated() {
+      const { data } = await supabase.rpc("get_customer_credits");
+      if (data !== null) {
+        setCredits(data);
+      }
+    }
+    window.addEventListener("credits-updated", handleCreditsUpdated);
+    return () => window.removeEventListener("credits-updated", handleCreditsUpdated);
+  }, [supabase]);
 
   // Sort preview: email contacts first, then by post_date desc
   const sortedPreviews = useMemo(() => {
@@ -347,6 +363,8 @@ export default function EventDetail({
                   <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Company LinkedIn</th>
                   <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Industry</th>
                   <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Size</th>
+                  <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">HQ</th>
+                  <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Founded</th>
                   <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Email</th>
                 </tr>
               </thead>
@@ -372,6 +390,8 @@ export default function EventDetail({
                         <td className="px-3 py-3"><div className="h-4 w-5 rounded bg-zinc-200 blur-[6px] dark:bg-zinc-700" /></td>
                         <td className="px-3 py-3"><div className="h-4 w-20 rounded bg-zinc-200 blur-[6px] dark:bg-zinc-700" /></td>
                         <td className="px-3 py-3"><div className="h-4 w-16 rounded bg-zinc-200 blur-[6px] dark:bg-zinc-700" /></td>
+                        <td className="px-3 py-3"><div className="h-4 w-24 rounded bg-zinc-200 blur-[6px] dark:bg-zinc-700" /></td>
+                        <td className="px-3 py-3"><div className="h-4 w-12 rounded bg-zinc-200 blur-[6px] dark:bg-zinc-700" /></td>
                         <td className="px-3 py-3"><div className="h-4 w-28 rounded bg-zinc-200 blur-[6px] dark:bg-zinc-700" /></td>
                       </tr>
                     ))}
@@ -532,8 +552,7 @@ export default function EventDetail({
                     </p>
                     <button
                       onClick={() => {
-                        // Dispatch event to open buy credits modal in sidebar
-                        window.dispatchEvent(new CustomEvent("open-buy-credits"));
+                        setShowBuyCredits(true);
                       }}
                       className="mt-4 inline-flex cursor-pointer items-center gap-2 rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-emerald-500 hover:shadow-md active:scale-[0.98]"
                     >
@@ -546,6 +565,14 @@ export default function EventDetail({
           </div>
         )}
       </div>
+
+      {/* Buy Credits Modal — embedded so it works on both dashboard and public pages */}
+      {showBuyCredits && userEmail && (
+        <BuyCreditsModal
+          userEmail={userEmail}
+          onClose={() => setShowBuyCredits(false)}
+        />
+      )}
     </div>
   );
 }
@@ -633,6 +660,12 @@ function ContactRow({ contact: c }: { contact: ContactPreview }) {
       </td>
       <td className="whitespace-nowrap px-3 py-3 text-zinc-400">
         {c.company_size ?? "\u2014"}
+      </td>
+      <td className="whitespace-nowrap px-3 py-3 text-zinc-400">
+        {c.company_headquarters ?? "\u2014"}
+      </td>
+      <td className="whitespace-nowrap px-3 py-3 text-zinc-400">
+        {c.company_founded_year ?? "\u2014"}
       </td>
       <td className="whitespace-nowrap px-3 py-3 text-zinc-500">
         {c.email ?? "\u2014"}

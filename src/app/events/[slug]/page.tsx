@@ -119,6 +119,7 @@ export default async function PublicEventDetailPage({ params }: Props) {
         credits={credits}
         isAuthenticated={!!user}
         unlockStatus={unlockStatus}
+        userEmail={user?.email ?? undefined}
       />
     </>
   );
