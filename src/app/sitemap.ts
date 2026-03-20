@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getAllPosts } from "@/lib/blog";
+import { getAllComparisons } from "@/lib/compare";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const supabase = createAdminClient();
@@ -46,5 +47,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
     ...blogEntries,
+    {
+      url: "https://app.whogoes.co/compare",
+      lastModified: new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.9,
+    },
+    ...getAllComparisons().map((c) => ({
+      url: `https://app.whogoes.co/compare/${c.meta.slug}`,
+      lastModified: new Date(c.meta.date),
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
+    })),
   ];
 }

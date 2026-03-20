@@ -1,5 +1,6 @@
 import type { MDXComponents } from "mdx/types";
 import Link from "next/link";
+import { ComparisonTable } from "./comparison-table";
 
 export const mdxComponents: MDXComponents = {
   h1: (props) => (
@@ -110,6 +111,7 @@ export const mdxComponents: MDXComponents = {
       </div>
     );
   },
+  ComparisonTable: ComparisonTable as unknown as React.ComponentType,
   CTA: () => (
     <div className="rounded-xl border border-emerald-200 bg-emerald-50 dark:bg-emerald-950 dark:border-emerald-800 p-6 my-8 text-center">
       <p className="text-lg font-semibold text-zinc-900 dark:text-white mb-2">

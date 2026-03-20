@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 
-export default async function BlogLayout({
+export default async function CompareLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -43,13 +43,13 @@ export default async function BlogLayout({
             </Link>
             <Link
               href="/blog"
-              className="text-sm font-medium text-zinc-900 dark:text-white"
+              className="text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
             >
               Blog
             </Link>
             <Link
               href="/compare"
-              className="text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
+              className="text-sm font-medium text-zinc-900 dark:text-white"
             >
               Compare
             </Link>
