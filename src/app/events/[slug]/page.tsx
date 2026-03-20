@@ -37,7 +37,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title,
       description,
       url: `https://app.whogoes.co/events/${slug}`,
-      type: "website",
+      type: "article",
+      siteName: "WhoGoes",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
     },
     alternates: {
       canonical: `https://app.whogoes.co/events/${slug}`,
@@ -62,6 +68,13 @@ function EventJsonLd({
     name: event.event_name,
     url: `https://app.whogoes.co/events/${event.event_slug}`,
     description: `Attendee list for ${event.event_name} with ${event.total_contacts.toLocaleString()} verified contacts.`,
+    eventStatus: "https://schema.org/EventScheduled",
+    eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+    organizer: {
+      "@type": "Organization",
+      name: "WhoGoes",
+      url: "https://whogoes.co",
+    },
   };
 
   if (event.event_start_date) {
@@ -73,6 +86,25 @@ function EventJsonLd({
       name: event.event_location,
     };
   }
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
+  );
+}
+
+function BreadcrumbJsonLd({ eventName, slug }: { eventName: string; slug: string }) {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://whogoes.co" },
+      { "@type": "ListItem", position: 2, name: "Events", item: "https://app.whogoes.co/events" },
+      { "@type": "ListItem", position: 3, name: `${eventName} Attendee List`, item: `https://app.whogoes.co/events/${slug}` },
+    ],
+  };
 
   return (
     <script
@@ -114,6 +146,7 @@ export default async function PublicEventDetailPage({ params }: Props) {
   return (
     <>
       <EventJsonLd event={event} />
+      <BreadcrumbJsonLd eventName={event.event_name} slug={event.event_slug} />
       <EventDetail
         event={event}
         credits={credits}
