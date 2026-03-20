@@ -27,6 +27,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     {
+      url: "https://app.whogoes.co",
+      lastModified: new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 1.0,
+    },
+    {
       url: "https://app.whogoes.co/events",
       lastModified: new Date(),
       changeFrequency: "daily" as const,
