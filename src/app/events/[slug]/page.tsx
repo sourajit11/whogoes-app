@@ -1,11 +1,22 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
 import EventDetail from "@/app/dashboard/events/[id]/event-detail";
 import type { BrowsableEvent } from "@/types";
 
 interface Props {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateStaticParams() {
+  const supabase = createAdminClient();
+  const { data: events } = await supabase
+    .from("events")
+    .select("slug")
+    .order("start_date", { ascending: false });
+
+  return (events ?? []).map((event) => ({ slug: event.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

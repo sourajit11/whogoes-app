@@ -22,6 +22,13 @@ export const metadata: Metadata = {
   description:
     "Outreach-ready trade show & conference attendee lists with LinkedIn proof. Browse 1,200+ events free.",
   metadataBase: new URL("https://app.whogoes.co"),
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+    apple: "/apple-icon.png",
+  },
   openGraph: {
     type: "website",
     siteName: "WhoGoes",
