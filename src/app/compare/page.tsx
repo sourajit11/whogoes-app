@@ -3,11 +3,11 @@ import Link from "next/link";
 import { getAllComparisons } from "@/lib/compare";
 
 export const metadata: Metadata = {
-  title: "Compare WhoGoes — Trade Show Attendee List Alternatives",
+  title: "Compare WhoGoes: Trade Show Attendee List Alternatives",
   description:
     "See how WhoGoes compares to manual LinkedIn searching, event organizer lists, Bombora, 6sense, and ZoomInfo for trade show attendee data.",
   openGraph: {
-    title: "Compare WhoGoes — Trade Show Attendee List Alternatives",
+    title: "Compare WhoGoes: Trade Show Attendee List Alternatives",
     description:
       "See how WhoGoes compares to alternatives for trade show attendee data.",
     url: "https://app.whogoes.co/compare",

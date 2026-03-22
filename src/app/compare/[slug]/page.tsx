@@ -28,6 +28,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       url: `https://app.whogoes.co/compare/${slug}`,
       type: "article",
       publishedTime: post.meta.date,
+      ...(post.meta.updatedDate && {
+        modifiedTime: post.meta.updatedDate,
+      }),
+      ...(post.meta.author && {
+        authors: [post.meta.author],
+      }),
+      ...(post.meta.image && {
+        images: [`https://app.whogoes.co/compare/${post.meta.image}`],
+      }),
     },
     twitter: {
       card: "summary_large_image",
@@ -51,11 +60,12 @@ function ArticleJsonLd({ meta }: { meta: ComparisonMeta }) {
     headline: meta.title,
     description: meta.description,
     datePublished: meta.date,
-    dateModified: meta.date,
+    dateModified: meta.updatedDate || meta.date,
     author: {
-      "@type": "Organization",
-      name: "WhoGoes",
-      url: "https://whogoes.co",
+      "@type": "Person",
+      name: meta.author || "Sam Kumar",
+      url: "https://www.linkedin.com/in/sam-kumar-162156329/",
+      sameAs: "https://www.linkedin.com/in/sam-kumar-162156329/",
     },
     publisher: {
       "@type": "Organization",
@@ -66,6 +76,9 @@ function ArticleJsonLd({ meta }: { meta: ComparisonMeta }) {
       "@type": "WebPage",
       "@id": `https://app.whogoes.co/compare/${meta.slug}`,
     },
+    ...(meta.image && {
+      image: `https://app.whogoes.co/compare/${meta.image}`,
+    }),
   };
 
   return (
@@ -175,7 +188,7 @@ export default async function ComparisonPage({ params }: Props) {
 
         {/* Meta line */}
         <div className="mt-4 flex items-center gap-3 text-sm text-zinc-500 dark:text-zinc-400">
-          <span>WhoGoes Team</span>
+          <span>{post.meta.author || "Sam Kumar"}</span>
           <span>&middot;</span>
           <time dateTime={post.meta.date}>
             {new Date(post.meta.date).toLocaleDateString("en-US", {
@@ -184,6 +197,21 @@ export default async function ComparisonPage({ params }: Props) {
               day: "numeric",
             })}
           </time>
+          {post.meta.updatedDate && post.meta.updatedDate !== post.meta.date && (
+            <>
+              <span>&middot;</span>
+              <span>
+                Updated{" "}
+                <time dateTime={post.meta.updatedDate}>
+                  {new Date(post.meta.updatedDate).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </time>
+              </span>
+            </>
+          )}
           <span>&middot;</span>
           <span>{readingTime} min read</span>
         </div>
