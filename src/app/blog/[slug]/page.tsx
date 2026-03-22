@@ -24,6 +24,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       url: `https://app.whogoes.co/blog/${slug}`,
       type: "article",
       publishedTime: post.meta.date,
+      ...(post.meta.updatedDate && {
+        modifiedTime: post.meta.updatedDate,
+      }),
       authors: [post.meta.author],
       ...(post.meta.image && {
         images: [`https://app.whogoes.co/blog/${post.meta.image}`],
@@ -51,11 +54,12 @@ function ArticleJsonLd({ meta }: { meta: BlogPostMeta }) {
     headline: meta.title,
     description: meta.description,
     datePublished: meta.date,
-    dateModified: meta.date,
+    dateModified: meta.updatedDate || meta.date,
     author: {
-      "@type": "Organization",
-      name: "WhoGoes",
-      url: "https://whogoes.co",
+      "@type": "Person",
+      name: meta.author,
+      url: "https://www.linkedin.com/in/sam-kumar-162156329/",
+      sameAs: "https://www.linkedin.com/in/sam-kumar-162156329/",
     },
     publisher: {
       "@type": "Organization",
@@ -167,6 +171,21 @@ export default async function BlogPostPage({ params }: Props) {
               day: "numeric",
             })}
           </time>
+          {post.meta.updatedDate && post.meta.updatedDate !== post.meta.date && (
+            <>
+              <span>&middot;</span>
+              <span>
+                Updated{" "}
+                <time dateTime={post.meta.updatedDate}>
+                  {new Date(post.meta.updatedDate).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </time>
+              </span>
+            </>
+          )}
           <span>&middot;</span>
           <span>{readingTime} min read</span>
         </div>
