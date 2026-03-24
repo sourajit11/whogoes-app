@@ -43,7 +43,8 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/blog/") ||
     request.nextUrl.pathname === "/compare" ||
     request.nextUrl.pathname.startsWith("/compare/") ||
-    request.nextUrl.pathname.startsWith("/api/payments/");
+    request.nextUrl.pathname.startsWith("/api/payments/") ||
+    request.nextUrl.pathname.startsWith("/api/indexnow");
 
   // Admin routes always require authentication
   if (!user && request.nextUrl.pathname.startsWith("/admin")) {
