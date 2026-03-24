@@ -81,20 +81,42 @@ function EventJsonLd({
     description: `Attendee list for ${event.event_name} with ${event.total_contacts.toLocaleString()} verified contacts.`,
     eventStatus: "https://schema.org/EventScheduled",
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+    image: `https://app.whogoes.co/events/${event.event_slug}/opengraph-image`,
     organizer: {
       "@type": "Organization",
       name: "WhoGoes",
       url: "https://whogoes.co",
     },
+    offers: {
+      "@type": "Offer",
+      url: `https://app.whogoes.co/events/${event.event_slug}`,
+      price: "29",
+      priceCurrency: "USD",
+      availability: "https://schema.org/InStock",
+      validFrom: event.event_start_date ?? undefined,
+    },
+    performer: {
+      "@type": "PerformingGroup",
+      name: "Various Exhibitors & Speakers",
+    },
   };
 
   if (event.event_start_date) {
     jsonLd.startDate = event.event_start_date;
+    // Estimate endDate as startDate + 3 days (typical trade show duration)
+    const start = new Date(event.event_start_date);
+    const end = new Date(start);
+    end.setDate(start.getDate() + 3);
+    jsonLd.endDate = end.toISOString().split("T")[0];
   }
   if (event.event_location) {
     jsonLd.location = {
       "@type": "Place",
       name: event.event_location,
+      address: {
+        "@type": "PostalAddress",
+        name: event.event_location,
+      },
     };
   }
 
