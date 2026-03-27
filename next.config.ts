@@ -1,6 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    return [
+      {
+        source: "/blog/what-is-an-event-attendee-list",
+        destination: "/blog/what-is-a-trade-show-attendee-list",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {
