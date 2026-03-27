@@ -23,6 +23,9 @@ export default async function BlogLayout({
               <span className="text-lg font-bold text-zinc-900 dark:text-white">
                 WhoGoes
               </span>
+              <span className="hidden lg:inline-block text-sm text-zinc-500 dark:text-zinc-400 border-l border-zinc-300 dark:border-zinc-700 pl-2.5 ml-0.5">
+                Event Attendee Lists. With Proof.
+              </span>
             </Link>
           ) : (
             <a href="https://whogoes.co" className="flex items-center gap-2.5">
@@ -31,6 +34,9 @@ export default async function BlogLayout({
               </div>
               <span className="text-lg font-bold text-zinc-900 dark:text-white">
                 WhoGoes
+              </span>
+              <span className="hidden lg:inline-block text-sm text-zinc-500 dark:text-zinc-400 border-l border-zinc-300 dark:border-zinc-700 pl-2.5 ml-0.5">
+                Event Attendee Lists. With Proof.
               </span>
             </a>
           )}
