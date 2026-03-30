@@ -606,7 +606,7 @@ function ContactRow({ contact: c }: { contact: ContactPreview }) {
       <td className="whitespace-nowrap px-3 py-3 text-zinc-500">
         {c.company_name ?? "\u2014"}
       </td>
-      <td className="px-3 py-3">
+      <td className="whitespace-nowrap px-3 py-3">
         {c.post_url ? (
           <a
             href={c.post_url}

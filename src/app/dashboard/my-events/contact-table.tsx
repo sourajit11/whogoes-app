@@ -283,7 +283,7 @@ function TableRow({
         </td>
 
         {/* Source (View Post link) */}
-        <td className="px-3 py-3.5">
+        <td className="whitespace-nowrap px-3 py-3.5">
           {contact.post_url ? (
             <a
               href={contact.post_url}
