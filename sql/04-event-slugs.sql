@@ -96,8 +96,11 @@ BEGIN
     ) AS total_contacts,
     (SELECT COUNT(DISTINCT ce.contact_id)
      FROM contact_events ce
-     JOIN contact_emails em ON em.contact_id = ce.contact_id AND em.is_primary = true
-     WHERE ce.event_id = e.id AND em.email IS NOT NULL AND em.email != ''
+     WHERE ce.event_id = e.id
+     AND EXISTS (
+       SELECT 1 FROM contact_emails em
+       WHERE em.contact_id = ce.contact_id AND em.status = 'valid'
+     )
     ) AS contacts_with_email,
     COALESCE(
       (SELECT true FROM customer_event_subscriptions ces

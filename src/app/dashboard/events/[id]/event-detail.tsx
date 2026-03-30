@@ -612,7 +612,7 @@ function ContactRow({ contact: c }: { contact: ContactPreview }) {
             href={c.post_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm font-medium text-blue-600 transition-colors hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+            className="text-sm font-medium text-emerald-600 transition-colors hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
           >
             View Post
           </a>

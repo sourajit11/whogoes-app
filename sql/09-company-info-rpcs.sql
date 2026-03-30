@@ -77,9 +77,19 @@ BEGIN
   ) em ON true
   CROSS JOIN event_contact_count ecc
   WHERE ce.event_id = p_event_id
-    AND COALESCE(c.updated_at, c.created_at) <= NOW() - INTERVAL '3 hours'
     AND em.email IS NOT NULL
-  ORDER BY p.posted_at DESC NULLS LAST
+  ORDER BY
+    (CASE WHEN co.name IS NOT NULL AND co.name != '' THEN 1 ELSE 0 END +
+     CASE WHEN c.current_title IS NOT NULL AND c.current_title != '' THEN 1 ELSE 0 END +
+     CASE WHEN co.domain IS NOT NULL AND co.domain != '' THEN 1 ELSE 0 END +
+     CASE WHEN co.industry IS NOT NULL AND co.industry != '' THEN 1 ELSE 0 END +
+     CASE WHEN co.size_range IS NOT NULL AND co.size_range != '' THEN 1 ELSE 0 END +
+     CASE WHEN co.headquarters IS NOT NULL AND co.headquarters != '' THEN 1 ELSE 0 END +
+     CASE WHEN co.founded_year IS NOT NULL THEN 1 ELSE 0 END +
+     CASE WHEN c.city IS NOT NULL AND c.city != '' THEN 1 ELSE 0 END +
+     CASE WHEN c.linkedin_url IS NOT NULL AND c.linkedin_url != '' THEN 1 ELSE 0 END +
+     CASE WHEN p.post_url IS NOT NULL AND p.post_url != '' THEN 1 ELSE 0 END) DESC,
+    p.posted_at DESC NULLS LAST
   LIMIT 5;
 END;
 $$;
@@ -165,7 +175,6 @@ BEGIN
   LEFT JOIN posts p ON ce.post_id = p.id
   WHERE cca.event_id = p_event_id
     AND cca.user_id = auth.uid()
-    AND COALESCE(c.updated_at, c.created_at) <= NOW() - INTERVAL '3 hours'
     AND (
       p_filter = 'all'
       OR (p_filter = 'new' AND cca.is_downloaded = false)
