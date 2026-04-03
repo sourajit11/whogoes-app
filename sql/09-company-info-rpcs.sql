@@ -170,7 +170,13 @@ BEGIN
   FROM customer_contact_access cca
   JOIN contacts c ON c.id = cca.contact_id
   JOIN contact_events ce ON ce.contact_id = c.id AND ce.event_id = p_event_id
-  LEFT JOIN contact_emails cem ON cem.contact_id = c.id AND cem.is_primary = true AND cem.status = 'valid'
+  LEFT JOIN LATERAL (
+    SELECT e.email, e.status, e.provider
+    FROM contact_emails e
+    WHERE e.contact_id = c.id AND e.status = 'valid'
+    ORDER BY e.is_primary DESC NULLS LAST
+    LIMIT 1
+  ) cem ON true
   LEFT JOIN companies co ON c.current_company_id = co.id
   LEFT JOIN posts p ON ce.post_id = p.id
   WHERE cca.event_id = p_event_id
