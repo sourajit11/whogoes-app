@@ -1,53 +1,20 @@
--- ============================================
--- WhoGoes - Unlock Credits System RPCs
--- Run this in Supabase SQL Editor AFTER 01-tables.sql
+-- Fix: unlock_event_contacts charged credits based on v_actual_count (pre-INSERT),
+-- not actual rows inserted. Contacts with multiple is_primary emails caused the
+-- LEFT JOIN contact_emails to produce duplicate rows, inflating the LIMIT count
+-- and causing fewer contacts to be delivered than credits charged.
 --
--- Credit system uses TWO tables:
---   user_signups:  free trial credits (20 on signup)
---   customers:     paid credits (from purchases)
---   Total credits = user_signups.free_credits + customers.credits_balance
--- ============================================
+-- Also fixes: get_event_unlock_status returned a phantom remaining_count after
+-- a partial unlock because v_total was counted from contact_events alone, not
+-- joined through contacts.
+--
+-- Changes:
+--   1. unlock_event_contacts: INSERT now uses DISTINCT ON (c.id) subquery to
+--      deduplicate contacts before applying LIMIT. ON CONFLICT DO NOTHING added
+--      as safety net. Credits deducted from GET DIAGNOSTICS ROW_COUNT (actual
+--      inserts), not v_actual_count.
+--   2. get_event_unlock_status: v_total now joins through contacts table to match
+--      exactly what unlock_event_contacts can deliver.
 
--- RPC: get_customer_credits
--- Returns the current user's total credit balance (free + paid).
--- Lazily creates a user_signups row with 20 free credits if one doesn't exist.
-CREATE OR REPLACE FUNCTION get_customer_credits()
-RETURNS INTEGER
-LANGUAGE plpgsql SECURITY DEFINER
-AS $$
-DECLARE
-  v_user_id UUID;
-  v_free INTEGER;
-  v_paid INTEGER;
-BEGIN
-  v_user_id := auth.uid();
-  IF v_user_id IS NULL THEN
-    RETURN 0;
-  END IF;
-
-  -- Get free credits (lazy-create if missing)
-  SELECT free_credits INTO v_free FROM user_signups WHERE user_id = v_user_id;
-  IF v_free IS NULL THEN
-    INSERT INTO user_signups (user_id, free_credits)
-    VALUES (v_user_id, 20)
-    ON CONFLICT (user_id) DO NOTHING;
-    v_free := 20;
-  END IF;
-
-  -- Get paid credits (may not exist if user hasn't purchased)
-  SELECT credits_balance INTO v_paid FROM customers WHERE user_id = v_user_id;
-  v_paid := COALESCE(v_paid, 0);
-
-  RETURN v_free + v_paid;
-END;
-$$;
-
-
--- RPC: unlock_event_contacts
--- Unlocks a specified number of contacts from an event.
--- Contacts are prioritized: email-verified first, then most recent posted_at.
--- Creates a subscription automatically if one doesn't exist.
--- Deducts from free credits first, then paid credits.
 CREATE OR REPLACE FUNCTION unlock_event_contacts(p_event_id UUID, p_count INTEGER)
 RETURNS JSON
 LANGUAGE plpgsql SECURITY DEFINER
@@ -190,9 +157,6 @@ END;
 $$;
 
 
--- RPC: get_event_unlock_status
--- Returns unlock progress for a given event and the current user.
--- Works for both authenticated and unauthenticated users (returns zeros for anon).
 CREATE OR REPLACE FUNCTION get_event_unlock_status(p_event_id UUID)
 RETURNS JSON
 LANGUAGE plpgsql SECURITY DEFINER
@@ -252,62 +216,5 @@ BEGIN
     'user_balance', v_balance,
     'is_subscribed', v_is_subscribed
   );
-END;
-$$;
-
-
--- ============================================================
--- get_subscribed_events: returns events the user has unlocked
--- with TRUE total_contacts from contact_events (not just unlocked count)
--- ============================================================
-CREATE OR REPLACE FUNCTION get_subscribed_events()
-RETURNS TABLE (
-  event_id UUID,
-  event_name TEXT,
-  event_year INTEGER,
-  event_region TEXT,
-  event_location TEXT,
-  event_start_date DATE,
-  is_active BOOLEAN,
-  subscribed_at TIMESTAMPTZ,
-  is_paused BOOLEAN,
-  total_contacts BIGINT,
-  new_contacts BIGINT,
-  processed_contacts BIGINT
-)
-LANGUAGE plpgsql SECURITY DEFINER
-AS $$
-BEGIN
-  RETURN QUERY
-  SELECT
-    e.id AS event_id,
-    e.name AS event_name,
-    e.year AS event_year,
-    e.region AS event_region,
-    e.location AS event_location,
-    e.start_date AS event_start_date,
-    e.is_active,
-    ces.subscribed_at,
-    ces.is_paused,
-    (SELECT COUNT(DISTINCT ce.contact_id)
-     FROM contact_events ce
-     WHERE ce.event_id = e.id
-    ) AS total_contacts,
-    (SELECT COUNT(*)
-     FROM customer_contact_access cca
-     WHERE cca.user_id = auth.uid()
-       AND cca.event_id = e.id
-       AND cca.is_downloaded = false
-    ) AS new_contacts,
-    (SELECT COUNT(*)
-     FROM customer_contact_access cca
-     WHERE cca.user_id = auth.uid()
-       AND cca.event_id = e.id
-       AND cca.is_downloaded = true
-    ) AS processed_contacts
-  FROM customer_event_subscriptions ces
-  JOIN events e ON e.id = ces.event_id
-  WHERE ces.user_id = auth.uid()
-  ORDER BY ces.subscribed_at DESC;
 END;
 $$;
