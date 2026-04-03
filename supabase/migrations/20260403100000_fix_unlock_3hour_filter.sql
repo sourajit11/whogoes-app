@@ -1,53 +1,18 @@
--- ============================================
--- WhoGoes - Unlock Credits System RPCs
--- Run this in Supabase SQL Editor AFTER 01-tables.sql
+-- Fix: All unlock functions now apply the same 3-hour settled contact filter
+-- as get_all_browsable_events.
 --
--- Credit system uses TWO tables:
---   user_signups:  free trial credits (20 on signup)
---   customers:     paid credits (from purchases)
---   Total credits = user_signups.free_credits + customers.credits_balance
--- ============================================
+-- Root cause: get_all_browsable_events counts contacts with:
+--   COALESCE(c.updated_at, c.created_at) <= NOW() - INTERVAL '3 hours'
+-- This hides contacts still being enriched by the n8n pipeline.
+--
+-- But unlock_event_contacts, get_event_unlock_status, and get_subscribed_events
+-- counted ALL contacts regardless of age. This caused:
+--   - Header showing 120 contacts (settled) vs slider showing 136 (all)
+--   - Credits charged for contacts that the header doesn't count
+--   - Phantom "remaining contacts" that can't actually be unlocked
+--
+-- Fix: Add the same 3-hour filter to all 3 functions.
 
--- RPC: get_customer_credits
--- Returns the current user's total credit balance (free + paid).
--- Lazily creates a user_signups row with 20 free credits if one doesn't exist.
-CREATE OR REPLACE FUNCTION get_customer_credits()
-RETURNS INTEGER
-LANGUAGE plpgsql SECURITY DEFINER
-AS $$
-DECLARE
-  v_user_id UUID;
-  v_free INTEGER;
-  v_paid INTEGER;
-BEGIN
-  v_user_id := auth.uid();
-  IF v_user_id IS NULL THEN
-    RETURN 0;
-  END IF;
-
-  -- Get free credits (lazy-create if missing)
-  SELECT free_credits INTO v_free FROM user_signups WHERE user_id = v_user_id;
-  IF v_free IS NULL THEN
-    INSERT INTO user_signups (user_id, free_credits)
-    VALUES (v_user_id, 20)
-    ON CONFLICT (user_id) DO NOTHING;
-    v_free := 20;
-  END IF;
-
-  -- Get paid credits (may not exist if user hasn't purchased)
-  SELECT credits_balance INTO v_paid FROM customers WHERE user_id = v_user_id;
-  v_paid := COALESCE(v_paid, 0);
-
-  RETURN v_free + v_paid;
-END;
-$$;
-
-
--- RPC: unlock_event_contacts
--- Unlocks a specified number of contacts from an event.
--- Contacts are prioritized: email-verified first, then most recent posted_at.
--- Creates a subscription automatically if one doesn't exist.
--- Deducts from free credits first, then paid credits.
 CREATE OR REPLACE FUNCTION unlock_event_contacts(p_event_id UUID, p_count INTEGER)
 RETURNS JSON
 LANGUAGE plpgsql SECURITY DEFINER
@@ -193,9 +158,6 @@ END;
 $$;
 
 
--- RPC: get_event_unlock_status
--- Returns unlock progress for a given event and the current user.
--- Works for both authenticated and unauthenticated users (returns zeros for anon).
 CREATE OR REPLACE FUNCTION get_event_unlock_status(p_event_id UUID)
 RETURNS JSON
 LANGUAGE plpgsql SECURITY DEFINER
@@ -261,10 +223,6 @@ END;
 $$;
 
 
--- ============================================================
--- get_subscribed_events: returns events the user has unlocked
--- with TRUE total_contacts from contact_events (not just unlocked count)
--- ============================================================
 CREATE OR REPLACE FUNCTION get_subscribed_events()
 RETURNS TABLE (
   event_id UUID,

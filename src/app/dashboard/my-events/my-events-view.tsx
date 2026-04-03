@@ -120,7 +120,7 @@ export default function MyEventsView({
 
   // Computed values for inline unlock slider
   const remainingForEvent = selectedEvent
-    ? selectedEvent.total_contacts - contacts.length
+    ? Math.max(0, selectedEvent.total_contacts - contacts.length)
     : 0;
 
   const maxUnlock = Math.min(credits ?? 0, remainingForEvent);
@@ -417,8 +417,8 @@ export default function MyEventsView({
                 {/* Unlock progress bar */}
                 {(() => {
                   const unlocked = event.new_contacts + event.processed_contacts;
-                  const pct = event.total_contacts > 0 ? (unlocked / event.total_contacts) * 100 : 0;
-                  const remaining = event.total_contacts - unlocked;
+                  const pct = event.total_contacts > 0 ? Math.min(100, (unlocked / event.total_contacts) * 100) : 0;
+                  const remaining = Math.max(0, event.total_contacts - unlocked);
                   return (
                     <>
                       <div className="mt-3 h-1.5 w-full rounded-full bg-zinc-200 dark:bg-zinc-700">

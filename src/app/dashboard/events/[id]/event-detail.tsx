@@ -296,11 +296,11 @@ export default function EventDetail({
             <div className="h-2 w-full rounded-full bg-zinc-200 dark:bg-zinc-800">
               <div
                 className="h-full rounded-full bg-emerald-500 transition-all"
-                style={{ width: `${(unlockedCount / totalContacts) * 100}%` }}
+                style={{ width: `${Math.min(100, (unlockedCount / totalContacts) * 100)}%` }}
               />
             </div>
             <p className="mt-1 text-xs text-zinc-400">
-              {((unlockedCount / totalContacts) * 100).toFixed(0)}% unlocked
+              {Math.min(100, Math.round((unlockedCount / totalContacts) * 100))}% unlocked
             </p>
           </div>
         )}
