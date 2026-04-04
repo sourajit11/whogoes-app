@@ -200,9 +200,7 @@ function TableRow({
   onToggleSelect: () => void;
   onToggle: () => void;
 }) {
-  const hasExtra =
-    contact.headline ||
-    contact.post_content;
+  const hasExtra = !!contact.post_content;
 
   return (
     <>
@@ -254,7 +252,7 @@ function TableRow({
         </td>
 
         {/* Title */}
-        <td className="max-w-48 truncate px-3 py-3.5 text-zinc-500 dark:text-zinc-400">
+        <td className="max-w-72 truncate px-3 py-3.5 text-zinc-500 dark:text-zinc-400">
           {contact.current_title ?? "—"}
         </td>
 
@@ -278,7 +276,7 @@ function TableRow({
         </td>
 
         {/* Company */}
-        <td className="whitespace-nowrap px-3 py-3.5 text-zinc-500 dark:text-zinc-400">
+        <td className="max-w-36 truncate px-3 py-3.5 text-zinc-500 dark:text-zinc-400">
           {contact.company_name ?? "—"}
         </td>
 
@@ -383,12 +381,6 @@ function TableRow({
             className="border-l-2 border-l-zinc-300 bg-zinc-50/50 px-6 py-5 dark:border-l-zinc-600 dark:bg-zinc-900/30"
           >
             <div className="space-y-4 text-sm">
-              {contact.headline && (
-                <div className="grid grid-cols-1 gap-x-8 gap-y-2 sm:grid-cols-3">
-                  <DetailField label="Headline">{contact.headline}</DetailField>
-                </div>
-              )}
-
               {contact.post_content && (
                 <div>
                   <SectionLabel>Post Content</SectionLabel>
@@ -397,7 +389,6 @@ function TableRow({
                   </p>
                 </div>
               )}
-
             </div>
           </td>
         </tr>
