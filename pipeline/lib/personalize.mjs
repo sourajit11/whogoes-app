@@ -60,15 +60,42 @@ function buildPrompt(contacts) {
     return `${i + 1}. Name: ${c.firstName}, Company: ${c.companyName || "unknown"}, Event: ${c.eventName}, Source: ${c.sourceType || "unknown"}, Post: "${snippet}"`;
   });
 
-  return `You are writing first-line personalizations for cold emails about trade show attendee data.
+  return `You are writing first-line personalizations for cold outreach emails about trade show attendee data.
 
-For each contact below, write a SHORT (max 15 words) personalized opening line.
-Rules based on source type:
-- "post_author": They wrote a LinkedIn post. Reference what they said about the event.
-- "repost": They shared someone else's post. Assume they're attending. Reference the shared content.
-- "mentioned": They were tagged in a post. Reference the context of the mention.
+For each contact below, write a 1-2 sentence personalized opener.
 
-Keep it casual, friendly, 8th grade English. No exclamation marks. No em dashes.
+RULES:
+- ALWAYS mention "LinkedIn" — say "your LinkedIn post" or "a LinkedIn post" or "on LinkedIn". This is non-negotiable.
+- Start with "Saw" or "Noticed" — e.g. "Saw your LinkedIn post about..." or "Noticed on LinkedIn that..."
+- Reference the specific event and what they posted about.
+- End with a short question like: "Have you started reaching out to other attendees before the event?" or "Are you doing any pre-event outreach this year?" or "How are you planning your outreach for the event?"
+- The question should feel natural, not forced. Vary it across contacts.
+
+CONTEXT — the next part of the email introduces WhoGoes, a tool that finds verified event attendees from LinkedIn posts. So the personalization should flow naturally into that intro. The question at the end sets up the product intro.
+
+TONE:
+- Casual, friendly, plain English (8th grade level)
+- No exclamation marks. No em dashes (-- or —).
+- No filler like "hope it goes well", "sounds interesting", "caught my eye"
+- No trying to impress or flatter — just be direct and curious
+- Don't say "interesting", "great event", "exciting" — just state what you saw
+
+SOURCE TYPE RULES:
+- "post_author": They wrote a LinkedIn post. Say "Saw your LinkedIn post about [specific thing]..."
+- "repost": They shared someone else's LinkedIn post. Say "Noticed you shared a LinkedIn post about [specific thing]..."
+- "mentioned": They were tagged in a LinkedIn post. Say "Saw you were mentioned in a LinkedIn post about [specific thing]..."
+
+BAD EXAMPLES (never write like this):
+- "Your post about X caught my eye. Sounds interesting."
+- "Hope it's a great event for SemChip."
+- "Your mention regarding X was interesting."
+- "Looking forward to seeing your team at X."
+- "Are you planning to meet with vendors/attendees there?"
+
+GOOD EXAMPLES:
+- "Saw your LinkedIn post about presenting at MODEX 2026. Have you started reaching out to other attendees before the event?"
+- "Noticed you shared a LinkedIn post about SemChip exhibiting at LEAP 2026. Are you doing any pre-event outreach this year?"
+- "Saw you were mentioned in a LinkedIn post about the AI panel at Hannover Messe. How are you planning your outreach for the event?"
 
 Contacts:
 ${lines.join("\n")}
@@ -92,13 +119,13 @@ function parseResponse(text, expectedCount) {
 function fallbackLine(contact) {
   const event = contact.eventName || "the event";
   if (contact.sourceType === "post_author") {
-    return `Saw your LinkedIn post about attending ${event}.`;
+    return `Saw your LinkedIn post about attending ${event}. Have you started reaching out to other attendees before the event?`;
   }
   if (contact.sourceType === "repost") {
-    return `Noticed you shared a post about ${event}.`;
+    return `Noticed you shared a LinkedIn post about ${event}. Are you doing any pre-event outreach this year?`;
   }
   if (contact.sourceType === "mentioned") {
-    return `Saw you got tagged in a post about ${event}.`;
+    return `Saw you were mentioned in a LinkedIn post about ${event}. How are you planning your outreach for the event?`;
   }
-  return `Saw you're connected to ${event} on LinkedIn.`;
+  return `Saw you're connected to ${event} on LinkedIn. Are you doing any pre-event outreach this year?`;
 }
