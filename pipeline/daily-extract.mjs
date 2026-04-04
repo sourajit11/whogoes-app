@@ -44,6 +44,16 @@ async function main() {
     process.env.SUPABASE_SERVICE_ROLE_KEY
   );
 
+  // Build sheet config once (if creds available)
+  const hasSheetCreds = process.env.GOOGLE_SHEET_ID && process.env.GOOGLE_CLIENT_ID
+    && process.env.GOOGLE_CLIENT_SECRET && process.env.GOOGLE_REFRESH_TOKEN;
+  const sheetConfig = hasSheetCreds ? {
+    sheetId: process.env.GOOGLE_SHEET_ID,
+    clientId: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    refreshToken: process.env.GOOGLE_REFRESH_TOKEN,
+  } : null;
+
   // Step 1: Get qualifying events
   console.log("Step 1: Fetching qualifying events...");
   const events = await getQualifyingEvents(supabase);
@@ -63,8 +73,8 @@ async function main() {
   }
   console.log();
 
-  // Step 2: Process each event
-  const allContacts = { US: [], EU: [], APAC: [] };
+  // Step 2: Process each event (fetch → personalize → write to sheet → update state)
+  const regionCounts = { US: 0, EU: 0, APAC: 0 };
   const errors = [];
   const processedNewEvents = [];
   let totalCollected = 0;
@@ -98,8 +108,29 @@ async function main() {
       console.log(`    Generating personalization...`);
       const personalized = await personalizeContacts(contacts, process.env.GEMINI_API_KEY);
 
-      // Add to the correct region bucket
-      allContacts[event.region].push(...personalized);
+      // Write to Google Sheet immediately (per-event, not batched at end)
+      if (!DRY_RUN && sheetConfig) {
+        try {
+          const count = await appendToSheet(personalized, event.region, sheetConfig);
+          regionCounts[event.region] += count;
+          console.log(`    Sheet: ${count} rows → ${event.region} tab`);
+        } catch (err) {
+          console.error(`    Sheet append failed: ${err.message}`);
+          errors.push(`GSheet ${event.event_name}: ${err.message}`);
+        }
+      } else if (DRY_RUN) {
+        regionCounts[event.region] += personalized.length;
+        for (const c of personalized.slice(0, 2)) {
+          console.log(`    ${c.firstName} ${c.lastName} <${c.email}>`);
+          console.log(`      Personalization: ${c.personalization}`);
+        }
+        if (personalized.length > 2) {
+          console.log(`    ... and ${personalized.length - 2} more`);
+        }
+      } else {
+        regionCounts[event.region] += personalized.length;
+      }
+
       totalCollected += personalized.length;
 
       // Track new events for Slack notification
@@ -130,55 +161,7 @@ async function main() {
     }
   }
 
-  // Step 3: Append to Google Sheets
-  const regionCounts = { US: 0, EU: 0, APAC: 0 };
-
-  const hasSheetCreds = process.env.GOOGLE_SHEET_ID && process.env.GOOGLE_CLIENT_ID
-    && process.env.GOOGLE_CLIENT_SECRET && process.env.GOOGLE_REFRESH_TOKEN;
-
-  if (!DRY_RUN && hasSheetCreds) {
-    console.log("Step 3: Appending to Google Sheets...");
-    const sheetConfig = {
-      sheetId: process.env.GOOGLE_SHEET_ID,
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      refreshToken: process.env.GOOGLE_REFRESH_TOKEN,
-    };
-
-    for (const region of ["US", "EU", "APAC"]) {
-      if (allContacts[region].length > 0) {
-        try {
-          const count = await appendToSheet(allContacts[region], region, sheetConfig);
-          regionCounts[region] = count;
-          console.log(`  ${region}: ${count} rows appended`);
-        } catch (err) {
-          console.error(`  ${region} Sheet append failed: ${err.message}`);
-          errors.push(`GSheet ${region}: ${err.message}`);
-        }
-      }
-    }
-  } else if (DRY_RUN) {
-    console.log("Step 3: [DRY RUN] Would append to Google Sheets:");
-    for (const region of ["US", "EU", "APAC"]) {
-      regionCounts[region] = allContacts[region].length;
-      console.log(`  ${region}: ${allContacts[region].length} contacts`);
-      // Show first 3 contacts per region as preview
-      for (const c of allContacts[region].slice(0, 3)) {
-        console.log(`    ${c.firstName} ${c.lastName} <${c.email}> — ${c.eventName}`);
-        console.log(`      Personalization: ${c.personalization}`);
-      }
-      if (allContacts[region].length > 3) {
-        console.log(`    ... and ${allContacts[region].length - 3} more`);
-      }
-    }
-  } else {
-    console.log("Step 3: Skipped (missing Google Sheets credentials)");
-    for (const region of ["US", "EU", "APAC"]) {
-      regionCounts[region] = allContacts[region].length;
-    }
-  }
-
-  // Step 4: Send Slack notification
+  // Summary
   const duration = Math.round((Date.now() - startTime) / 1000);
   const total = regionCounts.US + regionCounts.EU + regionCounts.APAC;
 
@@ -194,6 +177,7 @@ async function main() {
     errors.forEach((e) => console.log(`  - ${e}`));
   }
 
+  // Send Slack notification
   if (!DRY_RUN) {
     await sendSlackNotification(
       {
@@ -221,7 +205,7 @@ main().catch(async (err) => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          text: `:red_circle: *Daily Lead Extract FAILED*\n${err.message}`,
+          text: `Daily Lead Extract FAILED\n${err.message}`,
         }),
       });
     } catch (_) {}

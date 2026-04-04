@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const BATCH_SIZE = 10;
-const DELAY_MS = 1500;
+const DELAY_MS = 500;
 
 /**
  * Generate first-line personalization for contacts using Gemini Flash.

@@ -17,8 +17,11 @@ function getAuthClient(config) {
   return oauth2;
 }
 
+const CHUNK_SIZE = 500;
+
 /**
  * Append contact rows to the correct regional tab in the Google Sheet.
+ * Writes in chunks of 500 rows to avoid payload limits and improve reliability.
  *
  * Columns: First Name | Last Name | Email Address | Personalization | Event Name
  * Tabs: US, EU, APAC (must already exist in the sheet with headers in row 1)
@@ -37,13 +40,20 @@ export async function appendToSheet(contacts, region, config) {
     c.eventName,
   ]);
 
-  await sheets.spreadsheets.values.append({
-    spreadsheetId: config.sheetId,
-    range: `${region}!A:E`,
-    valueInputOption: "RAW",
-    insertDataOption: "INSERT_ROWS",
-    requestBody: { values: rows },
-  });
+  for (let i = 0; i < rows.length; i += CHUNK_SIZE) {
+    const chunk = rows.slice(i, i + CHUNK_SIZE);
+    await sheets.spreadsheets.values.append({
+      spreadsheetId: config.sheetId,
+      range: `${region}!A:E`,
+      valueInputOption: "RAW",
+      insertDataOption: "INSERT_ROWS",
+      requestBody: { values: chunk },
+    });
+
+    if (i + CHUNK_SIZE < rows.length) {
+      console.log(`    ${region}: wrote ${i + chunk.length}/${rows.length} rows...`);
+    }
+  }
 
   return rows.length;
 }
