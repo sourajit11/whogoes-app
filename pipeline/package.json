@@ -1,0 +1,11 @@
+{
+  "name": "whogoes-pipeline",
+  "type": "module",
+  "private": true,
+  "description": "Daily lead extraction pipeline for WhoGoes cold outreach",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.0",
+    "@supabase/supabase-js": "^2.98.0",
+    "googleapis": "^144.0.0"
+  }
+}
