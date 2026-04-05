@@ -51,15 +51,20 @@ export async function fetchContactsForEvent(supabase, event) {
   const contactMap = Object.fromEntries(contacts.map((c) => [c.id, c]));
   const filteredContactIds = contacts.map((c) => c.id);
 
-  // 5. Fetch primary valid emails
+  // 5. Fetch emails — prefer primary, fall back to any valid business email
   const allEmails = await fetchByIds(
     supabase, "contact_emails", "contact_id", filteredContactIds,
     "contact_id, email, status, is_primary"
   );
   const emailMap = {};
   for (const e of allEmails) {
-    if (e.is_primary && e.email && e.email.trim()) {
-      emailMap[e.contact_id] = e.email.trim();
+    if (!e.email || !e.email.trim()) continue;
+    const addr = e.email.trim();
+    if (isPersonalEmail(addr)) continue;
+
+    // Primary always wins; otherwise keep first non-personal email seen
+    if (e.is_primary || !emailMap[e.contact_id]) {
+      emailMap[e.contact_id] = addr;
     }
   }
 
@@ -85,14 +90,13 @@ export async function fetchContactsForEvent(supabase, event) {
 
   // 9. Build enriched rows, apply filters, dedup
   const seen = new Set();
-  const skipped = { noEmail: 0, noName: 0, personal: 0, dedup: 0 };
+  const skipped = { noEmail: 0, noName: 0, dedup: 0 };
   const rows = [];
 
   for (const contact of contacts) {
     const email = emailMap[contact.id];
     if (!email) { skipped.noEmail++; continue; }
     if (!contact.first_name?.trim()) { skipped.noName++; continue; }
-    if (isPersonalEmail(email)) { skipped.personal++; continue; }
 
     const emailLower = email.toLowerCase();
     if (seen.has(emailLower)) { skipped.dedup++; continue; }
@@ -115,8 +119,8 @@ export async function fetchContactsForEvent(supabase, event) {
     });
   }
 
-  if (skipped.noEmail || skipped.noName || skipped.personal || skipped.dedup) {
-    console.log(`    Filtered out: noEmail=${skipped.noEmail} noName=${skipped.noName} personal=${skipped.personal} dedup=${skipped.dedup}`);
+  if (skipped.noEmail || skipped.noName || skipped.dedup) {
+    console.log(`    Filtered out: noEmail=${skipped.noEmail} noName=${skipped.noName} dedup=${skipped.dedup}`);
   }
 
   return rows;

@@ -8,6 +8,7 @@
  *   node pipeline/daily-extract.mjs              # Full run
  *   node pipeline/daily-extract.mjs --dry-run    # Preview only (no Sheet/Slack/state updates)
  *   node pipeline/daily-extract.mjs --limit=5    # Limit total contacts (for testing)
+ *   node pipeline/daily-extract.mjs --backfill   # Re-process all events, dedup against sheet
  *
  * Required env vars: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
  */
@@ -16,10 +17,11 @@ import { createPipelineClient } from "./lib/supabase.mjs";
 import { getQualifyingEvents, updatePipelineState } from "./lib/events.mjs";
 import { fetchContactsForEvent } from "./lib/contacts.mjs";
 import { personalizeContacts } from "./lib/personalize.mjs";
-import { appendToSheet } from "./lib/sheets.mjs";
+import { appendToSheet, getExistingEmails } from "./lib/sheets.mjs";
 import { sendSlackNotification } from "./lib/slack.mjs";
 
 const DRY_RUN = process.argv.includes("--dry-run");
+const BACKFILL = process.argv.includes("--backfill");
 const LIMIT = (() => {
   const flag = process.argv.find((a) => a.startsWith("--limit="));
   return flag ? parseInt(flag.split("=")[1], 10) : 0;
@@ -29,6 +31,7 @@ async function main() {
   const startTime = Date.now();
 
   if (DRY_RUN) console.log("=== DRY RUN MODE (no Sheet/Slack/state updates) ===\n");
+  if (BACKFILL) console.log("=== BACKFILL MODE: re-process all events as INIT, dedup against sheet ===\n");
   if (LIMIT) console.log(`=== LIMIT MODE: max ${LIMIT} contacts total ===\n`);
 
   // Validate required env vars
@@ -63,6 +66,14 @@ async function main() {
     return;
   }
 
+  // In backfill mode, force all events to INIT (re-fetch all contacts)
+  if (BACKFILL) {
+    for (const e of events) {
+      e.isInit = true;
+      e.lastContactCreatedAt = null;
+    }
+  }
+
   const newEvents = events.filter((e) => e.isInit);
   const incrementalEvents = events.filter((e) => !e.isInit);
   console.log(`  ${newEvents.length} new events, ${incrementalEvents.length} incremental\n`);
@@ -72,6 +83,19 @@ async function main() {
     console.log(`  [${e.region}] ${e.event_name} — ${e.contacts_with_email} contacts — ${e.isInit ? "INIT" : "INCREMENTAL"}`);
   }
   console.log();
+
+  // In backfill mode, load existing emails from sheet for dedup
+  let existingSheetEmails = null;
+  if (BACKFILL && sheetConfig) {
+    console.log("Loading existing emails from Google Sheet for dedup...");
+    const [usEmails, euEmails, apacEmails] = await Promise.all([
+      getExistingEmails("US", sheetConfig),
+      getExistingEmails("EU", sheetConfig),
+      getExistingEmails("APAC", sheetConfig),
+    ]);
+    existingSheetEmails = new Set([...usEmails, ...euEmails, ...apacEmails]);
+    console.log(`  ${existingSheetEmails.size} emails already in sheet\n`);
+  }
 
   // Step 2: Process each event (fetch → personalize → write to sheet → update state)
   const regionCounts = { US: 0, EU: 0, APAC: 0 };
@@ -89,6 +113,15 @@ async function main() {
       // Fetch contacts (init = all, incremental = new only)
       let contacts = await fetchContactsForEvent(supabase, event);
       console.log(`    Usable contacts: ${contacts.length}`);
+
+      // In backfill mode, filter out contacts already in the sheet
+      if (BACKFILL && existingSheetEmails) {
+        const before = contacts.length;
+        contacts = contacts.filter((c) => !existingSheetEmails.has(c.email.toLowerCase()));
+        if (before !== contacts.length) {
+          console.log(`    Backfill dedup: ${before - contacts.length} already in sheet, ${contacts.length} new`);
+        }
+      }
 
       // Trim to remaining limit
       if (LIMIT) {

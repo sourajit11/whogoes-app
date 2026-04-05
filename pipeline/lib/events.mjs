@@ -14,11 +14,22 @@ export async function getQualifyingEvents(supabase) {
 
   console.log(`  Total events from RPC: ${allEvents.length}`);
 
-  // Filter: active events with 100+ contacts with email
+  // Only target events that are at least 1 week out (gives enough lead time for outreach)
+  const oneWeekOut = new Date();
+  oneWeekOut.setDate(oneWeekOut.getDate() + 7);
+  const oneWeekOutStr = oneWeekOut.toISOString().slice(0, 10); // YYYY-MM-DD
+
+  // Filter: active events, 100+ contacts with email, start date 7+ days out
   const qualifying = allEvents.filter(
-    (e) => e.is_active && e.contacts_with_email >= MIN_CONTACTS_WITH_EMAIL
+    (e) =>
+      e.is_active &&
+      e.contacts_with_email >= MIN_CONTACTS_WITH_EMAIL &&
+      e.event_start_date &&
+      e.event_start_date >= oneWeekOutStr
   );
-  console.log(`  Qualifying (active, ${MIN_CONTACTS_WITH_EMAIL}+ contacts): ${qualifying.length}`);
+  console.log(
+    `  Qualifying (active, ${MIN_CONTACTS_WITH_EMAIL}+ contacts, starts on/after ${oneWeekOutStr}): ${qualifying.length}`
+  );
 
   if (qualifying.length === 0) return [];
 

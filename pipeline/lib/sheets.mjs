@@ -57,3 +57,24 @@ export async function appendToSheet(contacts, region, config) {
 
   return rows.length;
 }
+
+/**
+ * Fetch all existing email addresses from a regional tab.
+ * Reads column C (Email Address) starting from row 2 (skip header).
+ * Returns a Set of lowercase email strings for dedup.
+ */
+export async function getExistingEmails(region, config) {
+  const auth = getAuthClient(config);
+  const sheets = google.sheets({ version: "v4", auth });
+
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: config.sheetId,
+    range: `${region}!C2:C`,
+  });
+
+  const emails = new Set();
+  for (const row of res.data.values || []) {
+    if (row[0]) emails.add(row[0].trim().toLowerCase());
+  }
+  return emails;
+}
