@@ -78,3 +78,52 @@ export async function getExistingEmails(region, config) {
   }
   return emails;
 }
+
+/**
+ * Append bounce rows to the "Bounces" tab.
+ * Columns: Email | First Name | Last Name | Campaign | Company | Domain | Bounce Date
+ * Tab must already exist in the sheet with headers in row 1.
+ */
+export async function appendToBouncesSheet(rows, config) {
+  if (rows.length === 0) return 0;
+
+  const auth = getAuthClient(config);
+  const sheets = google.sheets({ version: "v4", auth });
+
+  for (let i = 0; i < rows.length; i += CHUNK_SIZE) {
+    const chunk = rows.slice(i, i + CHUNK_SIZE);
+    await sheets.spreadsheets.values.append({
+      spreadsheetId: config.sheetId,
+      range: `Bounces!A:G`,
+      valueInputOption: "RAW",
+      insertDataOption: "INSERT_ROWS",
+      requestBody: { values: chunk },
+    });
+
+    if (i + CHUNK_SIZE < rows.length) {
+      console.log(`    Bounces: wrote ${i + chunk.length}/${rows.length} rows...`);
+    }
+  }
+
+  return rows.length;
+}
+
+/**
+ * Fetch existing emails from the Bounces tab for dedup.
+ * Reads column A (Email) starting from row 2 (skip header).
+ */
+export async function getExistingBounceEmails(config) {
+  const auth = getAuthClient(config);
+  const sheets = google.sheets({ version: "v4", auth });
+
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: config.sheetId,
+    range: `Bounces!A2:A`,
+  });
+
+  const emails = new Set();
+  for (const row of res.data.values || []) {
+    if (row[0]) emails.add(row[0].trim().toLowerCase());
+  }
+  return emails;
+}

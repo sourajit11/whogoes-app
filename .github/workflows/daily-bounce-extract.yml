@@ -1,0 +1,32 @@
+name: Daily Bounce Extract
+
+on:
+  schedule:
+    # 10:00 AM IST = 4:30 UTC
+    - cron: "30 4 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install pipeline dependencies
+        run: cd pipeline && npm ci
+
+      - name: Run bounce extraction
+        env:
+          INSTANTLY_API_KEY: ${{ secrets.INSTANTLY_API_KEY }}
+          BOUNCE_GOOGLE_SHEET_ID: ${{ secrets.BOUNCE_GOOGLE_SHEET_ID }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: node pipeline/bounce-extract.mjs
