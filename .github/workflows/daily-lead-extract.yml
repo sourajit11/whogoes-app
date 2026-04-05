@@ -4,7 +4,17 @@ on:
   schedule:
     # 11:00 AM IST = 5:30 UTC
     - cron: "30 5 * * *"
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      backfill:
+        description: "Run in backfill mode (re-process all events, dedup against sheet)"
+        type: boolean
+        default: false
+
+# Only one run at a time. New manual runs wait for scheduled runs to finish.
+concurrency:
+  group: daily-lead-extract
+  cancel-in-progress: false
 
 jobs:
   extract:
@@ -31,4 +41,4 @@ jobs:
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        run: node pipeline/daily-extract.mjs
+        run: node pipeline/daily-extract.mjs ${{ inputs.backfill && '--backfill' || '' }}
