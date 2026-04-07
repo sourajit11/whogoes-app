@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import EventDetail from "@/app/dashboard/events/[id]/event-detail";
+import { getPostBySlug } from "@/lib/blog";
 import type { BrowsableEvent } from "@/types";
 
 interface Props {
@@ -176,6 +178,9 @@ export default async function PublicEventDetailPage({ params }: Props) {
     unlockStatus = statusData ?? null;
   }
 
+  // Check if a matching blog post exists for this event
+  const relatedPost = getPostBySlug(`${slug}-attendee-list`);
+
   return (
     <>
       <EventJsonLd event={event} />
@@ -187,6 +192,21 @@ export default async function PublicEventDetailPage({ params }: Props) {
         unlockStatus={unlockStatus}
         userEmail={user?.email ?? undefined}
       />
+      {relatedPost && (
+        <div className="mx-auto max-w-4xl px-4 pb-12">
+          <Link
+            href={`/blog/${relatedPost.meta.slug}`}
+            className="block rounded-lg border border-blue-200 bg-blue-50 p-4 transition-colors hover:bg-blue-100"
+          >
+            <p className="text-sm font-medium text-blue-900">
+              Read our full guide
+            </p>
+            <p className="mt-1 text-blue-700">
+              {relatedPost.meta.title}
+            </p>
+          </Link>
+        </div>
+      )}
     </>
   );
 }

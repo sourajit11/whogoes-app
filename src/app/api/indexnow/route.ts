@@ -16,24 +16,40 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const supabase = createAdminClient();
-  const { data: events } = await supabase
-    .from("events")
-    .select("slug")
-    .order("start_date", { ascending: false });
+  const type = request.nextUrl.searchParams.get("type");
 
   const blogPosts = getAllPosts();
   const comparisons = getAllComparisons();
 
-  const urls = [
-    `https://${HOST}`,
-    `https://${HOST}/events`,
-    `https://${HOST}/blog`,
-    `https://${HOST}/compare`,
-    ...(events ?? []).map((e) => `https://${HOST}/events/${e.slug}`),
-    ...blogPosts.map((p) => `https://${HOST}/blog/${p.meta.slug}`),
-    ...comparisons.map((c) => `https://${HOST}/compare/${c.meta.slug}`),
-  ];
+  let urls: string[];
+
+  if (type === "blog") {
+    // Submit only blog + compare URLs (skip 339 event pages)
+    urls = [
+      `https://${HOST}`,
+      `https://${HOST}/blog`,
+      `https://${HOST}/compare`,
+      ...blogPosts.map((p) => `https://${HOST}/blog/${p.meta.slug}`),
+      ...comparisons.map((c) => `https://${HOST}/compare/${c.meta.slug}`),
+    ];
+  } else {
+    // Submit all URLs (existing behavior)
+    const supabase = createAdminClient();
+    const { data: events } = await supabase
+      .from("events")
+      .select("slug")
+      .order("start_date", { ascending: false });
+
+    urls = [
+      `https://${HOST}`,
+      `https://${HOST}/events`,
+      `https://${HOST}/blog`,
+      `https://${HOST}/compare`,
+      ...(events ?? []).map((e) => `https://${HOST}/events/${e.slug}`),
+      ...blogPosts.map((p) => `https://${HOST}/blog/${p.meta.slug}`),
+      ...comparisons.map((c) => `https://${HOST}/compare/${c.meta.slug}`),
+    ];
+  }
 
   const payload = {
     host: HOST,
