@@ -15,6 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  applicationName: "WhoGoes",
   title: {
     default: "WhoGoes — Trade Show & Event Attendee Lists With Proof",
     template: "%s | WhoGoes",
@@ -67,6 +68,22 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: "WhoGoes",
+              url: "https://app.whogoes.co",
+              potentialAction: {
+                "@type": "SearchAction",
+                target: "https://app.whogoes.co/events?q={search_term_string}",
+                "query-input": "required name=search_term_string",
+              },
+            }),
+          }}
+        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
