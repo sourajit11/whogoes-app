@@ -1,0 +1,43 @@
+name: Post-Deploy IndexNow Ping
+
+on:
+  # Trigger after pushes to main (Vercel auto-deploys from main)
+  push:
+    branches: [main]
+    paths:
+      - "src/content/blog/**"
+      - "src/app/sitemap.ts"
+      - "src/app/robots.ts"
+  # Manual trigger
+  workflow_dispatch: {}
+
+jobs:
+  ping-indexnow:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for Vercel deploy to finish
+        run: sleep 120
+
+      - name: Ping IndexNow (blog + compare URLs)
+        run: |
+          response=$(curl -s -w "\n%{http_code}" -X POST \
+            "https://app.whogoes.co/api/indexnow?secret=${{ secrets.INDEXNOW_SECRET }}&type=blog")
+          body=$(echo "$response" | head -1)
+          status=$(echo "$response" | tail -1)
+          echo "Response: $body"
+          echo "HTTP Status: $status"
+          if [ "$status" -ge 400 ]; then
+            echo "::error::IndexNow ping failed with status $status"
+            exit 1
+          fi
+
+      - name: Verify sitemap accessibility
+        run: |
+          for path in "/sitemap.xml" "/sitemap/0.xml" "/robots.txt"; do
+            status=$(curl -s -o /dev/null -w "%{http_code}" "https://app.whogoes.co$path")
+            echo "$path -> $status"
+            if [ "$status" -ge 300 ]; then
+              echo "::error::$path returned $status — sitemaps may be blocked"
+              exit 1
+            fi
+          done
