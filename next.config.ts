@@ -1,6 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  async rewrites() {
+    return [
+      {
+        // Next.js 16 doesn't auto-generate a sitemap index, so rewrite to our API route
+        source: "/sitemap.xml",
+        destination: "/api/sitemap-index",
+      },
+    ];
+  },
   async redirects() {
     return [
       {

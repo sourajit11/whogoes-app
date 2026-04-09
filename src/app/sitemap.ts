@@ -13,13 +13,16 @@ export async function generateSitemaps() {
   return [{ id: 0 }, { id: 1 }, { id: 2 }];
 }
 
-export default async function sitemap({
-  id,
-}: {
-  id: number;
-}): Promise<MetadataRoute.Sitemap> {
+// Next.js 16 passes params as Promises (async params) — must await
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default async function sitemap(props: any): Promise<MetadataRoute.Sitemap> {
+  // props may be { id: Promise<number> } or Promise<{ id: number }> in Next.js 16
+  const resolved = await Promise.resolve(props);
+  const rawId = await Promise.resolve(resolved.id);
+  const sitemapId = Number(rawId);
+
   // Sitemap 0: Static pages + Blog — HIGHEST PRIORITY
-  if (id === 0) {
+  if (sitemapId === 0) {
     const blogPosts = getAllPosts();
     return [
       {
@@ -50,7 +53,7 @@ export default async function sitemap({
   }
 
   // Sitemap 1: Comparison pages
-  if (id === 1) {
+  if (sitemapId === 1) {
     return getAllComparisons().map((c) => ({
       url: `https://app.whogoes.co/compare/${c.meta.slug}`,
       lastModified: new Date(c.meta.date),
