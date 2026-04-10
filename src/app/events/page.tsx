@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { createAdminClient } from "@/lib/supabase/admin";
 import EventsBrowser from "@/app/dashboard/events/events-browser";
+import { getBrowsableEventsCached } from "@/lib/events/get-browsable-events";
 import type { BrowsableEvent } from "@/types";
 
 export const metadata: Metadata = {
@@ -50,29 +50,15 @@ function EventsListJsonLd({
 }
 
 export default async function PublicEventsPage() {
-  // Use admin client for all queries — anon key fails for unauthenticated users (no cookies)
-  const adminClient = createAdminClient();
+  let eventsWithSlugs: BrowsableEvent[] = [];
+  let loadError = false;
 
-  const { data: events, error: eventsError } = await adminClient.rpc("get_all_browsable_events");
-  if (eventsError) {
-    console.error("Failed to fetch browsable events:", eventsError.message);
+  try {
+    eventsWithSlugs = await getBrowsableEventsCached();
+  } catch (err) {
+    console.error("Failed to load browsable events:", err);
+    loadError = true;
   }
-
-  const { data: slugs } = await adminClient
-    .from("events")
-    .select("id, slug");
-
-  const slugMap = new Map(
-    (slugs ?? []).map((s: { id: string; slug: string }) => [s.id, s.slug])
-  );
-
-  // Merge slugs into events
-  const eventsWithSlugs: BrowsableEvent[] = (events ?? []).map(
-    (e: BrowsableEvent) => ({
-      ...e,
-      event_slug: slugMap.get(e.event_id) ?? undefined,
-    })
-  );
 
   const years = [
     ...new Set(eventsWithSlugs.map((e) => e.event_year)),
@@ -93,6 +79,7 @@ export default async function PublicEventsPage() {
         years={years}
         regions={regions}
         isAuthenticated={false}
+        loadError={loadError}
       />
     </>
   );

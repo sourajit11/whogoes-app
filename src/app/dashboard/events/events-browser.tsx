@@ -1,8 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useDeferredValue, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { BrowsableEvent } from "@/types";
+
+const PAGE_SIZE = 60;
 
 interface EventsBrowserProps {
   initialEvents: BrowsableEvent[];
@@ -10,6 +13,7 @@ interface EventsBrowserProps {
   years: number[];
   regions: string[];
   isAuthenticated?: boolean;
+  loadError?: boolean;
 }
 
 export default function EventsBrowser({
@@ -18,12 +22,45 @@ export default function EventsBrowser({
   years,
   regions,
   isAuthenticated,
+  loadError = false,
 }: EventsBrowserProps) {
+  const router = useRouter();
+  const [isRefreshing, startRefreshing] = useTransition();
   const [selectedYear, setSelectedYear] = useState<string>("");
   const [selectedRegion, setSelectedRegion] = useState<string>("");
   const [minContacts, setMinContacts] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  // Capture "now" once at mount so the sort inside useMemo stays pure.
+  const [now] = useState(() => Date.now());
+
+  // Defer search query so fast typing doesn't block re-renders on slow devices.
+  const deferredSearchQuery = useDeferredValue(searchQuery);
+
+  // Reset pagination when filters change — using the "adjust state during render"
+  // pattern (https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes).
+  const filterKey = `${selectedYear}|${selectedRegion}|${minContacts}|${statusFilter}|${deferredSearchQuery}`;
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+  if (prevFilterKey !== filterKey) {
+    setPrevFilterKey(filterKey);
+    setVisibleCount(PAGE_SIZE);
+  }
+
+  const hasActiveFilters =
+    !!selectedYear ||
+    !!selectedRegion ||
+    !!minContacts ||
+    !!statusFilter ||
+    !!searchQuery.trim();
+
+  function clearFilters() {
+    setSelectedYear("");
+    setSelectedRegion("");
+    setMinContacts("");
+    setStatusFilter("");
+    setSearchQuery("");
+  }
 
   const filteredEvents = useMemo(() => {
     let result = initialEvents;
@@ -44,8 +81,8 @@ export default function EventsBrowser({
     } else if (statusFilter === "completed") {
       result = result.filter((e) => !e.is_active);
     }
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
+    if (deferredSearchQuery.trim()) {
+      const q = deferredSearchQuery.toLowerCase();
       result = result.filter(
         (e) =>
           e.event_name.toLowerCase().includes(q) ||
@@ -54,7 +91,6 @@ export default function EventsBrowser({
     }
 
     // Sort: 1) Most contacts (highest first), 2) Nearest date to today
-    const now = Date.now();
     result = [...result].sort((a, b) => {
       if (a.total_contacts !== b.total_contacts)
         return b.total_contacts - a.total_contacts;
@@ -68,7 +104,10 @@ export default function EventsBrowser({
     });
 
     return result;
-  }, [initialEvents, selectedYear, selectedRegion, minContacts, searchQuery, statusFilter]);
+  }, [initialEvents, selectedYear, selectedRegion, minContacts, deferredSearchQuery, statusFilter, now]);
+
+  const visibleEvents = filteredEvents.slice(0, visibleCount);
+  const hasMore = filteredEvents.length > visibleCount;
 
   function getEventHref(event: BrowsableEvent): string {
     if (event.is_subscribed) {
@@ -93,6 +132,46 @@ export default function EventsBrowser({
       <p className="mt-1 text-sm text-zinc-400">
         Explore all tracked events and unlock contact data
       </p>
+
+      {/* Load error banner — shown when the server-side fetch failed but the
+          page still rendered. Keeps filters visible and gives a retry path. */}
+      {loadError && (
+        <div
+          role="alert"
+          className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm dark:border-amber-500/20 dark:bg-amber-500/10"
+        >
+          <div className="flex items-start gap-2">
+            <svg
+              className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
+              />
+            </svg>
+            <div>
+              <p className="font-medium text-amber-900 dark:text-amber-200">
+                We couldn&apos;t load the latest events
+              </p>
+              <p className="mt-0.5 text-amber-800/80 dark:text-amber-300/80">
+                Check your connection and try again.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => startRefreshing(() => router.refresh())}
+            disabled={isRefreshing}
+            className="cursor-pointer rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-amber-500 dark:hover:bg-amber-400"
+          >
+            {isRefreshing ? "Refreshing…" : "Refresh"}
+          </button>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="mt-6 flex flex-wrap items-center gap-3">
@@ -174,21 +253,45 @@ export default function EventsBrowser({
 
       {/* Event Cards Grid */}
       {filteredEvents.length === 0 ? (
-        <div className="mt-12 flex h-48 items-center justify-center rounded-xl border border-dashed border-zinc-300 dark:border-zinc-700">
+        <div className="mt-12 flex h-48 flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-700">
           <p className="text-sm text-zinc-400">
-            No events match your filters
+            {initialEvents.length === 0 && !loadError
+              ? "No events available yet. Check back soon."
+              : "No events match your filters"}
           </p>
+          {hasActiveFilters && (
+            <button
+              onClick={clearFilters}
+              className="cursor-pointer rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 shadow-sm transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            >
+              Clear filters
+            </button>
+          )}
         </div>
       ) : (
-        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredEvents.map((event) => (
-            <EventCard
-              key={event.event_id}
-              event={event}
-              href={getEventHref(event)}
-            />
-          ))}
-        </div>
+        <>
+          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {visibleEvents.map((event) => (
+              <EventCard
+                key={event.event_id}
+                event={event}
+                href={getEventHref(event)}
+              />
+            ))}
+          </div>
+          {hasMore && (
+            <div className="mt-8 flex justify-center">
+              <button
+                onClick={() =>
+                  setVisibleCount((c) => c + PAGE_SIZE)
+                }
+                className="cursor-pointer rounded-lg border border-zinc-200 bg-white px-5 py-2.5 text-sm font-medium text-zinc-700 shadow-sm transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              >
+                Load more ({filteredEvents.length - visibleCount} remaining)
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

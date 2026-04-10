@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { requireAdmin } from "@/lib/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { BROWSABLE_EVENTS_TAG } from "@/lib/events/get-browsable-events";
 
 export async function POST(request: NextRequest) {
   try {
@@ -33,6 +35,9 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+
+  // Invalidate cached public /events list so edits appear immediately.
+  revalidateTag(BROWSABLE_EVENTS_TAG, "max");
 
   return NextResponse.json({ success: true });
 }
