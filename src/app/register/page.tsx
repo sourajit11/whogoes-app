@@ -79,6 +79,22 @@ export default function RegisterPage() {
       return;
     }
 
+    // Fire Google Ads conversion event
+    if (typeof window !== "undefined" && typeof window.gtag === "function") {
+      window.gtag("event", "conversion", {
+        send_to: "AW-18070876708/l_93CN-Dx5ccEKTk7qhD",
+        value: 1.0,
+        currency: "INR",
+      });
+    }
+
+    // Create contact in Loops for email automation (await to ensure it completes before navigation)
+    await fetch("/api/loops/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, firstName, lastName }),
+    }).catch(() => {});
+
     router.push("/dashboard");
   }
 

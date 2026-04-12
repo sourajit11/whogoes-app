@@ -45,6 +45,7 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname === "/compare" ||
     request.nextUrl.pathname.startsWith("/compare/") ||
     request.nextUrl.pathname.startsWith("/api/payments/") ||
+    request.nextUrl.pathname.startsWith("/api/loops/signup") ||
     request.nextUrl.pathname.startsWith("/api/indexnow") ||
     request.nextUrl.pathname.startsWith("/api/sitemap-index") ||
     request.nextUrl.pathname.startsWith("/sitemap");

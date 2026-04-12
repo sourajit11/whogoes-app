@@ -169,6 +169,20 @@ export default function EventDetail({
       return;
     }
 
+    // Fire first_unlock event to Loops if this was the user's first-ever unlock
+    const wasFirstUnlock =
+      !unlockStatus || unlockStatus.unlocked_count === 0;
+    if (wasFirstUnlock) {
+      fetch("/api/loops", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          eventName: "first_unlock",
+          eventId: event.event_id,
+        }),
+      }).catch(() => {});
+    }
+
     // Update local state and notify sidebar
     setCredits(result.new_balance ?? 0);
     window.dispatchEvent(new CustomEvent("credits-updated"));
