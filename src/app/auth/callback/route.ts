@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { createLoopsContact } from "@/lib/loops";
+import { createLoopsContact, sendLoopsEvent } from "@/lib/loops";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -17,14 +17,27 @@ export async function GET(request: Request) {
         data: { user },
       } = await supabase.auth.getUser();
       if (user) {
+        // Google SSO stores name as "full_name", email/password stores as "first_name"
+        const meta = user.user_metadata ?? {};
+        const firstName =
+          meta.first_name ?? meta.full_name?.split(" ")[0] ?? "";
+        const lastName =
+          meta.last_name ?? meta.full_name?.split(" ").slice(1).join(" ") ?? "";
+
         await createLoopsContact({
           email: user.email!,
-          firstName: user.user_metadata?.first_name ?? "",
-          lastName: user.user_metadata?.last_name ?? "",
+          firstName,
+          lastName,
           plan: "free",
           creditsBalance: 20,
           creditsUsed: 0,
         }).catch((err) => console.error("Loops contact creation failed:", err));
+
+        // Send signup event to trigger the onboarding loop
+        await sendLoopsEvent({
+          email: user.email!,
+          eventName: "signup",
+        }).catch((err) => console.error("Loops signup event failed:", err));
       }
 
       return NextResponse.redirect(`${origin}${next}`);

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createLoopsContact } from "@/lib/loops";
+import { createLoopsContact, sendLoopsEvent } from "@/lib/loops";
 
 export async function POST(request: Request) {
   const { email, firstName, lastName } = await request.json();
@@ -15,6 +15,12 @@ export async function POST(request: Request) {
     plan: "free",
     creditsBalance: 20,
     creditsUsed: 0,
+  });
+
+  // Send signup event to trigger the onboarding loop
+  await sendLoopsEvent({
+    email,
+    eventName: "signup",
   });
 
   return NextResponse.json({ success: true });
