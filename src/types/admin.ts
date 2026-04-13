@@ -90,6 +90,21 @@ export interface AdminPayment {
   paid_at: string | null;
 }
 
+export interface AdminPaymentWithEmail {
+  id: string;
+  user_id: string;
+  razorpay_order_id: string;
+  razorpay_payment_id: string | null;
+  amount_usd: number;
+  currency: string;
+  credits: number;
+  package_name: string | null;
+  status: string;
+  created_at: string;
+  paid_at: string | null;
+  user_email: string;
+}
+
 // --- CEO Dashboard types ---
 
 export type TimeRange = "today" | "7d" | "4w" | "3m" | "all";
