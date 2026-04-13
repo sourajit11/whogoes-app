@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { createClient } from "@/lib/supabase/server";
+import { sendLoopsEvent, updateLoopsContact } from "@/lib/loops";
 
 export async function POST(request: NextRequest) {
   try {
@@ -49,6 +50,36 @@ export async function POST(request: NextRequest) {
 
     if (!result.success) {
       return NextResponse.json({ error: result.message }, { status: 400 });
+    }
+
+    // Fire plan_purchased event to Loops on the user's first paid payment
+    const { count: paidCount } = await supabase
+      .from("payments")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("status", "paid");
+
+    if (paidCount === 1) {
+      const { data: paymentRow } = await supabase
+        .from("payments")
+        .select("package_name, credits, amount_usd")
+        .eq("razorpay_payment_id", razorpay_payment_id)
+        .single();
+
+      await updateLoopsContact(user.email!, {
+        plan: paymentRow?.package_name ?? "paid",
+        creditsBalance: result.new_balance ?? 0,
+      }).catch((err) => console.error("Loops contact update failed:", err));
+
+      await sendLoopsEvent({
+        email: user.email!,
+        eventName: "plan_purchased",
+        eventProperties: {
+          planName: paymentRow?.package_name ?? "",
+          creditsPurchased: paymentRow?.credits ?? 0,
+          amountUsd: paymentRow?.amount_usd ?? 0,
+        },
+      }).catch((err) => console.error("Loops plan_purchased event failed:", err));
     }
 
     return NextResponse.json({
