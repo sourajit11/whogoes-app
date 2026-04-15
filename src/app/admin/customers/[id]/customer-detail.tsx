@@ -23,6 +23,7 @@ interface CustomerDetailProps {
   payments: AdminPayment[];
   subscriptions: AdminCustomerSubscription[];
   recentUnlocks: AdminCustomerUnlock[];
+  contactsUnlockedCount: number;
   monthlyBreakdown: { month: string; credits_used: number }[];
 }
 
@@ -37,6 +38,7 @@ export default function CustomerDetail({
   payments,
   subscriptions,
   recentUnlocks,
+  contactsUnlockedCount,
   monthlyBreakdown,
 }: CustomerDetailProps) {
   const router = useRouter();
@@ -175,7 +177,7 @@ export default function CustomerDetail({
         />
         <StatCard
           label="Contacts Unlocked"
-          value={recentUnlocks.length}
+          value={contactsUnlockedCount}
         />
       </div>
 

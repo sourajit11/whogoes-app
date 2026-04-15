@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
+import { listAllAuthUsers } from "@/lib/supabase/list-all-users";
 import PaymentsList from "./payments-list";
 
 export default async function AdminPaymentsPage() {
@@ -11,16 +12,11 @@ export default async function AdminPaymentsPage() {
     )
     .order("created_at", { ascending: false });
 
-  // Resolve user emails
-  const { data: usersData } = await admin.auth.admin.listUsers();
-  const emailMap = new Map<string, string>();
-  usersData?.users?.forEach((u) => {
-    emailMap.set(u.id, u.email ?? "Unknown");
-  });
+  const userMap = await listAllAuthUsers(admin);
 
   const paymentsWithEmail = (payments ?? []).map((p) => ({
     ...p,
-    user_email: emailMap.get(p.user_id) ?? "Unknown",
+    user_email: userMap.get(p.user_id)?.email ?? "Unknown",
   }));
 
   return <PaymentsList payments={paymentsWithEmail} />;

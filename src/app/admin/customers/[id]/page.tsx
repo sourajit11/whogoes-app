@@ -11,9 +11,9 @@ export default async function AdminCustomerDetailPage({
   const admin = createAdminClient();
 
   // Get customer info
-  const { data: users } = await admin.auth.admin.listUsers();
-  const user = users?.users?.find((u) => u.id === id);
-  if (!user) notFound();
+  const { data: userRes, error: userErr } = await admin.auth.admin.getUserById(id);
+  if (userErr || !userRes?.user) notFound();
+  const user = userRes.user;
 
   // Get free credits (from user_signups)
   const { data: signup } = await admin
@@ -43,13 +43,19 @@ export default async function AdminCustomerDetailPage({
     .eq("user_id", id)
     .order("subscribed_at", { ascending: false });
 
-  // Get recent unlocks
+  // Get recent unlocks (table display)
   const { data: unlocks } = await admin
     .from("customer_contact_access")
     .select("contact_id, event_id, charged_at, events(name), contacts(full_name)")
     .eq("user_id", id)
     .order("charged_at", { ascending: false })
     .limit(50);
+
+  // Get exact total unlocks for the stat card
+  const { count: totalUnlocks } = await admin
+    .from("customer_contact_access")
+    .select("contact_id", { count: "exact", head: true })
+    .eq("user_id", id);
 
   // Get monthly usage for this user
   const { data: monthlyUsage } = await admin
@@ -76,6 +82,7 @@ export default async function AdminCustomerDetailPage({
       paidCredits={customer?.credits_balance ?? 0}
       totalPaidAmount={customer?.total_paid_amount ?? 0}
       totalPurchasedCredits={customer?.total_purchased_credits ?? 0}
+      contactsUnlockedCount={totalUnlocks ?? 0}
       payments={
         payments?.map((p) => ({
           id: p.id,
