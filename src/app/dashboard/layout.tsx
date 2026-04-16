@@ -1,7 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import Sidebar from "./components/sidebar";
 import Link from "next/link";
+import { ConversionTracker } from "@/components/conversion-tracker";
 
 export default async function DashboardLayout({
   children,
@@ -84,6 +86,9 @@ export default async function DashboardLayout({
             Talk to Expert
           </a>
         </div>
+        <Suspense>
+          <ConversionTracker />
+        </Suspense>
         {children}
       </main>
     </div>

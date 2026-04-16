@@ -16,6 +16,7 @@ export async function GET(request: Request) {
       const {
         data: { user },
       } = await supabase.auth.getUser();
+      let isNewUser = false;
       if (user) {
         // Google SSO stores name as "full_name", email/password stores as "first_name"
         const meta = user.user_metadata ?? {};
@@ -38,9 +39,18 @@ export async function GET(request: Request) {
           email: user.email!,
           eventName: "signup",
         }).catch((err) => console.error("Loops signup event failed:", err));
+
+        // Flag new sign-ups so the client can fire the Google Ads conversion event
+        isNewUser =
+          !!user.created_at &&
+          Date.now() - new Date(user.created_at).getTime() < 60_000;
       }
 
-      return NextResponse.redirect(`${origin}${next}`);
+      const redirectUrl = isNewUser
+        ? `${origin}${next}?new_signup=1`
+        : `${origin}${next}`;
+
+      return NextResponse.redirect(redirectUrl);
     }
   }
 
