@@ -3,7 +3,11 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendLoopsEvent, updateLoopsContact } from "@/lib/loops";
 
-/** Fires a Loops event with contact properties for the authenticated user */
+/**
+ * Refreshes Loops contact properties for the authenticated user.
+ * If `eventName` is provided, also fires that event to Loops.
+ * If `eventId` is provided, includes event-specific properties (eventName, totalContacts, creditsUsed).
+ */
 export async function POST(request: Request) {
   const supabase = await createClient();
   const {
@@ -17,19 +21,18 @@ export async function POST(request: Request) {
   const body = await request.json();
   const { eventName, eventId } = body;
 
-  if (!eventName) {
-    return NextResponse.json(
-      { error: "eventName is required" },
-      { status: 400 }
-    );
-  }
-
-  // Fetch current credit balance (RPC returns a single integer)
+  // Fresh credit balance
   const { data: totalCredits } = await supabase.rpc("get_customer_credits");
 
-  // For first_unlock, fetch event-specific data
+  // Total credits used across all events (used by paid-user emails)
+  const { count: creditsUsedTotalCount } = await supabase
+    .from("customer_contact_access")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", user.id);
+
+  // Event-specific data (used by free-user first_unlock emails)
   let eventData: Record<string, string | number | boolean> = {};
-  if (eventName === "first_unlock" && eventId) {
+  if (eventId) {
     const adminSupabase = createAdminClient();
 
     // Get event name (bypass RLS — read-only lookup for email)
@@ -39,13 +42,13 @@ export async function POST(request: Request) {
       .eq("event_id", eventId)
       .single();
 
-    // Get total contacts for this event (bypass RLS — contacts table may restrict user reads)
+    // Get total contacts for this event (bypass RLS — contacts table restricts user reads)
     const { count: totalContacts } = await adminSupabase
       .from("contacts")
       .select("*", { count: "exact", head: true })
       .eq("event_id", eventId);
 
-    // Get how many credits user has used on this event
+    // Credits user has spent on this specific event
     const { count: creditsUsedOnEvent } = await supabase
       .from("customer_contact_access")
       .select("*", { count: "exact", head: true })
@@ -57,26 +60,31 @@ export async function POST(request: Request) {
       totalContacts: totalContacts ?? 0,
       creditsUsed: creditsUsedOnEvent ?? 0,
     };
-
-    console.log("[loops] first_unlock event data:", {
-      user: user.email,
-      eventId,
-      eventData,
-    });
   }
 
-  // Update contact properties in Loops
+  console.log("[loops] contact refresh:", {
+    user: user.email,
+    eventId,
+    eventName,
+    creditsUsedTotal: creditsUsedTotalCount,
+    eventData,
+  });
+
+  // Always refresh contact properties with fresh numbers
   await updateLoopsContact(user.email!, {
     creditsBalance: totalCredits ?? 0,
+    creditsUsedTotal: creditsUsedTotalCount ?? 0,
     ...eventData,
   });
 
-  // Send the event
-  await sendLoopsEvent({
-    email: user.email!,
-    eventName,
-    eventProperties: eventData,
-  });
+  // Only fire a Loops event when an eventName is provided (e.g., first_unlock)
+  if (eventName) {
+    await sendLoopsEvent({
+      email: user.email!,
+      eventName,
+      eventProperties: eventData,
+    });
+  }
 
   return NextResponse.json({ success: true });
 }

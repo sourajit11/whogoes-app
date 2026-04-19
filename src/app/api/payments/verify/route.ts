@@ -52,24 +52,38 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: result.message }, { status: 400 });
     }
 
-    // Fire plan_purchased event to Loops on the user's first paid payment
+    // Refresh Loops contact properties with fresh credit numbers on every payment
+    // (first purchase OR refill), so follow-up emails render accurate balances.
+    const { count: creditsUsedTotalCount } = await supabase
+      .from("customer_contact_access")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id);
+
     const { count: paidCount } = await supabase
       .from("payments")
       .select("id", { count: "exact", head: true })
       .eq("user_id", user.id)
       .eq("status", "paid");
 
-    if (paidCount === 1) {
+    const isFirstPaidPayment = paidCount === 1;
+
+    const contactUpdate: Record<string, string | number | boolean> = {
+      creditsBalance: result.new_balance ?? 0,
+      creditsUsedTotal: creditsUsedTotalCount ?? 0,
+    };
+
+    if (isFirstPaidPayment) {
       const { data: paymentRow } = await supabase
         .from("payments")
         .select("package_name, credits, amount_usd")
         .eq("razorpay_payment_id", razorpay_payment_id)
         .single();
 
-      await updateLoopsContact(user.email!, {
-        plan: paymentRow?.package_name ?? "paid",
-        creditsBalance: result.new_balance ?? 0,
-      }).catch((err) => console.error("Loops contact update failed:", err));
+      contactUpdate.plan = paymentRow?.package_name ?? "paid";
+
+      await updateLoopsContact(user.email!, contactUpdate).catch((err) =>
+        console.error("Loops contact update failed:", err)
+      );
 
       await sendLoopsEvent({
         email: user.email!,
@@ -80,6 +94,11 @@ export async function POST(request: NextRequest) {
           amountUsd: paymentRow?.amount_usd ?? 0,
         },
       }).catch((err) => console.error("Loops plan_purchased event failed:", err));
+    } else {
+      // Refill — just refresh the fresh numbers, no event fire
+      await updateLoopsContact(user.email!, contactUpdate).catch((err) =>
+        console.error("Loops contact update failed:", err)
+      );
     }
 
     return NextResponse.json({

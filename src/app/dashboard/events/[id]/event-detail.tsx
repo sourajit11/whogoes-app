@@ -169,19 +169,18 @@ export default function EventDetail({
       return;
     }
 
-    // Fire first_unlock event to Loops if this was the user's first-ever unlock
+    // Always refresh Loops contact properties on unlock. Fire the
+    // first_unlock event only on the user's first-ever unlock.
     const wasFirstUnlock =
       !unlockStatus || unlockStatus.unlocked_count === 0;
-    if (wasFirstUnlock) {
-      fetch("/api/loops", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          eventName: "first_unlock",
-          eventId: event.event_id,
-        }),
-      }).catch(() => {});
-    }
+    fetch("/api/loops", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        eventName: wasFirstUnlock ? "first_unlock" : undefined,
+        eventId: event.event_id,
+      }),
+    }).catch(() => {});
 
     // Update local state and notify sidebar
     setCredits(result.new_balance ?? 0);
