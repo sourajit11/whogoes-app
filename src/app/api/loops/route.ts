@@ -38,13 +38,13 @@ export async function POST(request: Request) {
     // Get event name (bypass RLS — read-only lookup for email)
     const { data: eventInfo } = await adminSupabase
       .from("events")
-      .select("event_name, event_id")
-      .eq("event_id", eventId)
+      .select("name")
+      .eq("id", eventId)
       .single();
 
-    // Get total contacts for this event (bypass RLS — contacts table restricts user reads)
+    // Total contacts for this event — linked via contact_events join table
     const { count: totalContacts } = await adminSupabase
-      .from("contacts")
+      .from("contact_events")
       .select("*", { count: "exact", head: true })
       .eq("event_id", eventId);
 
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
       .eq("event_id", eventId);
 
     eventData = {
-      eventName: eventInfo?.event_name ?? "",
+      eventName: eventInfo?.name ?? "",
       totalContacts: totalContacts ?? 0,
       creditsUsed: creditsUsedOnEvent ?? 0,
     };
