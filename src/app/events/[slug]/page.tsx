@@ -12,18 +12,13 @@ interface Props {
 }
 
 export async function generateStaticParams() {
-  try {
-    const supabase = createAdminClient();
-    const { data: events } = await supabase
-      .from("events")
-      .select("slug")
-      .order("start_date", { ascending: false });
+  const supabase = createAdminClient();
+  const { data: events } = await supabase
+    .from("events")
+    .select("slug")
+    .order("start_date", { ascending: false });
 
-    return (events ?? []).map((event) => ({ slug: event.slug }));
-  } catch {
-    // Fallback to dynamic rendering if env vars aren't available at build time
-    return [];
-  }
+  return (events ?? []).map((event) => ({ slug: event.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
