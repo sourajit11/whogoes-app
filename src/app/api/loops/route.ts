@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { sendLoopsEvent, updateLoopsContact } from "@/lib/loops";
 
 /** Fires a Loops event with contact properties for the authenticated user */
@@ -29,15 +30,17 @@ export async function POST(request: Request) {
   // For first_unlock, fetch event-specific data
   let eventData: Record<string, string | number | boolean> = {};
   if (eventName === "first_unlock" && eventId) {
-    // Get event name
-    const { data: eventInfo } = await supabase
+    const adminSupabase = createAdminClient();
+
+    // Get event name (bypass RLS — read-only lookup for email)
+    const { data: eventInfo } = await adminSupabase
       .from("events")
       .select("event_name, event_id")
       .eq("event_id", eventId)
       .single();
 
-    // Get total contacts for this event
-    const { count: totalContacts } = await supabase
+    // Get total contacts for this event (bypass RLS — contacts table may restrict user reads)
+    const { count: totalContacts } = await adminSupabase
       .from("contacts")
       .select("*", { count: "exact", head: true })
       .eq("event_id", eventId);
@@ -54,6 +57,12 @@ export async function POST(request: Request) {
       totalContacts: totalContacts ?? 0,
       creditsUsed: creditsUsedOnEvent ?? 0,
     };
+
+    console.log("[loops] first_unlock event data:", {
+      user: user.email,
+      eventId,
+      eventData,
+    });
   }
 
   // Update contact properties in Loops
