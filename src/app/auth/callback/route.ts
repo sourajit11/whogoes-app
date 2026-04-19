@@ -18,32 +18,34 @@ export async function GET(request: Request) {
       } = await supabase.auth.getUser();
       let isNewUser = false;
       if (user) {
-        // Google SSO stores name as "full_name", email/password stores as "first_name"
-        const meta = user.user_metadata ?? {};
-        const firstName =
-          meta.first_name ?? meta.full_name?.split(" ")[0] ?? "";
-        const lastName =
-          meta.last_name ?? meta.full_name?.split(" ").slice(1).join(" ") ?? "";
-
-        await createLoopsContact({
-          email: user.email!,
-          firstName,
-          lastName,
-          plan: "free",
-          creditsBalance: 20,
-          creditsUsed: 0,
-        }).catch((err) => console.error("Loops contact creation failed:", err));
-
-        // Send signup event to trigger the onboarding loop
-        await sendLoopsEvent({
-          email: user.email!,
-          eventName: "signup",
-        }).catch((err) => console.error("Loops signup event failed:", err));
-
         // Flag new sign-ups so the client can fire the Google Ads conversion event
+        // and so we only push genuinely-new users into the Loops onboarding flow.
         isNewUser =
           !!user.created_at &&
           Date.now() - new Date(user.created_at).getTime() < 60_000;
+
+        if (isNewUser) {
+          // Google SSO stores name as "full_name", email/password stores as "first_name"
+          const meta = user.user_metadata ?? {};
+          const firstName =
+            meta.first_name ?? meta.full_name?.split(" ")[0] ?? "";
+          const lastName =
+            meta.last_name ?? meta.full_name?.split(" ").slice(1).join(" ") ?? "";
+
+          await createLoopsContact({
+            email: user.email!,
+            firstName,
+            lastName,
+            plan: "free",
+            creditsBalance: 20,
+            creditsUsed: 0,
+          }).catch((err) => console.error("Loops contact creation failed:", err));
+
+          await sendLoopsEvent({
+            email: user.email!,
+            eventName: "signup",
+          }).catch((err) => console.error("Loops signup event failed:", err));
+        }
       }
 
       const redirectUrl = isNewUser
