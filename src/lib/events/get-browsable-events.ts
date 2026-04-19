@@ -11,13 +11,6 @@ export const BROWSABLE_EVENTS_TAG = "events-browsable";
 // subscribed event IDs separately and merge them in via `mergeSubscriptions()`.
 export const getBrowsableEventsCached = unstable_cache(
   async (): Promise<BrowsableEvent[]> => {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!url || !key) {
-      console.warn("getBrowsableEventsCached: Supabase env vars not available, returning empty list");
-      return [];
-    }
-
     const adminClient = createAdminClient();
 
     const [eventsRes, slugsRes] = await Promise.all([
