@@ -111,6 +111,7 @@ export function openInvoice(payment: InvoicePayment, userEmail: string) {
     <p style="font-weight: 600; font-size: 13px; color: #18181b;">AVRPIX SOLUTIONS PRIVATE LIMITED</p>
     <p style="margin-top: 4px;">S NO 635/1A, PLOT NO-20, VAIBHAV SOCIETY, Bibvewadi, Pune City, Pune- 411037, Maharashtra, India</p>
     <p style="margin-top: 2px;">GST: 27ABBCA4226B1Z9</p>
+    <p style="margin-top: 2px;">LUT NO-AD270426027584X</p>
     <p style="margin-top: 8px;">WhoGoes &middot; Trade Show &amp; Event Attendee Data &middot; hello@whogoes.co</p>
     <p style="margin-top: 4px;">Thank you for your purchase!</p>
   </div>
