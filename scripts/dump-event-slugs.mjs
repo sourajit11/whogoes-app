@@ -10,15 +10,31 @@
  */
 
 import { createClient } from "@supabase/supabase-js";
-import { writeFileSync } from "node:fs";
+import { writeFileSync, readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
+function loadEnvLocal() {
+  const path = join(__dirname, "../.env.local");
+  if (!existsSync(path)) return;
+  const text = readFileSync(path, "utf8");
+  for (const line of text.split("\n")) {
+    const m = line.match(/^([A-Z_]+)=(.*)$/);
+    if (m && !process.env[m[1]]) {
+      process.env[m[1]] = m[2].replace(/^["']|["']$/g, "");
+    }
+  }
+}
+loadEnvLocal();
+
 const SUPABASE_URL = "https://citrznhubxqvsfhjkssg.supabase.co";
-const SERVICE_ROLE_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNpdHJ6bmh1YnhxdnNmaGprc3NnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MTMxMjkxMiwiZXhwIjoyMDg2ODg4OTEyfQ.CT7QMc5evdt5lBvOXSe4ZHbOdpZUrYMqN9VB--efbWg";
+const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+if (!SERVICE_ROLE_KEY) {
+  console.error("Missing env: SUPABASE_SERVICE_ROLE_KEY (expected in app/.env.local)");
+  process.exit(1);
+}
 
 const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
