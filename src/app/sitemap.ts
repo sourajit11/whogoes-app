@@ -2,6 +2,9 @@ import type { MetadataRoute } from "next";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getAllPosts } from "@/lib/blog";
 import { getAllComparisons } from "@/lib/compare";
+import noindexedConfig from "@/config/noindexed-event-slugs.json";
+
+const NOINDEXED_SLUGS = new Set<string>(noindexedConfig.slugs);
 
 /**
  * Split sitemap into 3 parts so Google crawls blogs first:
@@ -69,10 +72,12 @@ export default async function sitemap(props: any): Promise<MetadataRoute.Sitemap
     .select("slug")
     .order("start_date", { ascending: false });
 
-  return (events ?? []).map((event) => ({
-    url: `https://app.whogoes.co/events/${event.slug}`,
-    lastModified: new Date(),
-    changeFrequency: "weekly" as const,
-    priority: 0.5,
-  }));
+  return (events ?? [])
+    .filter((event) => !NOINDEXED_SLUGS.has(event.slug))
+    .map((event) => ({
+      url: `https://app.whogoes.co/events/${event.slug}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.5,
+    }));
 }

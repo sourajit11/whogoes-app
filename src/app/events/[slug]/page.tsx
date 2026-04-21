@@ -6,6 +6,9 @@ import Link from "next/link";
 import EventDetail from "@/app/dashboard/events/[id]/event-detail";
 import { getPostBySlug } from "@/lib/blog";
 import type { BrowsableEvent } from "@/types";
+import noindexedConfig from "@/config/noindexed-event-slugs.json";
+
+const NOINDEXED_SLUGS = new Set<string>(noindexedConfig.slugs);
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -43,7 +46,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       : ""
   }.${event.event_location ? ` Location: ${event.event_location}.` : ""}`;
 
-  return {
+  const metadata: Metadata = {
     title,
     description,
     openGraph: {
@@ -62,6 +65,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       canonical: `https://app.whogoes.co/events/${slug}`,
     },
   };
+
+  if (NOINDEXED_SLUGS.has(slug)) {
+    metadata.robots = { index: false, follow: true };
+  }
+
+  return metadata;
 }
 
 function EventJsonLd({
