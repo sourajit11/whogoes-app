@@ -53,7 +53,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title,
       description,
       url: `https://app.whogoes.co/events/${slug}`,
-      type: "article",
+      type: "website",
       siteName: "WhoGoes",
     },
     twitter: {

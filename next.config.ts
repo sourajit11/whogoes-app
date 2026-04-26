@@ -17,6 +17,11 @@ const nextConfig: NextConfig = {
         destination: "/blog/what-is-a-trade-show-attendee-list",
         permanent: true,
       },
+      {
+        source: "/pricing",
+        destination: "https://whogoes.co/#pricing",
+        permanent: true,
+      },
     ];
   },
   async headers() {

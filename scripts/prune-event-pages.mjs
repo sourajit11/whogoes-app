@@ -51,7 +51,7 @@ const args = process.argv.slice(2);
 const gscPath = args.find((a) => a.startsWith("--gsc="))?.split("=")[1];
 const apply = args.includes("--apply");
 
-const DAYS_PAST_CUTOFF = 30;
+const DAYS_PAST_CUTOFF = 180;
 const MONTHS_FUTURE_CUTOFF = 6;
 const MIN_IMPRESSIONS = 3;
 
