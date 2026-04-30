@@ -13,6 +13,14 @@ export interface BlogPostMeta {
     question: string;
     answer: string;
   }>;
+  howto?: {
+    name: string;
+    description: string;
+    steps: Array<{
+      name: string;
+      text: string;
+    }>;
+  };
 }
 
 export interface BlogPost {

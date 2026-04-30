@@ -109,6 +109,28 @@ function FaqJsonLd({
   );
 }
 
+function HowToJsonLd({ howto }: { howto: NonNullable<BlogPostMeta["howto"]> }) {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name: howto.name,
+    description: howto.description,
+    step: howto.steps.map((step, index) => ({
+      "@type": "HowToStep",
+      position: index + 1,
+      name: step.name,
+      text: step.text,
+    })),
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
+  );
+}
+
 function BlogBreadcrumbJsonLd({ title, slug }: { title: string; slug: string }) {
   const jsonLd = {
     "@context": "https://schema.org",
@@ -146,6 +168,7 @@ export default async function BlogPostPage({ params }: Props) {
       <ArticleJsonLd meta={post.meta} />
       <BlogBreadcrumbJsonLd title={post.meta.title} slug={post.meta.slug} />
       {post.meta.faqs && <FaqJsonLd faqs={post.meta.faqs} />}
+      {post.meta.howto && <HowToJsonLd howto={post.meta.howto} />}
 
       <article className="mx-auto max-w-3xl px-6 py-12">
         {/* Category badge */}
