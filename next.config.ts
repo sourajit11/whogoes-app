@@ -18,6 +18,11 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
+        source: "/blog/most-trusted-event-attendee-list-provider",
+        destination: "/blog/best-trade-show-attendee-list-provider",
+        permanent: true,
+      },
+      {
         source: "/pricing",
         destination: "https://whogoes.co/#pricing",
         permanent: true,
