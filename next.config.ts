@@ -15,17 +15,17 @@ const nextConfig: NextConfig = {
       {
         source: "/blog/what-is-an-event-attendee-list",
         destination: "/blog/what-is-a-trade-show-attendee-list",
-        permanent: true,
+        statusCode: 301,
       },
       {
         source: "/blog/most-trusted-event-attendee-list-provider",
         destination: "/blog/best-trade-show-attendee-list-provider",
-        permanent: true,
+        statusCode: 301,
       },
       {
         source: "/pricing",
         destination: "https://whogoes.co/#pricing",
-        permanent: true,
+        statusCode: 301,
       },
     ];
   },
