@@ -44,6 +44,13 @@ const nextConfig: NextConfig = {
         ],
       },
       {
+        // Root redirects to /dashboard or /login depending on auth — no public content to index
+        source: "/",
+        headers: [
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+        ],
+      },
+      {
         source: "/login",
         headers: [
           { key: "X-Robots-Tag", value: "noindex, nofollow" },
