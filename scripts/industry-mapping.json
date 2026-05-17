@@ -1,0 +1,5018 @@
+{
+  "generated": "2026-05-17T17:05:36.265Z",
+  "model": "claude-sonnet-4-6",
+  "taxonomy": [
+    "Healthcare & Medical",
+    "Pharma & Life Sciences",
+    "Technology & SaaS",
+    "Cybersecurity",
+    "AI & Data",
+    "Manufacturing & Industrial",
+    "Supply Chain & Logistics",
+    "Retail & E-commerce",
+    "Finance & FinTech",
+    "Marketing, Sales & MarTech",
+    "Legal & LegalTech",
+    "Construction & Real Estate",
+    "Energy, Sustainability & CleanTech",
+    "Automotive & Mobility",
+    "Aerospace & Defense",
+    "Food, Beverage & Agriculture",
+    "Hospitality, Travel & Events",
+    "Media, Entertainment & Gaming",
+    "Education & HR",
+    "Beauty, Fashion & Consumer Goods",
+    "Cannabis"
+  ],
+  "usage": {
+    "input_tokens": 837384,
+    "output_tokens": 49399
+  },
+  "results": [
+    {
+      "slug": "100-optical-2026",
+      "name": "100% Optical",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.92,
+      "rationale": "UK's largest optical trade show uniting optometrists, dispensing opticians, and eyewear professionals.",
+      "valid": true
+    },
+    {
+      "slug": "2026-grainger-show",
+      "name": "2026 Grainger Show",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.95,
+      "rationale": "Premier MRO industry trade show for industrial supply, maintenance, repair, and operations professionals.",
+      "valid": true
+    },
+    {
+      "slug": "2026-nab-show",
+      "name": "2026 NAB Show",
+      "industry": "Media, Entertainment & Gaming",
+      "confidence": 0.98,
+      "rationale": "NAB Show is the flagship broadcast, media, and entertainment technology conference.",
+      "valid": true
+    },
+    {
+      "slug": "3d-print-congress-exhibition-lyon-2026",
+      "name": "3D Print Congress & Exhibition Lyon 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.93,
+      "rationale": "Dedicated to 3D printing and additive manufacturing technologies and industrial applications.",
+      "valid": true
+    },
+    {
+      "slug": "awma-conference-exhibition-2026",
+      "name": "A&WMA Conference & Exhibition 2026",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.94,
+      "rationale": "Air & Waste Management Association conference focused on environmental, clean energy, and sustainability topics.",
+      "valid": true
+    },
+    {
+      "slug": "aace-international-2026",
+      "name": "AACE International 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.82,
+      "rationale": "AACE International is the global authority on cost engineering and project management across industrial sectors.",
+      "valid": true
+    },
+    {
+      "slug": "aacr-annual-meeting-2026",
+      "name": "AACR Annual Meeting",
+      "industry": "Pharma & Life Sciences",
+      "confidence": 0.97,
+      "rationale": "American Association for Cancer Research annual meeting focused on oncology research and drug development.",
+      "valid": true
+    },
+    {
+      "slug": "aahoacon26-2026",
+      "name": "AAHOACON26",
+      "industry": "Hospitality, Travel & Events",
+      "confidence": 0.98,
+      "rationale": "AAHOA is the Asian American Hotel Owners Association; AAHOACON is its flagship hospitality industry conference.",
+      "valid": true
+    },
+    {
+      "slug": "aba-annual-meeting-2026",
+      "name": "ABA Annual Meeting 2026",
+      "industry": "Legal & LegalTech",
+      "confidence": 0.97,
+      "rationale": "American Bar Association annual meeting is the primary gathering for legal professionals.",
+      "valid": true
+    },
+    {
+      "slug": "abilitiesexpo-2026",
+      "name": "AbilitiesExpo",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.93,
+      "rationale": "AbilitiesExpo showcases assistive technology, mobility aids, and services for people with disabilities.",
+      "valid": true
+    },
+    {
+      "slug": "abma-boiler-expo-2026",
+      "name": "ABMA BOILER Expo 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.96,
+      "rationale": "American Boiler Manufacturers Association expo dedicated to industrial boiler systems and manufacturing.",
+      "valid": true
+    },
+    {
+      "slug": "accountex-london-2026",
+      "name": "Accountex London",
+      "industry": "Finance & FinTech",
+      "confidence": 0.96,
+      "rationale": "Accountex is the UK's leading accounting and finance technology trade show.",
+      "valid": true
+    },
+    {
+      "slug": "accounting-business-expo-2026",
+      "name": "Accounting & Business Expo 2026",
+      "industry": "Finance & FinTech",
+      "confidence": 0.95,
+      "rationale": "Dedicated accounting and business finance professionals expo in Australia.",
+      "valid": true
+    },
+    {
+      "slug": "acp-siting-permitting-conference-2026",
+      "name": "ACP Siting & Permitting Conference",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.95,
+      "rationale": "American Clean Power Association conference focused on clean energy project siting and permitting.",
+      "valid": true
+    },
+    {
+      "slug": "act-expo-2026",
+      "name": "ACT Expo",
+      "industry": "Automotive & Mobility",
+      "confidence": 0.96,
+      "rationale": "ACT Expo is North America's largest advanced clean transportation and fleet vehicle event.",
+      "valid": true
+    },
+    {
+      "slug": "adas-autonomous-vehicle-technology-expo-europe-2026",
+      "name": "ADAS Autonomous Vehicle Technology Expo Europe 2026",
+      "industry": "Automotive & Mobility",
+      "confidence": 0.98,
+      "rationale": "Event is exclusively focused on ADAS and autonomous vehicle technology.",
+      "valid": true
+    },
+    {
+      "slug": "adhesives-bonding-expo-north-america-2026",
+      "name": "Adhesives & Bonding Expo North America 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.95,
+      "rationale": "Adhesives and bonding materials expo targets industrial manufacturing attendees.",
+      "valid": true
+    },
+    {
+      "slug": "adlm-clinical-lab-expo-2026",
+      "name": "ADLM Clinical Lab Expo 2026",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.95,
+      "rationale": "Premier global expo for laboratory medicine and clinical diagnostics professionals.",
+      "valid": true
+    },
+    {
+      "slug": "adobe-summit-2026",
+      "name": "Adobe Summit 2026",
+      "industry": "Marketing, Sales & MarTech",
+      "confidence": 0.97,
+      "rationale": "Adobe Summit centers on Adobe's digital marketing and customer experience cloud products.",
+      "valid": true
+    },
+    {
+      "slug": "advanced-factories-2026",
+      "name": "Advanced Factories 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.96,
+      "rationale": "Event dedicated to smart manufacturing, automation, and industrial technology.",
+      "valid": true
+    },
+    {
+      "slug": "afcea-west",
+      "name": "AFCEA WEST",
+      "industry": "Aerospace & Defense",
+      "confidence": 0.97,
+      "rationale": "Premier U.S. Navy, Marine Corps, and Coast Guard defense technology conference.",
+      "valid": true
+    },
+    {
+      "slug": "affiliate-summit-east-2026",
+      "name": "Affiliate Summit East 2026",
+      "industry": "Marketing, Sales & MarTech",
+      "confidence": 0.97,
+      "rationale": "Affiliate Summit is the leading performance and affiliate marketing industry event.",
+      "valid": true
+    },
+    {
+      "slug": "aha-leadership-summit-2026",
+      "name": "AHA Leadership Summit 2026",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.97,
+      "rationale": "American Hospital Association leadership summit for hospital and health system executives.",
+      "valid": true
+    },
+    {
+      "slug": "ahip-2026",
+      "name": "AHIP 2026",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.97,
+      "rationale": "America's Health Insurance Plans flagship conference for health insurance and payer leaders.",
+      "valid": true
+    },
+    {
+      "slug": "ahra-annual-meeting-2026",
+      "name": "AHRA 2026 Annual Meeting",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.96,
+      "rationale": "AHRA is the Association for Medical Imaging Management; radiology/imaging healthcare focus.",
+      "valid": true
+    },
+    {
+      "slug": "ahrmm-conference-exhibition-2026",
+      "name": "AHRMM Conference & Exhibition",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.93,
+      "rationale": "AHRMM serves healthcare supply chain and materials management professionals.",
+      "valid": true
+    },
+    {
+      "slug": "ai-agent-copilot-summit-na-2026",
+      "name": "AI Agent & Copilot Summit NA",
+      "industry": "AI & Data",
+      "confidence": 0.97,
+      "rationale": "Summit dedicated to AI agents and copilot technologies for enterprise and developers.",
+      "valid": true
+    },
+    {
+      "slug": "ai-agent-conference-2026",
+      "name": "AI Agent Conference",
+      "industry": "AI & Data",
+      "confidence": 0.97,
+      "rationale": "Conference entirely focused on AI agent technologies and applications.",
+      "valid": true
+    },
+    {
+      "slug": "ai-developer-conference-2026",
+      "name": "AI Developer Conference",
+      "industry": "AI & Data",
+      "confidence": 0.97,
+      "rationale": "Developer-focused AI conference covering AI tools, frameworks, and applications.",
+      "valid": true
+    },
+    {
+      "slug": "ai-engineer-worlds-fair-2026",
+      "name": "AI Engineer World's Fair 2026",
+      "industry": "AI & Data",
+      "confidence": 0.98,
+      "rationale": "Large AI engineering conference for practitioners building AI-powered products.",
+      "valid": true
+    },
+    {
+      "slug": "ai-world-congress-2026",
+      "name": "AI World Congress 2026",
+      "industry": "AI & Data",
+      "confidence": 0.97,
+      "rationale": "Event name explicitly focuses on artificial intelligence at a world congress level.",
+      "valid": true
+    },
+    {
+      "slug": "aia-conference-on-architecture-2026",
+      "name": "AIA Conference on Architecture",
+      "industry": "Construction & Real Estate",
+      "confidence": 0.98,
+      "rationale": "AIA is the American Institute of Architects; conference is solely for architecture professionals.",
+      "valid": true
+    },
+    {
+      "slug": "aicpa-engage-2026",
+      "name": "AICPA ENGAGE 2026",
+      "industry": "Finance & FinTech",
+      "confidence": 0.98,
+      "rationale": "AICPA is the American Institute of CPAs; event serves accounting and finance professionals.",
+      "valid": true
+    },
+    {
+      "slug": "aim-congress-2026",
+      "name": "Aim Congress 2026",
+      "industry": "Finance & FinTech",
+      "confidence": 0.88,
+      "rationale": "AIM Congress is a leading global investment and finance platform held in Dubai.",
+      "valid": true
+    },
+    {
+      "slug": "aircraft-interiors-expo-2026",
+      "name": "Aircraft Interiors Expo",
+      "industry": "Aerospace & Defense",
+      "confidence": 0.98,
+      "rationale": "Aircraft Interiors Expo focuses exclusively on commercial aviation cabin products and services.",
+      "valid": true
+    },
+    {
+      "slug": "aix-2026",
+      "name": "AIX 2026",
+      "industry": "Aerospace & Defense",
+      "confidence": 0.95,
+      "rationale": "AIX Hamburg is the Aircraft Interiors Expo, co-located in Hamburg for aviation interiors.",
+      "valid": true
+    },
+    {
+      "slug": "ala-annual-conference-2026",
+      "name": "ALA Annual Conference 2026",
+      "industry": "Education & HR",
+      "confidence": 0.95,
+      "rationale": "ALA Annual is the American Library Association conference, serving library and education professionals.",
+      "valid": true
+    },
+    {
+      "slug": "alimentaria-barcelona-2026",
+      "name": "Alimentaria Barcelona",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.99,
+      "rationale": "Alimentaria is a major international food and beverage trade fair held in Barcelona.",
+      "valid": true
+    },
+    {
+      "slug": "all-about-automation-2026",
+      "name": "All About Automation",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.97,
+      "rationale": "All About Automation is a trade fair dedicated to industrial automation technology.",
+      "valid": true
+    },
+    {
+      "slug": "all-about-automation-hamburg-2026",
+      "name": "All About Automation Hamburg 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.97,
+      "rationale": "Hamburg edition of All About Automation; same industrial automation focus.",
+      "valid": true
+    },
+    {
+      "slug": "altseccon-2026",
+      "name": "ALTSECCON 2026",
+      "industry": "Cybersecurity",
+      "confidence": 0.99,
+      "rationale": "ATLSECCON is Atlantic Canada's premier information security and cybersecurity conference.",
+      "valid": true
+    },
+    {
+      "slug": "amwc-monaco-2026",
+      "name": "AMWC Monaco",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.96,
+      "rationale": "AMWC is the Aesthetic & Anti-Aging Medicine World Congress, a medical professional event.",
+      "valid": true
+    },
+    {
+      "slug": "analytica-2026",
+      "name": "Analytica 2026",
+      "industry": "Pharma & Life Sciences",
+      "confidence": 0.92,
+      "rationale": "Analytica Munich is the leading trade fair for laboratory technology, analysis, and biotechnology.",
+      "valid": true
+    },
+    {
+      "slug": "aonl-2026",
+      "name": "AONL 2026",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.98,
+      "rationale": "AONL is the American Organization for Nursing Leadership conference for nurse executives.",
+      "valid": true
+    },
+    {
+      "slug": "aonl-conference-2026",
+      "name": "AONL conference",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.98,
+      "rationale": "Duplicate of AONL 2026; same American Organization for Nursing Leadership annual event.",
+      "valid": true
+    },
+    {
+      "slug": "scoop-2026",
+      "name": "Scoop 2026",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.98,
+      "rationale": "Scoop International is one of the UK's leading fashion and lifestyle trade shows.",
+      "valid": true
+    },
+    {
+      "slug": "scottish-dental-show",
+      "name": "Scottish Dental Show",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.99,
+      "rationale": "Dedicated dental profession trade show serving Scottish dental practitioners.",
+      "valid": true
+    },
+    {
+      "slug": "sea-air-space-2026",
+      "name": "Sea-Air-Space 2026",
+      "industry": "Aerospace & Defense",
+      "confidence": 0.97,
+      "rationale": "Navy League's premier maritime defense exposition for military and defense industry leaders.",
+      "valid": true
+    },
+    {
+      "slug": "seafood-expo-global-2026",
+      "name": "Seafood Expo Global",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.99,
+      "rationale": "Global seafood trade show covering fishing, aquaculture, and seafood processing.",
+      "valid": true
+    },
+    {
+      "slug": "seatrade-cruise-global-2026",
+      "name": "Seatrade Cruise Global",
+      "industry": "Hospitality, Travel & Events",
+      "confidence": 0.98,
+      "rationale": "Seatrade Cruise Global is the world's leading cruise industry trade event.",
+      "valid": true
+    },
+    {
+      "slug": "seawork-2026",
+      "name": "Seawork 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.88,
+      "rationale": "Europe's largest commercial marine and workboat exhibition targeting maritime industry professionals.",
+      "valid": true
+    },
+    {
+      "slug": "securing-financial-services-2026",
+      "name": "Securing Financial Services 2026",
+      "industry": "Cybersecurity",
+      "confidence": 0.92,
+      "rationale": "Cybersecurity-focused conference specifically addressing threats within the financial services sector.",
+      "valid": true
+    },
+    {
+      "slug": "self-storage-association-ssa-usa-2026",
+      "name": "Self Storage Association (SSA) - USA",
+      "industry": "Construction & Real Estate",
+      "confidence": 0.93,
+      "rationale": "Self-storage industry is primarily a real estate asset class and development sector.",
+      "valid": true
+    },
+    {
+      "slug": "semiexpo-heartland-2026",
+      "name": "SEMIEXPO Heartland",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.88,
+      "rationale": "SEMIEXPO focuses on semiconductor and electronics manufacturing supply chain in the US heartland.",
+      "valid": true
+    },
+    {
+      "slug": "sena-2026",
+      "name": "SENA",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.85,
+      "rationale": "SENA is a medical/surgical device and aesthetics conference held in Boston.",
+      "valid": true
+    },
+    {
+      "slug": "sensor-test-2026",
+      "name": "SENSOR+TEST 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.93,
+      "rationale": "SENSOR+TEST is Nuremberg's premier measurement, sensor, and testing technology trade fair.",
+      "valid": true
+    },
+    {
+      "slug": "sensors-converge-2026",
+      "name": "Sensors Converge 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.91,
+      "rationale": "Sensors Converge covers sensor, embedded, and IoT hardware technology for engineers.",
+      "valid": true
+    },
+    {
+      "slug": "servicenow-knowledge-26-2026",
+      "name": "ServiceNow Knowledge 26",
+      "industry": "Technology & SaaS",
+      "confidence": 0.99,
+      "rationale": "ServiceNow Knowledge is the flagship annual conference for ServiceNow's enterprise SaaS platform.",
+      "valid": true
+    },
+    {
+      "slug": "shm-converge-2026",
+      "name": "SHM Converge 2026",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.97,
+      "rationale": "SHM Converge is the Society of Hospital Medicine's annual clinical conference.",
+      "valid": true
+    },
+    {
+      "slug": "shop-le-salon-2026",
+      "name": "SHOP! Le Salon",
+      "industry": "Retail & E-commerce",
+      "confidence": 0.93,
+      "rationale": "SHOP! is the global retail environments association; Le Salon focuses on retail merchandising.",
+      "valid": true
+    },
+    {
+      "slug": "apex-expo-2026",
+      "name": "APEX EXPO",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.97,
+      "rationale": "IPC APEX EXPO is North America's premier electronics manufacturing trade show.",
+      "valid": true
+    },
+    {
+      "slug": "apex-maastricht-2026",
+      "name": "APEX Maastricht 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.95,
+      "rationale": "APEX Maastricht is the leading international trade event for the powered access industry.",
+      "valid": true
+    },
+    {
+      "slug": "aps-global-physics-summit-2026",
+      "name": "APS Global Physics Summit",
+      "industry": "Education & HR",
+      "confidence": 0.72,
+      "rationale": "APS Global Physics Summit is the American Physical Society's premier academic research gathering.",
+      "valid": true
+    },
+    {
+      "slug": "asco-annual-meeting-2026",
+      "name": "ASCO Annual Meeting",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.99,
+      "rationale": "ASCO Annual Meeting is the world's leading oncology and clinical cancer conference.",
+      "valid": true
+    },
+    {
+      "slug": "asd-market-week-2026",
+      "name": "ASD Market Week",
+      "industry": "Retail & E-commerce",
+      "confidence": 0.96,
+      "rationale": "ASD Market Week is a major Las Vegas wholesale merchandise trade show for retailers.",
+      "valid": true
+    },
+    {
+      "slug": "asembia-axs-2026",
+      "name": "Asembia AXS",
+      "industry": "Pharma & Life Sciences",
+      "confidence": 0.97,
+      "rationale": "Asembia AXS is the leading specialty pharmacy and biopharmaceuticals summit.",
+      "valid": true
+    },
+    {
+      "slug": "asi-show-chicago-2026",
+      "name": "ASI Show Chicago 2026",
+      "industry": "Marketing, Sales & MarTech",
+      "confidence": 0.93,
+      "rationale": "ASI Show is the Advertising Specialty Institute's trade show for promotional products professionals.",
+      "valid": true
+    },
+    {
+      "slug": "asia-tech-x-singapore-2026",
+      "name": "Asia Tech x Singapore 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.97,
+      "rationale": "ATxSG is Singapore's flagship government-backed festival for technology and digital innovation.",
+      "valid": true
+    },
+    {
+      "slug": "asotu-con-2026",
+      "name": "ASOTU CON",
+      "industry": "Automotive & Mobility",
+      "confidence": 0.95,
+      "rationale": "ASOTU CON is a conference focused on automotive retail dealers and industry professionals.",
+      "valid": true
+    },
+    {
+      "slug": "asu-gsv-summit-2026",
+      "name": "ASU+GSV Summit 2026",
+      "industry": "Education & HR",
+      "confidence": 0.97,
+      "rationale": "ASU+GSV Summit is the premier EdTech and education innovation investment conference.",
+      "valid": true
+    },
+    {
+      "slug": "ata-nexus-2026",
+      "name": "ATA Nexus 2026",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.98,
+      "rationale": "American Telemedicine Association's annual conference focused on telehealth and digital health.",
+      "valid": true
+    },
+    {
+      "slug": "atd-international-conference-2026",
+      "name": "ATD International Conference",
+      "industry": "Education & HR",
+      "confidence": 0.98,
+      "rationale": "ATD is the Association for Talent Development; event serves L&D and training professionals.",
+      "valid": true
+    },
+    {
+      "slug": "atmosphere-america-summit-2026",
+      "name": "ATMOsphere America Summit 2026",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.95,
+      "rationale": "ATMOsphere focuses on natural refrigerants and sustainable HVAC/cooling technologies.",
+      "valid": true
+    },
+    {
+      "slug": "automate-2026",
+      "name": "Automate 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.97,
+      "rationale": "Automate Chicago is the leading robotics and industrial automation trade show in North America.",
+      "valid": true
+    },
+    {
+      "slug": "automotive-ethernet-congress-2026",
+      "name": "Automotive Ethernet Congress",
+      "industry": "Automotive & Mobility",
+      "confidence": 0.97,
+      "rationale": "Dedicated to automotive Ethernet and in-vehicle networking for the automotive industry.",
+      "valid": true
+    },
+    {
+      "slug": "automotive-testing-expo-europe-2026",
+      "name": "Automotive Testing Expo Europe",
+      "industry": "Automotive & Mobility",
+      "confidence": 0.98,
+      "rationale": "Focuses exclusively on vehicle testing, validation, and development technologies.",
+      "valid": true
+    },
+    {
+      "slug": "autonomous-ship-expo-2026",
+      "name": "Autonomous Ship Expo 2026",
+      "industry": "Supply Chain & Logistics",
+      "confidence": 0.82,
+      "rationale": "Covers autonomous and smart shipping vessels, primarily serving the maritime logistics sector.",
+      "valid": true
+    },
+    {
+      "slug": "autumn-gift-home-fair-2026",
+      "name": "Autumn Gift & Home Fair 2026",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.93,
+      "rationale": "Gift and home goods trade fair serving consumer goods buyers and retailers.",
+      "valid": true
+    },
+    {
+      "slug": "awe-usa-2026",
+      "name": "AWE USA 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.92,
+      "rationale": "Augmented World Expo is the premier AR/VR/XR and spatial computing technology conference.",
+      "valid": true
+    },
+    {
+      "slug": "aws-summit-london-2026",
+      "name": "AWS Summit London 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.99,
+      "rationale": "AWS Summit is Amazon Web Services' flagship cloud computing and developer conference.",
+      "valid": true
+    },
+    {
+      "slug": "aws-summit-new-york-2026",
+      "name": "AWS Summit New York 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.99,
+      "rationale": "AWS Summit is Amazon's flagship cloud computing and developer conference.",
+      "valid": true
+    },
+    {
+      "slug": "awwa-ace26-2026",
+      "name": "AWWA ACE26",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.82,
+      "rationale": "AWWA ACE focuses on water infrastructure, sustainability, and clean water technology.",
+      "valid": true
+    },
+    {
+      "slug": "axpona-2026",
+      "name": "AXPONA",
+      "industry": "Media, Entertainment & Gaming",
+      "confidence": 0.88,
+      "rationale": "AXPONA is North America's largest high-end audio and hi-fi entertainment expo.",
+      "valid": true
+    },
+    {
+      "slug": "b2b-ecommerce-world-uk-europe-2026",
+      "name": "B2B eCommerce World UK & Europe",
+      "industry": "Retail & E-commerce",
+      "confidence": 0.97,
+      "rationale": "Event is explicitly focused on B2B e-commerce strategies and platforms.",
+      "valid": true
+    },
+    {
+      "slug": "b2b-ignite-2026",
+      "name": "B2B Ignite 2026",
+      "industry": "Marketing, Sales & MarTech",
+      "confidence": 0.93,
+      "rationale": "B2B Ignite is a dedicated B2B marketing and demand generation conference.",
+      "valid": true
+    },
+    {
+      "slug": "b2b-marketing-expo-2026",
+      "name": "B2B Marketing Expo",
+      "industry": "Marketing, Sales & MarTech",
+      "confidence": 0.97,
+      "rationale": "B2B Marketing Expo is explicitly a B2B marketing trade show.",
+      "valid": true
+    },
+    {
+      "slug": "b2b-online-chicago-2026",
+      "name": "B2B Online Chicago",
+      "industry": "Retail & E-commerce",
+      "confidence": 0.92,
+      "rationale": "B2B Online Chicago focuses on digital commerce and e-commerce for B2B manufacturers.",
+      "valid": true
+    },
+    {
+      "slug": "b2bmx-2026",
+      "name": "B2BMX",
+      "industry": "Marketing, Sales & MarTech",
+      "confidence": 0.95,
+      "rationale": "B2BMX (B2B Marketing Exchange) is a premier B2B marketing strategy conference.",
+      "valid": true
+    },
+    {
+      "slug": "bar-restaurant-expo-2026",
+      "name": "Bar & Restaurant Expo",
+      "industry": "Hospitality, Travel & Events",
+      "confidence": 0.95,
+      "rationale": "Bar & Restaurant Expo targets bar and restaurant hospitality industry professionals.",
+      "valid": true
+    },
+    {
+      "slug": "bar-convent-brooklyn-2026",
+      "name": "Bar Convent Brooklyn 2026",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.93,
+      "rationale": "Bar Convent Brooklyn is a spirits, cocktail, and beverage trade show.",
+      "valid": true
+    },
+    {
+      "slug": "barcelona-bridal-fashion-week-2026",
+      "name": "Barcelona Bridal Fashion Week",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.99,
+      "rationale": "Bridal fashion week is a flagship fashion industry event.",
+      "valid": true
+    },
+    {
+      "slug": "battery-cells-systems-expo",
+      "name": "Battery Cells & Systems Expo",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.95,
+      "rationale": "Battery cells and systems are core energy storage and cleantech topics.",
+      "valid": true
+    },
+    {
+      "slug": "battery-recycling-world-conference-2026",
+      "name": "Battery Recycling World Conference 2026",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.95,
+      "rationale": "Battery recycling is a sustainability and clean energy supply chain topic.",
+      "valid": true
+    },
+    {
+      "slug": "beckers-rural-healthcare-leadership-summit-2026",
+      "name": "Beckers Rural Healthcare Leadership Summit",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.99,
+      "rationale": "Event explicitly targets rural healthcare leadership and executives.",
+      "valid": true
+    },
+    {
+      "slug": "biemh-2026",
+      "name": "BIEMH 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.99,
+      "rationale": "BIEMH is the International Machine Tool Biennial for advanced manufacturing.",
+      "valid": true
+    },
+    {
+      "slug": "big-data-ai-world-frankfurt-2026",
+      "name": "Big Data & AI World Frankfurt 2026",
+      "industry": "AI & Data",
+      "confidence": 0.99,
+      "rationale": "Event name explicitly covers big data and AI technologies.",
+      "valid": true
+    },
+    {
+      "slug": "bio-international-convention-2026",
+      "name": "BIO International Convention",
+      "industry": "Pharma & Life Sciences",
+      "confidence": 0.99,
+      "rationale": "BIO International Convention is the premier global biotech and pharma event.",
+      "valid": true
+    },
+    {
+      "slug": "bio-it-world-conference-2026",
+      "name": "Bio-IT World Conference",
+      "industry": "Pharma & Life Sciences",
+      "confidence": 0.93,
+      "rationale": "Bio-IT World focuses on IT and data applications within life sciences.",
+      "valid": true
+    },
+    {
+      "slug": "bitac-casino-resorts-2026",
+      "name": "BITAC Casino Resorts 2026",
+      "industry": "Hospitality, Travel & Events",
+      "confidence": 0.95,
+      "rationale": "BITAC Casino Resorts targets lodging and gaming hospitality executives.",
+      "valid": true
+    },
+    {
+      "slug": "bitcoin-2026",
+      "name": "Bitcoin 2026",
+      "industry": "Finance & FinTech",
+      "confidence": 0.97,
+      "rationale": "Bitcoin conference centers on cryptocurrency, a core FinTech topic.",
+      "valid": true
+    },
+    {
+      "slug": "black-hat-asia-2026",
+      "name": "Black Hat Asia",
+      "industry": "Cybersecurity",
+      "confidence": 0.99,
+      "rationale": "Black Hat is the world's leading cybersecurity conference series.",
+      "valid": true
+    },
+    {
+      "slug": "black-hat-usa-2026",
+      "name": "Black Hat USA 2026",
+      "industry": "Cybersecurity",
+      "confidence": 0.99,
+      "rationale": "Black Hat USA is the flagship cybersecurity briefings and training event.",
+      "valid": true
+    },
+    {
+      "slug": "blue-yonder-icon-2026",
+      "name": "Blue Yonder ICON 2026",
+      "industry": "Supply Chain & Logistics",
+      "confidence": 0.98,
+      "rationale": "Blue Yonder ICON is explicitly the premier supply chain conference of the year.",
+      "valid": true
+    },
+    {
+      "slug": "breakbulk-europe-2026",
+      "name": "Breakbulk Europe 2026",
+      "industry": "Supply Chain & Logistics",
+      "confidence": 0.97,
+      "rationale": "Breakbulk Europe is the world's largest project cargo and breakbulk logistics event.",
+      "valid": true
+    },
+    {
+      "slug": "broadband-communities-summit-2026",
+      "name": "Broadband Communities Summit 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.88,
+      "rationale": "Broadband Communities Summit focuses on broadband infrastructure and connectivity technology.",
+      "valid": true
+    },
+    {
+      "slug": "build-expo-nashville-2026",
+      "name": "Build Expo Nashville 2026",
+      "industry": "Construction & Real Estate",
+      "confidence": 0.96,
+      "rationale": "Build Expo is a construction industry trade show held in major US cities.",
+      "valid": true
+    },
+    {
+      "slug": "building-fair-brno-2026",
+      "name": "Building Fair Brno",
+      "industry": "Construction & Real Estate",
+      "confidence": 0.96,
+      "rationale": "Building Fair Brno is a Czech trade fair dedicated to the construction industry.",
+      "valid": true
+    },
+    {
+      "slug": "bus2bus-2026",
+      "name": "BUS2BUS",
+      "industry": "Automotive & Mobility",
+      "confidence": 0.95,
+      "rationale": "BUS2BUS Berlin is an international trade show specifically for the bus industry.",
+      "valid": true
+    },
+    {
+      "slug": "business-analyst-world-washington-2026",
+      "name": "Business Analyst World Washington 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.87,
+      "rationale": "Business Analyst World conferences target IT and business analysis professionals.",
+      "valid": true
+    },
+    {
+      "slug": "bva-live-2026",
+      "name": "BVA Live 2026",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.92,
+      "rationale": "BVA Live is the British Veterinary Association's annual conference for veterinary professionals.",
+      "valid": true
+    },
+    {
+      "slug": "canadas-farm-show-2026",
+      "name": "Canada's Farm Show",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.99,
+      "rationale": "Canada's Farm Show is the country's largest prairie agricultural trade exhibition.",
+      "valid": true
+    },
+    {
+      "slug": "cannes-lions-2026",
+      "name": "Cannes Lions 2026",
+      "industry": "Marketing, Sales & MarTech",
+      "confidence": 0.99,
+      "rationale": "Cannes Lions is the world's premier festival for creative advertising and marketing.",
+      "valid": true
+    },
+    {
+      "slug": "care-show-london-2026",
+      "name": "Care Show London",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.97,
+      "rationale": "Care Show London focuses on elderly, social, and residential care sector professionals.",
+      "valid": true
+    },
+    {
+      "slug": "carrefour-international-du-bois-2026",
+      "name": "Carrefour International du Bois 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.93,
+      "rationale": "Carrefour International du Bois is a global wood and timber industry trade fair.",
+      "valid": true
+    },
+    {
+      "slug": "castforge-2026",
+      "name": "Castforge 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.98,
+      "rationale": "Castforge is a dedicated trade show for casting and forging manufacturing industries.",
+      "valid": true
+    },
+    {
+      "slug": "cba-live-2026",
+      "name": "CBA Live 2026",
+      "industry": "Finance & FinTech",
+      "confidence": 0.99,
+      "rationale": "CBA Live is the Consumer Bankers Association's flagship retail banking conference.",
+      "valid": true
+    },
+    {
+      "slug": "cda-presents-2026",
+      "name": "CDA Presents",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.98,
+      "rationale": "CDA Presents is the California Dental Association's annual dental professionals event.",
+      "valid": true
+    },
+    {
+      "slug": "ceramitec-2026",
+      "name": "Ceramitec",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.97,
+      "rationale": "Ceramitec is the leading international trade fair for ceramics and powder technology.",
+      "valid": true
+    },
+    {
+      "slug": "cfma-annual-conference-2026",
+      "name": "CFMA Annual Conference",
+      "industry": "Construction & Real Estate",
+      "confidence": 0.98,
+      "rationale": "CFMA Annual Conference serves financial professionals in the construction industry.",
+      "valid": true
+    },
+    {
+      "slug": "channel-partners-conference-expo-2026",
+      "name": "Channel Partners Conference & Expo",
+      "industry": "Technology & SaaS",
+      "confidence": 0.95,
+      "rationale": "Channel Partners Conference serves IT channel, telecom, and technology solution providers.",
+      "valid": true
+    },
+    {
+      "slug": "chemical-recycling-europe-2026",
+      "name": "Chemical Recycling Europe 2026",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.82,
+      "rationale": "Focused on circular economy and chemical recycling of plastics for sustainable waste management.",
+      "valid": true
+    },
+    {
+      "slug": "chemspec-europe-2026",
+      "name": "Chemspec Europe 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.88,
+      "rationale": "Leading international trade fair for fine and specialty chemicals manufacturing and supply.",
+      "valid": true
+    },
+    {
+      "slug": "chicago-collective-mens-edition-2026",
+      "name": "Chicago Collective Men's Edition 2026",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.97,
+      "rationale": "Chicago Collective is a menswear apparel trade show for fashion buyers and brands.",
+      "valid": true
+    },
+    {
+      "slug": "chicago-collective-womens-edition-2026",
+      "name": "Chicago Collective Women's Edition 2026",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.97,
+      "rationale": "Chicago Collective is a womenswear apparel trade show for fashion buyers and brands.",
+      "valid": true
+    },
+    {
+      "slug": "ciff-copenhagen-2026",
+      "name": "CIFF Copenhagen 2026",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.97,
+      "rationale": "CIFF Copenhagen is a major international fashion and apparel trade fair.",
+      "valid": true
+    },
+    {
+      "slug": "cine-gear-expo-la-2026",
+      "name": "Cine Gear Expo LA 2026",
+      "industry": "Media, Entertainment & Gaming",
+      "confidence": 0.96,
+      "rationale": "Cine Gear Expo showcases film and cinema production equipment for entertainment professionals.",
+      "valid": true
+    },
+    {
+      "slug": "cipd-festival-of-work-2026",
+      "name": "CIPD Festival of Work 2026",
+      "industry": "Education & HR",
+      "confidence": 0.98,
+      "rationale": "CIPD is the Chartered Institute of Personnel and Development; event is HR-focused.",
+      "valid": true
+    },
+    {
+      "slug": "cisco-live-usa-2026",
+      "name": "Cisco Live USA 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.97,
+      "rationale": "Cisco Live is Cisco's flagship IT networking and enterprise technology conference.",
+      "valid": true
+    },
+    {
+      "slug": "cleanpower-2026",
+      "name": "CLEANPOWER 2026",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.99,
+      "rationale": "CLEANPOWER is a leading clean energy and renewables industry conference.",
+      "valid": true
+    },
+    {
+      "slug": "cmpx-2026",
+      "name": "CMPX",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.92,
+      "rationale": "CMPX Toronto is the trade show for mechanical, plumbing, HVAC, and building systems.",
+      "valid": true
+    },
+    {
+      "slug": "coffee-fest-chicago-2026",
+      "name": "Coffee Fest Chicago 2026",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.99,
+      "rationale": "Coffee Fest is a dedicated specialty coffee trade show series.",
+      "valid": true
+    },
+    {
+      "slug": "coffee-fest-los-angeles-2026",
+      "name": "Coffee Fest Los Angeles 2026",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.99,
+      "rationale": "Coffee Fest is a dedicated specialty coffee trade show series.",
+      "valid": true
+    },
+    {
+      "slug": "coffee-fest-new-york-2026",
+      "name": "Coffee Fest New York",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.99,
+      "rationale": "Coffee Fest is a dedicated specialty coffee trade show series.",
+      "valid": true
+    },
+    {
+      "slug": "coiltech-deutschland-2026",
+      "name": "Coiltech Deutschland",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.97,
+      "rationale": "Trade fair for electric motors, transformers, generators, and coil winding manufacturing.",
+      "valid": true
+    },
+    {
+      "slug": "commercenext-2026",
+      "name": "CommerceNext 2026",
+      "industry": "Retail & E-commerce",
+      "confidence": 0.97,
+      "rationale": "Conference exclusively for retail and ecommerce marketing and technology leaders.",
+      "valid": true
+    },
+    {
+      "slug": "commercial-vehicle-show-2026",
+      "name": "Commercial Vehicle Show 2026",
+      "industry": "Automotive & Mobility",
+      "confidence": 0.97,
+      "rationale": "UK's premier show for trucks, vans, and commercial vehicle industry.",
+      "valid": true
+    },
+    {
+      "slug": "conexpo-2026",
+      "name": "CONEXPO",
+      "industry": "Construction & Real Estate",
+      "confidence": 0.99,
+      "rationale": "CONEXPO is North America's largest construction equipment and technology trade show.",
+      "valid": true
+    },
+    {
+      "slug": "config-2026",
+      "name": "Config 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.95,
+      "rationale": "Config is Figma's annual design and developer software conference.",
+      "valid": true
+    },
+    {
+      "slug": "connect-x-2026",
+      "name": "Connect (X) 2026",
+      "industry": "Finance & FinTech",
+      "confidence": 0.88,
+      "rationale": "Connect X is the payments and financial services industry's annual conference.",
+      "valid": true
+    },
+    {
+      "slug": "connecting-green-hydrogen-europe-2026",
+      "name": "Connecting Green Hydrogen Europe 2026",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.99,
+      "rationale": "Dedicated conference on green hydrogen energy across Europe.",
+      "valid": true
+    },
+    {
+      "slug": "connexfm-2026",
+      "name": "ConnexFM 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.72,
+      "rationale": "ConnexFM is the leading multi-site facilities management conference covering building operations and maintenance.",
+      "valid": true
+    },
+    {
+      "slug": "consensus-2026",
+      "name": "Consensus 2026",
+      "industry": "Finance & FinTech",
+      "confidence": 0.88,
+      "rationale": "Consensus is CoinDesk's flagship crypto/blockchain/Web3 conference focused on digital assets and finance.",
+      "valid": true
+    },
+    {
+      "slug": "cosmetic-business-2026",
+      "name": "Cosmetic Business 2026",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.98,
+      "rationale": "CosmeticBusiness Munich is a dedicated B2B trade show for the cosmetics and personal care industry.",
+      "valid": true
+    },
+    {
+      "slug": "cosmoprof-north-america-2026",
+      "name": "Cosmoprof North America 2026",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.99,
+      "rationale": "Cosmoprof is the premier professional beauty trade show in North America.",
+      "valid": true
+    },
+    {
+      "slug": "coverings-2026",
+      "name": "Coverings",
+      "industry": "Construction & Real Estate",
+      "confidence": 0.97,
+      "rationale": "Coverings is the largest tile and stone trade show in North America, squarely in construction.",
+      "valid": true
+    },
+    {
+      "slug": "cphi-americas-2026",
+      "name": "CPHI Americas",
+      "industry": "Pharma & Life Sciences",
+      "confidence": 0.99,
+      "rationale": "CPhI is the world's leading pharmaceutical ingredients and contract pharma trade show.",
+      "valid": true
+    },
+    {
+      "slug": "cream-uk-2026",
+      "name": "CREAM UK 2026",
+      "industry": "Construction & Real Estate",
+      "confidence": 0.88,
+      "rationale": "CREAM UK is the Commercial Real Estate Annual Meeting focused on the UK property sector.",
+      "valid": true
+    },
+    {
+      "slug": "creatorfest-europe-2026",
+      "name": "CreatorFest Europe 2026",
+      "industry": "Media, Entertainment & Gaming",
+      "confidence": 0.9,
+      "rationale": "CreatorFest is a content creator and digital media festival targeting the creator economy.",
+      "valid": true
+    },
+    {
+      "slug": "crefc-annual-conference-2026",
+      "name": "CREFC Annual Conference",
+      "industry": "Finance & FinTech",
+      "confidence": 0.95,
+      "rationale": "CREFC is the CRE Finance Council's flagship conference focused on commercial real estate finance.",
+      "valid": true
+    },
+    {
+      "slug": "critical-communications-world-2026",
+      "name": "Critical Communications World 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.88,
+      "rationale": "Critical Communications World covers mission-critical radio, broadband, and public safety tech.",
+      "valid": true
+    },
+    {
+      "slug": "curve-ny-2026",
+      "name": "Curve NY 2026",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.97,
+      "rationale": "North America's premier B2B trade show for intimate apparel, lingerie, and swimwear.",
+      "valid": true
+    },
+    {
+      "slug": "customer-contact-week-2026",
+      "name": "Customer Contact Week 2026",
+      "industry": "Marketing, Sales & MarTech",
+      "confidence": 0.88,
+      "rationale": "World's largest customer contact/CX event focused on contact center strategy and technology.",
+      "valid": true
+    },
+    {
+      "slug": "customer-success-festival-london-2026",
+      "name": "Customer Success Festival London 2026",
+      "industry": "Marketing, Sales & MarTech",
+      "confidence": 0.88,
+      "rationale": "Customer success is a core sales and post-sale revenue discipline within the MarTech/SaaS ecosystem.",
+      "valid": true
+    },
+    {
+      "slug": "cyber-security-expo-manchester-2026",
+      "name": "Cyber Security Expo Manchester 2026",
+      "industry": "Cybersecurity",
+      "confidence": 0.99,
+      "rationale": "Explicitly named cybersecurity expo held in Manchester.",
+      "valid": true
+    },
+    {
+      "slug": "cybersec-europe-2026",
+      "name": "Cybersec Europe 2026",
+      "industry": "Cybersecurity",
+      "confidence": 0.99,
+      "rationale": "Pan-European cybersecurity conference and expo held in Brussels.",
+      "valid": true
+    },
+    {
+      "slug": "cyclingworld-europe-2026",
+      "name": "CYCLINGWORLD EUROPE",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.82,
+      "rationale": "Consumer-facing cycling industry trade show covering bikes, gear, and accessories.",
+      "valid": true
+    },
+    {
+      "slug": "cycon-2026",
+      "name": "CyCon 2026",
+      "industry": "Cybersecurity",
+      "confidence": 0.97,
+      "rationale": "NATO CCDCOE's annual cyber conflict conference focused on cyber defense and security law.",
+      "valid": true
+    },
+    {
+      "slug": "dac-2026",
+      "name": "DAC 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.93,
+      "rationale": "Design Automation Conference is the premier event for EDA, chip design, and electronic systems.",
+      "valid": true
+    },
+    {
+      "slug": "data-ai-summit-2026",
+      "name": "Data + AI Summit 2026",
+      "industry": "AI & Data",
+      "confidence": 0.99,
+      "rationale": "Databricks' flagship conference dedicated entirely to data engineering and AI/ML.",
+      "valid": true
+    },
+    {
+      "slug": "data-innovation-summit-stockholm-2026",
+      "name": "Data Innovation Summit Stockholm",
+      "industry": "AI & Data",
+      "confidence": 0.96,
+      "rationale": "Stockholm summit focused on data innovation, analytics, and AI-driven business transformation.",
+      "valid": true
+    },
+    {
+      "slug": "datacloud-global-congress-2026",
+      "name": "Datacloud Global Congress 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.88,
+      "rationale": "Premier event for data center, cloud, and digital infrastructure industry leaders.",
+      "valid": true
+    },
+    {
+      "slug": "def-con-34",
+      "name": "DEF CON 34",
+      "industry": "Cybersecurity",
+      "confidence": 0.99,
+      "rationale": "DEF CON is the world's largest and most prominent hacker/cybersecurity conference.",
+      "valid": true
+    },
+    {
+      "slug": "deliver-europe-2026",
+      "name": "DELIVER Europe 2026",
+      "industry": "Supply Chain & Logistics",
+      "confidence": 0.91,
+      "rationale": "Premier matchmaking event focused on retail and supply chain decision-makers.",
+      "valid": true
+    },
+    {
+      "slug": "dell-technologies-world-2026",
+      "name": "Dell Technologies World 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.97,
+      "rationale": "Dell's flagship annual conference covering enterprise technology, cloud, and IT solutions.",
+      "valid": true
+    },
+    {
+      "slug": "design-engineering-expo-2026",
+      "name": "Design + Engineering Expo 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.9,
+      "rationale": "Design and engineering expo focused on industrial product design and manufacturing.",
+      "valid": true
+    },
+    {
+      "slug": "develop-brighton-2026",
+      "name": "Develop:Brighton 2026",
+      "industry": "Media, Entertainment & Gaming",
+      "confidence": 0.97,
+      "rationale": "Develop:Brighton is the UK's leading video game development conference.",
+      "valid": true
+    },
+    {
+      "slug": "devicetalks-boston-2026",
+      "name": "DeviceTalks Boston",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.96,
+      "rationale": "DeviceTalks focuses on medical device industry executives and innovators.",
+      "valid": true
+    },
+    {
+      "slug": "dia-europe-2026",
+      "name": "DIA Europe 2026",
+      "industry": "Pharma & Life Sciences",
+      "confidence": 0.97,
+      "rationale": "DIA (Drug Information Association) Europe serves pharma and life sciences professionals.",
+      "valid": true
+    },
+    {
+      "slug": "dia-global-annual-meeting-2026",
+      "name": "DIA Global Annual Meeting",
+      "industry": "Pharma & Life Sciences",
+      "confidence": 0.97,
+      "rationale": "DIA Global Annual Meeting is the flagship pharma and drug development industry conference.",
+      "valid": true
+    },
+    {
+      "slug": "digimarcon-great-lakes-2026",
+      "name": "DigiMarCon Great Lakes",
+      "industry": "Marketing, Sales & MarTech",
+      "confidence": 0.98,
+      "rationale": "DigiMarCon is a digital marketing conference series focused on marketing technology.",
+      "valid": true
+    },
+    {
+      "slug": "digimarcon-new-england-2026",
+      "name": "DigiMarCon New England",
+      "industry": "Marketing, Sales & MarTech",
+      "confidence": 0.99,
+      "rationale": "Explicitly a digital marketing, media, and advertising conference and exhibition.",
+      "valid": true
+    },
+    {
+      "slug": "digital-construction-week-2026",
+      "name": "Digital Construction Week 2026",
+      "industry": "Construction & Real Estate",
+      "confidence": 0.98,
+      "rationale": "Event name directly references digital technology applied to the construction sector.",
+      "valid": true
+    },
+    {
+      "slug": "digital-enterprise-show-2026",
+      "name": "Digital Enterprise Show 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.91,
+      "rationale": "Europe's leading event on digital business transformation and enterprise technology.",
+      "valid": true
+    },
+    {
+      "slug": "digital-health-rewired-2026",
+      "name": "Digital Health Rewired",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.98,
+      "rationale": "Event name and brand are squarely focused on digital health and NHS transformation.",
+      "valid": true
+    },
+    {
+      "slug": "digitalbau-2026-cologne",
+      "name": "digitalBAU 2026, Cologne",
+      "industry": "Construction & Real Estate",
+      "confidence": 0.97,
+      "rationale": "digitalBAU is a dedicated trade fair for digital solutions in construction and architecture.",
+      "valid": true
+    },
+    {
+      "slug": "dmea26-2026",
+      "name": "DMEA26",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.97,
+      "rationale": "DMEA is Europe's leading health IT and digital medicine conference, held in Berlin.",
+      "valid": true
+    },
+    {
+      "slug": "dmems-2026",
+      "name": "DMEMS 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.97,
+      "rationale": "Del Mar Electronics & Manufacturing Show targets electronics design and manufacturing professionals.",
+      "valid": true
+    },
+    {
+      "slug": "dmwf-global-2026",
+      "name": "DMWF Global 2026",
+      "industry": "Marketing, Sales & MarTech",
+      "confidence": 0.97,
+      "rationale": "DMWF stands for Digital Marketing World Forum, focused on marketing strategy and technology.",
+      "valid": true
+    },
+    {
+      "slug": "drives-controls-2026",
+      "name": "Drives & Controls 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.98,
+      "rationale": "Drives & Controls covers industrial motion, power electronics, and automation engineering.",
+      "valid": true
+    },
+    {
+      "slug": "drug-discovery-summit-boston-2026",
+      "name": "Drug Discovery Summit Boston 2026",
+      "industry": "Pharma & Life Sciences",
+      "confidence": 0.99,
+      "rationale": "Drug discovery is a core pharmaceutical R&D topic; attendees are biopharma professionals.",
+      "valid": true
+    },
+    {
+      "slug": "dtw-ignite-2026",
+      "name": "DTW Ignite 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.88,
+      "rationale": "TM Forum's flagship telecom industry summit focused on AI-native networks and connectivity.",
+      "valid": true
+    },
+    {
+      "slug": "dtx-manchester-2026",
+      "name": "DTX Manchester 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.92,
+      "rationale": "Digital Transformation EXPO covering cloud, AI, data, and enterprise IT strategy.",
+      "valid": true
+    },
+    {
+      "slug": "dubai-derma-2026",
+      "name": "Dubai Derma",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.97,
+      "rationale": "Dermatology-focused medical trade show and conference in Dubai.",
+      "valid": true
+    },
+    {
+      "slug": "dubai-international-boat-show-2026",
+      "name": "Dubai International Boat Show",
+      "industry": "Hospitality, Travel & Events",
+      "confidence": 0.78,
+      "rationale": "Marine leisure and yachting consumer show; closest fit is hospitality and travel.",
+      "valid": true
+    },
+    {
+      "slug": "dubai-woodshow-2026",
+      "name": "Dubai WoodShow",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.93,
+      "rationale": "Trade show dedicated to wood, timber, and woodworking manufacturing industry.",
+      "valid": true
+    },
+    {
+      "slug": "dublin-tech-summit-2026",
+      "name": "Dublin Tech Summit 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.96,
+      "rationale": "Premier technology summit bringing together global tech leaders in Dublin.",
+      "valid": true
+    },
+    {
+      "slug": "e-health26-conference-and-tradeshow-2026",
+      "name": "e-Health26 Conference and Tradeshow",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.97,
+      "rationale": "eHealth conference focused on digital health technology and medical informatics.",
+      "valid": true
+    },
+    {
+      "slug": "e-waste-world-2026",
+      "name": "E-Waste World 2026",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.92,
+      "rationale": "Electronic waste recycling and sustainability-focused trade show in Frankfurt.",
+      "valid": true
+    },
+    {
+      "slug": "ecb-european-congress-on-biotechnology-2026",
+      "name": "ECB European Congress on Biotechnology 2026",
+      "industry": "Pharma & Life Sciences",
+      "confidence": 0.97,
+      "rationale": "Major European biotechnology congress covering life sciences research and innovation.",
+      "valid": true
+    },
+    {
+      "slug": "ecio-2026",
+      "name": "ECIO 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.82,
+      "rationale": "European Conference on Integrated Optics covering photonics and optical engineering.",
+      "valid": true
+    },
+    {
+      "slug": "eei-annual-convention-2026",
+      "name": "EEI Annual Convention",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.98,
+      "rationale": "Edison Electric Institute's flagship convention for the electric power utility industry.",
+      "valid": true
+    },
+    {
+      "slug": "efort-annual-congress-2026",
+      "name": "EFORT Annual Congress",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.99,
+      "rationale": "EFORT is Europe's largest orthopaedics and traumatology medical congress.",
+      "valid": true
+    },
+    {
+      "slug": "electric-hybrid-vehicle-technology-expo-europe-2026",
+      "name": "Electric & Hybrid Vehicle Technology Expo Europe 2026",
+      "industry": "Automotive & Mobility",
+      "confidence": 0.99,
+      "rationale": "Dedicated expo for electric and hybrid vehicle technology targeting automotive industry.",
+      "valid": true
+    },
+    {
+      "slug": "embedded-world-2026",
+      "name": "Embedded World",
+      "industry": "Technology & SaaS",
+      "confidence": 0.93,
+      "rationale": "World's leading embedded systems and electronics technology conference and exhibition.",
+      "valid": true
+    },
+    {
+      "slug": "emerge-americas-2026",
+      "name": "eMerge Americas 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.95,
+      "rationale": "eMerge Americas is a major tech and startup ecosystem conference in Miami.",
+      "valid": true
+    },
+    {
+      "slug": "enercom-denver-2026",
+      "name": "EnerCom Denver 2026",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.96,
+      "rationale": "EnerCom Denver is a leading oil, gas, and energy investment conference.",
+      "valid": true
+    },
+    {
+      "slug": "engine-leasing-trading-finance-europe-2026",
+      "name": "Engine Leasing Trading & Finance Europe 2026",
+      "industry": "Aerospace & Defense",
+      "confidence": 0.95,
+      "rationale": "Focused on commercial aircraft engine leasing and finance within aerospace sector.",
+      "valid": true
+    },
+    {
+      "slug": "epc-show-2026",
+      "name": "EPC Show",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.92,
+      "rationale": "EPC Show covers engineering, procurement, and construction for energy projects in Houston.",
+      "valid": true
+    },
+    {
+      "slug": "ephj-epmt-smt-2026",
+      "name": "EPHJ-EPMT-SMT 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.91,
+      "rationale": "Geneva precision manufacturing show covering watchmaking, medtech, and microtechnology sectors.",
+      "valid": true
+    },
+    {
+      "slug": "equiplast-2026",
+      "name": "Equiplast 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.97,
+      "rationale": "Equiplast is Barcelona's international plastics and rubber machinery trade show.",
+      "valid": true
+    },
+    {
+      "slug": "erp-summit",
+      "name": "ERP Summit",
+      "industry": "Technology & SaaS",
+      "confidence": 0.95,
+      "rationale": "Event focuses on ERP software systems, CFO Tech, and enterprise business management solutions.",
+      "valid": true
+    },
+    {
+      "slug": "esc-congress-2026",
+      "name": "ESC Congress 2026",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.99,
+      "rationale": "ESC Congress is the world's largest cardiology event for cardiovascular healthcare professionals.",
+      "valid": true
+    },
+    {
+      "slug": "escmid-global-2026",
+      "name": "ESCMID Global 2026",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.97,
+      "rationale": "ESCMID is the European Society of Clinical Microbiology and Infectious Diseases congress.",
+      "valid": true
+    },
+    {
+      "slug": "esri-user-conference-2026",
+      "name": "Esri User Conference 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.93,
+      "rationale": "Esri UC is the flagship conference for Esri's GIS mapping and spatial analytics software platform.",
+      "valid": true
+    },
+    {
+      "slug": "esx-electronic-security-expo-2026",
+      "name": "ESX - Electronic Security Expo 2026",
+      "industry": "Cybersecurity",
+      "confidence": 0.88,
+      "rationale": "ESX focuses on electronic security, alarms, surveillance, and physical/cyber security solutions.",
+      "valid": true
+    },
+    {
+      "slug": "etail-uk-2026",
+      "name": "eTail UK 2026",
+      "industry": "Retail & E-commerce",
+      "confidence": 0.99,
+      "rationale": "eTail is a dedicated e-commerce and retail industry conference series.",
+      "valid": true
+    },
+    {
+      "slug": "eurobike-2026",
+      "name": "Eurobike 2026",
+      "industry": "Automotive & Mobility",
+      "confidence": 0.92,
+      "rationale": "Eurobike is the world's leading trade show for bicycles, e-bikes, and personal mobility.",
+      "valid": true
+    },
+    {
+      "slug": "eurobiotech-2026",
+      "name": "Eurobiotech 2026",
+      "industry": "Pharma & Life Sciences",
+      "confidence": 0.95,
+      "rationale": "Eurobiotech is a European biotechnology conference covering life sciences research and innovation.",
+      "valid": true
+    },
+    {
+      "slug": "eurocoat-2026",
+      "name": "Eurocoat",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.93,
+      "rationale": "Eurocoat is a European trade show dedicated to paints, coatings, and industrial surface treatment.",
+      "valid": true
+    },
+    {
+      "slug": "euromaintenance-congress-2026",
+      "name": "Euromaintenance Congress 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.95,
+      "rationale": "Euromaintenance is the leading European congress for industrial maintenance and asset management.",
+      "valid": true
+    },
+    {
+      "slug": "eurosatory-2026",
+      "name": "Eurosatory 2026",
+      "industry": "Aerospace & Defense",
+      "confidence": 0.99,
+      "rationale": "World's leading land and air-land defence and security exhibition held in Paris.",
+      "valid": true
+    },
+    {
+      "slug": "euroshop-2026",
+      "name": "Euroshop",
+      "industry": "Retail & E-commerce",
+      "confidence": 0.99,
+      "rationale": "World's No. 1 retail trade fair focused entirely on the retail sector.",
+      "valid": true
+    },
+    {
+      "slug": "ev-charging-infrastructure-summit-north-america-2026",
+      "name": "EV Charging Infrastructure Summit North America 2026",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.88,
+      "rationale": "Focuses on EV charging infrastructure, a core energy and clean-tech domain.",
+      "valid": true
+    },
+    {
+      "slug": "evcs-2026",
+      "name": "EVCS 2026",
+      "industry": "Automotive & Mobility",
+      "confidence": 0.8,
+      "rationale": "EVCS targets electric vehicle charging stations, squarely in the EV/automotive space.",
+      "valid": true
+    },
+    {
+      "slug": "evs-electric-vehicle-symposium-2026",
+      "name": "EVS Electric Vehicle Symposium 2026",
+      "industry": "Automotive & Mobility",
+      "confidence": 0.97,
+      "rationale": "EVS is the premier global symposium dedicated to electric vehicles and mobility.",
+      "valid": true
+    },
+    {
+      "slug": "expo-riva-schuh-2026",
+      "name": "Expo Riva Schuh 2026",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.97,
+      "rationale": "Expo Riva Schuh is an international footwear trade fair, a fashion/consumer goods event.",
+      "valid": true
+    },
+    {
+      "slug": "expodental-2026",
+      "name": "Expodental",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.98,
+      "rationale": "Expodental is a dedicated dental industry trade show, firmly in healthcare.",
+      "valid": true
+    },
+    {
+      "slug": "expoptica-udio-2026",
+      "name": "Expoóptica + Áudio 2026",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.95,
+      "rationale": "Expoóptica + Áudio covers optical and audiology health products and professionals.",
+      "valid": true
+    },
+    {
+      "slug": "fabcon-2026",
+      "name": "FABCON 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.88,
+      "rationale": "FABCON is a fabrication and precast/manufacturing industry conference.",
+      "valid": true
+    },
+    {
+      "slug": "fabtech-canada-2026",
+      "name": "Fabtech Canada 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.99,
+      "rationale": "Fabtech Canada covers metal forming, fabricating, welding, and finishing manufacturing.",
+      "valid": true
+    },
+    {
+      "slug": "facilities-management-forum-uk-2026",
+      "name": "Facilities Management Forum UK 2026",
+      "industry": "Construction & Real Estate",
+      "confidence": 0.82,
+      "rationale": "Forum for FM directors managing building operations, maintenance, and procurement.",
+      "valid": true
+    },
+    {
+      "slug": "farm-shop-deli-show-2026",
+      "name": "Farm Shop & Deli Show",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.97,
+      "rationale": "Premier trade show for specialty food, drink, and farm retail products.",
+      "valid": true
+    },
+    {
+      "slug": "farnborough-international-airshow-2026",
+      "name": "Farnborough International Airshow 2026",
+      "industry": "Aerospace & Defense",
+      "confidence": 0.99,
+      "rationale": "One of the world's largest aerospace and defense trade shows.",
+      "valid": true
+    },
+    {
+      "slug": "fensterbaufrontale-2026",
+      "name": "fensterbaufrontale",
+      "industry": "Construction & Real Estate",
+      "confidence": 0.95,
+      "rationale": "Leading international trade fair for windows, doors, and facade technology.",
+      "valid": true
+    },
+    {
+      "slug": "fhca-annual-conference-2026",
+      "name": "FHCA Annual Conference 2026",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.97,
+      "rationale": "FHCA is the Florida Health Care Association, representing long-term care providers.",
+      "valid": true
+    },
+    {
+      "slug": "fiber-connect-2026",
+      "name": "Fiber Connect 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.88,
+      "rationale": "Fiber broadband industry conference focused on network technology and deployment.",
+      "valid": true
+    },
+    {
+      "slug": "finovatespring-2026",
+      "name": "FinovateSpring",
+      "industry": "Finance & FinTech",
+      "confidence": 0.99,
+      "rationale": "Flagship fintech demo and innovation conference for financial services.",
+      "valid": true
+    },
+    {
+      "slug": "fintech-americas-2026",
+      "name": "Fintech Americas 2026",
+      "industry": "Finance & FinTech",
+      "confidence": 0.99,
+      "rationale": "Fintech conference focused on financial technology across the Americas region.",
+      "valid": true
+    },
+    {
+      "slug": "fintech-meetup-2026-las-vegas",
+      "name": "Fintech Meetup 2026, Las Vegas",
+      "industry": "Finance & FinTech",
+      "confidence": 0.99,
+      "rationale": "Major fintech networking and meetings event for financial technology professionals.",
+      "valid": true
+    },
+    {
+      "slug": "fip-solution-plastique-2026",
+      "name": "FIP Solution Plastique 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.96,
+      "rationale": "Leading French trade fair for plastics processing and polymer manufacturing.",
+      "valid": true
+    },
+    {
+      "slug": "fleet-services-management-summit-2026",
+      "name": "Fleet Services Management Summit 2026",
+      "industry": "Automotive & Mobility",
+      "confidence": 0.88,
+      "rationale": "Premier conference for fleet industry professionals covering vehicles, EV, and fleet management.",
+      "valid": true
+    },
+    {
+      "slug": "fluid-power-systems-2026",
+      "name": "Fluid Power & Systems 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.97,
+      "rationale": "UK's leading trade fair for hydraulic and pneumatic industrial equipment and systems.",
+      "valid": true
+    },
+    {
+      "slug": "foam-expo-north-america-2026",
+      "name": "Foam Expo North America 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.95,
+      "rationale": "Dedicated expo for foam materials manufacturing, engineering, and supply chain.",
+      "valid": true
+    },
+    {
+      "slug": "food-drink-expo-2026",
+      "name": "Food & Drink Expo",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.99,
+      "rationale": "Major UK trade show for food and drink industry professionals.",
+      "valid": true
+    },
+    {
+      "slug": "food-hospitality-asia-2026",
+      "name": "Food & Hospitality Asia",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.92,
+      "rationale": "Asia's leading food and hospitality trade fair; food is the dominant vertical.",
+      "valid": true
+    },
+    {
+      "slug": "food-safety-summit-2026",
+      "name": "Food Safety Summit",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.98,
+      "rationale": "Conference focused exclusively on food safety practices and regulations.",
+      "valid": true
+    },
+    {
+      "slug": "foodex-japan-2026",
+      "name": "FOODEX JAPAN 2026",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.99,
+      "rationale": "One of Asia's largest international food and beverage trade exhibitions.",
+      "valid": true
+    },
+    {
+      "slug": "formex-stockholm-2026",
+      "name": "Formex Stockholm 2026",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.92,
+      "rationale": "Scandinavian trade fair for interior design, gifts, and lifestyle consumer goods.",
+      "valid": true
+    },
+    {
+      "slug": "formland-2026",
+      "name": "Formland 2026",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.92,
+      "rationale": "Danish trade fair for interior design, gifts, and lifestyle consumer products.",
+      "valid": true
+    },
+    {
+      "slug": "forrester-cx-forum-east-2026",
+      "name": "Forrester CX Forum East",
+      "industry": "Marketing, Sales & MarTech",
+      "confidence": 0.93,
+      "rationale": "Forrester's customer experience forum targets marketing and CX strategy professionals.",
+      "valid": true
+    },
+    {
+      "slug": "forrester-cx-forum-west-2026",
+      "name": "Forrester CX Forum West",
+      "industry": "Marketing, Sales & MarTech",
+      "confidence": 0.92,
+      "rationale": "Forrester CX Forum targets CX, B2C marketing, and digital leaders primarily.",
+      "valid": true
+    },
+    {
+      "slug": "forrester-cx-summit-emea-2026",
+      "name": "Forrester CX Summit EMEA",
+      "industry": "Marketing, Sales & MarTech",
+      "confidence": 0.92,
+      "rationale": "Same Forrester CX series; brings together CX, marketing, and digital leaders.",
+      "valid": true
+    },
+    {
+      "slug": "franchise-expo-2026",
+      "name": "Franchise Expo",
+      "industry": "Retail & E-commerce",
+      "confidence": 0.75,
+      "rationale": "World's largest franchise expo; retail and consumer brands dominate exhibitors.",
+      "valid": true
+    },
+    {
+      "slug": "future-labs-live-basel-2026",
+      "name": "Future Labs Live Basel 2026",
+      "industry": "Pharma & Life Sciences",
+      "confidence": 0.82,
+      "rationale": "Basel is the global pharma hub; 'Labs Live' targets life sciences R&D professionals.",
+      "valid": true
+    },
+    {
+      "slug": "future-steel-forum-2026",
+      "name": "Future Steel Forum 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.98,
+      "rationale": "Explicitly focused on the steel manufacturing industry and its future.",
+      "valid": true
+    },
+    {
+      "slug": "futurebuild-2026",
+      "name": "Futurebuild 2026",
+      "industry": "Construction & Real Estate",
+      "confidence": 0.95,
+      "rationale": "Futurebuild is a leading UK built environment and sustainable construction event.",
+      "valid": true
+    },
+    {
+      "slug": "futurelaw-2026",
+      "name": "FutureLaw 2026",
+      "industry": "Legal & LegalTech",
+      "confidence": 0.97,
+      "rationale": "FutureLaw is explicitly dedicated to the future of law and legal innovation.",
+      "valid": true
+    },
+    {
+      "slug": "gainsight-pulse-2026",
+      "name": "Gainsight Pulse",
+      "industry": "Technology & SaaS",
+      "confidence": 0.93,
+      "rationale": "Gainsight Pulse is the flagship SaaS customer success platform user conference.",
+      "valid": true
+    },
+    {
+      "slug": "gamescom-2026",
+      "name": "Gamescom 2026",
+      "industry": "Media, Entertainment & Gaming",
+      "confidence": 0.99,
+      "rationale": "Gamescom is the world's largest video game trade fair and fan event.",
+      "valid": true
+    },
+    {
+      "slug": "gartner-cso-sales-leader-conference-2026",
+      "name": "Gartner CSO & Sales Leader Conference",
+      "industry": "Marketing, Sales & MarTech",
+      "confidence": 0.95,
+      "rationale": "Gartner CSO conference targets chief sales officers and sales leadership teams.",
+      "valid": true
+    },
+    {
+      "slug": "gartner-data-analytics-summit",
+      "name": "Gartner Data & Analytics Summit",
+      "industry": "AI & Data",
+      "confidence": 0.95,
+      "rationale": "Gartner Data & Analytics Summit focuses squarely on data and analytics strategy.",
+      "valid": true
+    },
+    {
+      "slug": "gartner-digital-workplace-summit-2026",
+      "name": "Gartner Digital Workplace Summit",
+      "industry": "Technology & SaaS",
+      "confidence": 0.88,
+      "rationale": "Digital Workplace Summit covers enterprise tech, SaaS tools, and workforce technology.",
+      "valid": true
+    },
+    {
+      "slug": "gartner-iam-2026",
+      "name": "Gartner IAM",
+      "industry": "Cybersecurity",
+      "confidence": 0.97,
+      "rationale": "Gartner IAM is dedicated to Identity & Access Management and cybersecurity programs.",
+      "valid": true
+    },
+    {
+      "slug": "gartner-marketing-symposium-xpo-denver-2026",
+      "name": "Gartner Marketing Symposium/Xpo Denver",
+      "industry": "Marketing, Sales & MarTech",
+      "confidence": 0.98,
+      "rationale": "Gartner Marketing Symposium explicitly targets marketing leaders and MarTech strategy.",
+      "valid": true
+    },
+    {
+      "slug": "gartner-marketing-symposium-xpo-london-2026",
+      "name": "Gartner Marketing Symposium/Xpo London",
+      "industry": "Marketing, Sales & MarTech",
+      "confidence": 0.98,
+      "rationale": "London edition of Gartner Marketing Symposium; same marketing-focused audience.",
+      "valid": true
+    },
+    {
+      "slug": "gartner-security-risk-management-summit-2026",
+      "name": "Gartner Security & Risk Management Summit",
+      "industry": "Cybersecurity",
+      "confidence": 0.98,
+      "rationale": "Gartner Security & Risk Management Summit is a premier cybersecurity conference.",
+      "valid": true
+    },
+    {
+      "slug": "gartner-supply-chain-symposium-2026",
+      "name": "Gartner Supply Chain Symposium",
+      "industry": "Supply Chain & Logistics",
+      "confidence": 0.98,
+      "rationale": "Gartner Supply Chain Symposium is dedicated entirely to supply chain leadership.",
+      "valid": true
+    },
+    {
+      "slug": "gas-lng-future-of-energy-conference-2026",
+      "name": "Gas LNG & Future of Energy Conference 2026",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.97,
+      "rationale": "Conference focuses on gas, LNG, and the future of energy markets.",
+      "valid": true
+    },
+    {
+      "slug": "gdc-2026",
+      "name": "GDC",
+      "industry": "Media, Entertainment & Gaming",
+      "confidence": 0.97,
+      "rationale": "GDC (Game Developers Conference) is the world's leading game industry event.",
+      "valid": true
+    },
+    {
+      "slug": "geo-2026-national-conference",
+      "name": "GEO 2026 National Conference",
+      "industry": "Education & HR",
+      "confidence": 0.72,
+      "rationale": "GEO is a philanthropy/nonprofit sector conference on organizational effectiveness and grantmaking.",
+      "valid": true
+    },
+    {
+      "slug": "geo-business-2026",
+      "name": "Geo Business 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.78,
+      "rationale": "UK's largest geospatial event focused on location data, GIS, and spatial technology solutions.",
+      "valid": true
+    },
+    {
+      "slug": "geo-connect-asia-2026",
+      "name": "Geo Connect Asia",
+      "industry": "Technology & SaaS",
+      "confidence": 0.76,
+      "rationale": "Asia's leading geospatial and location intelligence conference covering mapping and spatial tech.",
+      "valid": true
+    },
+    {
+      "slug": "geoint-symposium-2026",
+      "name": "GEOINT Symposium 2026",
+      "industry": "Aerospace & Defense",
+      "confidence": 0.92,
+      "rationale": "GEOINT is the premier U.S. geospatial intelligence symposium serving the defense and intelligence community.",
+      "valid": true
+    },
+    {
+      "slug": "gess-saudi-arabia-2026",
+      "name": "GESS Saudi Arabia",
+      "industry": "Education & HR",
+      "confidence": 0.95,
+      "rationale": "GESS stands for Global Education Supplies & Solutions, a dedicated education trade show.",
+      "valid": true
+    },
+    {
+      "slug": "gitex-ai-europe-2026",
+      "name": "GITEX AI Europe 2026",
+      "industry": "AI & Data",
+      "confidence": 0.88,
+      "rationale": "GITEX AI Europe is explicitly branded around artificial intelligence as its primary focus.",
+      "valid": true
+    },
+    {
+      "slug": "gitex-asia-2026",
+      "name": "GITEX Asia",
+      "industry": "Technology & SaaS",
+      "confidence": 0.93,
+      "rationale": "GITEX is a globally recognized technology mega-show covering broad tech and digital innovation.",
+      "valid": true
+    },
+    {
+      "slug": "global-britain-trade-expo",
+      "name": "Global Britain Trade Expo",
+      "industry": "Finance & FinTech",
+      "confidence": 0.55,
+      "rationale": "UK-focused international trade expo centered on commerce, investment, and cross-border business.",
+      "valid": true
+    },
+    {
+      "slug": "global-energy-show-2026",
+      "name": "Global Energy Show 2026",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.97,
+      "rationale": "Calgary-based show dedicated to the global energy sector including oil, gas, and clean energy.",
+      "valid": true
+    },
+    {
+      "slug": "global-industrie-2026",
+      "name": "Global Industrie",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.97,
+      "rationale": "Global Industrie Paris is France's flagship manufacturing and industrial technology trade show.",
+      "valid": true
+    },
+    {
+      "slug": "global-pet-expo-2026",
+      "name": "Global Pet Expo",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.85,
+      "rationale": "Global Pet Expo is the world's largest pet products trade show targeting consumer goods buyers.",
+      "valid": true
+    },
+    {
+      "slug": "go-to-market-summit-2026",
+      "name": "Go-to-Market Summit 2026",
+      "industry": "Marketing, Sales & MarTech",
+      "confidence": 0.95,
+      "rationale": "Summit focused on aligning marketing, sales, RevOps, and GTM strategy.",
+      "valid": true
+    },
+    {
+      "slug": "google-cloud-next-26-2026",
+      "name": "Google Cloud Next '26",
+      "industry": "Technology & SaaS",
+      "confidence": 0.99,
+      "rationale": "Google's flagship cloud platform and enterprise SaaS developer conference.",
+      "valid": true
+    },
+    {
+      "slug": "google-io-2026",
+      "name": "Google I/O",
+      "industry": "Technology & SaaS",
+      "confidence": 0.99,
+      "rationale": "Google's annual developer conference covering software, platforms, and APIs.",
+      "valid": true
+    },
+    {
+      "slug": "grand-designs-live-london-2026",
+      "name": "Grand Designs Live London",
+      "industry": "Construction & Real Estate",
+      "confidence": 0.95,
+      "rationale": "Consumer exhibition for home building, renovation, and interior design.",
+      "valid": true
+    },
+    {
+      "slug": "grapas-europe-2026",
+      "name": "Grapas Europe 2026",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.97,
+      "rationale": "Exhibition dedicated to grain, rice, and flour milling technology.",
+      "valid": true
+    },
+    {
+      "slug": "greentech-amsterdam-2026",
+      "name": "GreenTech Amsterdam 2026",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.97,
+      "rationale": "Leading trade show focused on sustainable horticulture and green technology.",
+      "valid": true
+    },
+    {
+      "slug": "grindinghub-2026",
+      "name": "GrindingHub 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.98,
+      "rationale": "International trade fair exclusively dedicated to grinding and abrasive technology.",
+      "valid": true
+    },
+    {
+      "slug": "gs1-connect-2026",
+      "name": "GS1 Connect 2026",
+      "industry": "Supply Chain & Logistics",
+      "confidence": 0.93,
+      "rationale": "GS1's annual conference on supply chain standards, barcoding, and traceability.",
+      "valid": true
+    },
+    {
+      "slug": "gulf-print-pack-2026",
+      "name": "Gulf Print & Pack",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.9,
+      "rationale": "Regional trade show for printing, packaging, and converting industries.",
+      "valid": true
+    },
+    {
+      "slug": "hannover-messe-2026",
+      "name": "Hannover Messe 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.97,
+      "rationale": "World's largest industrial trade fair covering automation, energy, and manufacturing.",
+      "valid": true
+    },
+    {
+      "slug": "hardware-pioneers-max-2026",
+      "name": "Hardware Pioneers Max 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.82,
+      "rationale": "Electronics and embedded systems engineering exhibition for hardware/IoT engineering teams.",
+      "valid": true
+    },
+    {
+      "slug": "hd-expo-conference-2026",
+      "name": "HD Expo + Conference 2026",
+      "industry": "Hospitality, Travel & Events",
+      "confidence": 0.98,
+      "rationale": "Premier hospitality design trade show serving hotels, resorts, and restaurant designers.",
+      "valid": true
+    },
+    {
+      "slug": "healthtac-west-2026",
+      "name": "HealthTAC West 2026",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.92,
+      "rationale": "Senior living and healthcare technology executive conference targeting healthcare operators.",
+      "valid": true
+    },
+    {
+      "slug": "hfma-annual-conference-2026",
+      "name": "HFMA Annual Conference",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.95,
+      "rationale": "HFMA is the Healthcare Financial Management Association; primary audience is healthcare professionals.",
+      "valid": true
+    },
+    {
+      "slug": "himss-2026",
+      "name": "HIMSS",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.97,
+      "rationale": "HIMSS is the world's leading health information and technology conference for healthcare.",
+      "valid": true
+    },
+    {
+      "slug": "himss-europe-2026",
+      "name": "HIMSS Europe 2026",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.97,
+      "rationale": "European edition of HIMSS, focused on health IT and digital transformation in healthcare.",
+      "valid": true
+    },
+    {
+      "slug": "hitec-2026",
+      "name": "HITEC",
+      "industry": "Hospitality, Travel & Events",
+      "confidence": 0.95,
+      "rationale": "HITEC is the Hospitality Industry Technology Exposition & Conference for hospitality tech.",
+      "valid": true
+    },
+    {
+      "slug": "hlth-europe-2026",
+      "name": "HLTH Europe 2026",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.93,
+      "rationale": "HLTH Europe is a health innovation summit focused on digital health and healthcare transformation.",
+      "valid": true
+    },
+    {
+      "slug": "holz-handwerk-2026",
+      "name": "HOLZ-HANDWERK 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.95,
+      "rationale": "HOLZ-HANDWERK is a major international trade fair for woodworking machinery and craftsmanship.",
+      "valid": true
+    },
+    {
+      "slug": "home-gift-2026",
+      "name": "Home & Gift 2026",
+      "industry": "Retail & E-commerce",
+      "confidence": 0.88,
+      "rationale": "Home & Gift Harrogate is a UK trade show for home décor and gift retail buyers.",
+      "valid": true
+    },
+    {
+      "slug": "home-delivery-world-usa-2026",
+      "name": "Home Delivery World USA 2026",
+      "industry": "Supply Chain & Logistics",
+      "confidence": 0.97,
+      "rationale": "Event is dedicated to home delivery, last-mile logistics, and supply chain innovation.",
+      "valid": true
+    },
+    {
+      "slug": "hpe-discover-las-vegas-2026",
+      "name": "HPE Discover Las Vegas 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.98,
+      "rationale": "HPE Discover is Hewlett Packard Enterprise's flagship enterprise technology conference.",
+      "valid": true
+    },
+    {
+      "slug": "hr-tech-europe-2026",
+      "name": "HR Tech Europe",
+      "industry": "Education & HR",
+      "confidence": 0.97,
+      "rationale": "HR Tech Europe focuses squarely on human resources technology and workforce solutions.",
+      "valid": true
+    },
+    {
+      "slug": "hr-technologies-uk-2026",
+      "name": "HR Technologies UK",
+      "industry": "Education & HR",
+      "confidence": 0.97,
+      "rationale": "HR Technologies UK is a dedicated HR tech and workforce management trade show.",
+      "valid": true
+    },
+    {
+      "slug": "hr-world-summit-2026",
+      "name": "HR World Summit 2026",
+      "industry": "Education & HR",
+      "confidence": 0.95,
+      "rationale": "HR World Summit focuses on human resources strategy and people management professionals.",
+      "valid": true
+    },
+    {
+      "slug": "hrc-2026",
+      "name": "HRC",
+      "industry": "Hospitality, Travel & Events",
+      "confidence": 0.98,
+      "rationale": "HRC is the UK's leading Hotel, Restaurant & Catering hospitality trade show.",
+      "valid": true
+    },
+    {
+      "slug": "hsr-uk-2026",
+      "name": "HSR UK 2026",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.97,
+      "rationale": "HSR UK is the Health Services Research UK annual conference focused on healthcare systems.",
+      "valid": true
+    },
+    {
+      "slug": "humanx-2026",
+      "name": "HumanX",
+      "industry": "AI & Data",
+      "confidence": 0.95,
+      "rationale": "HumanX is a prominent AI-focused conference bringing together AI industry leaders.",
+      "valid": true
+    },
+    {
+      "slug": "iberzoopropet-expo-2026",
+      "name": "Iberzoo+Propet Expo 2026",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.82,
+      "rationale": "Iberzoo+Propet is a pet and zoo industry consumer goods trade expo in Madrid.",
+      "valid": true
+    },
+    {
+      "slug": "ibs-2026",
+      "name": "IBS",
+      "industry": "Construction & Real Estate",
+      "confidence": 0.96,
+      "rationale": "IBS Orlando is the International Builders' Show, the premier residential construction trade event.",
+      "valid": true
+    },
+    {
+      "slug": "icast-2026",
+      "name": "ICAST 2026",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.82,
+      "rationale": "ICAST is the world's largest sportfishing trade show, closest to Food/Beverage/Agriculture (fishing industry).",
+      "valid": true
+    },
+    {
+      "slug": "icbc-berlin-2026",
+      "name": "ICBC Berlin 2026",
+      "industry": "Cannabis",
+      "confidence": 0.99,
+      "rationale": "ICBC is explicitly Europe's largest cannabis B2B conference held in Berlin.",
+      "valid": true
+    },
+    {
+      "slug": "ics-scada-cybersecurity-symposium-2026",
+      "name": "ICS SCADA Cybersecurity Symposium 2026",
+      "industry": "Cybersecurity",
+      "confidence": 0.99,
+      "rationale": "ICS SCADA Cybersecurity Symposium is entirely focused on industrial control system cybersecurity.",
+      "valid": true
+    },
+    {
+      "slug": "icsc-las-vegas-2026",
+      "name": "ICSC Las Vegas",
+      "industry": "Construction & Real Estate",
+      "confidence": 0.92,
+      "rationale": "ICSC is the International Council of Shopping Centers; dominant vertical is commercial real estate.",
+      "valid": true
+    },
+    {
+      "slug": "iddba-show-2026",
+      "name": "IDDBA Show",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.99,
+      "rationale": "IDDBA is the International Dairy Deli Bakery Association, a core food industry trade show.",
+      "valid": true
+    },
+    {
+      "slug": "ideal-home-show-2026",
+      "name": "Ideal Home Show 2026",
+      "industry": "Construction & Real Estate",
+      "confidence": 0.88,
+      "rationale": "Ideal Home Show London focuses on home improvement, interiors, and property for consumers.",
+      "valid": true
+    },
+    {
+      "slug": "idem-2026",
+      "name": "IDEM",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.95,
+      "rationale": "IDEM Singapore is the International Dental Exhibition and Meeting, a leading dental/medical event.",
+      "valid": true
+    },
+    {
+      "slug": "identity-week-europe-2026",
+      "name": "Identity Week Europe 2026",
+      "industry": "Cybersecurity",
+      "confidence": 0.88,
+      "rationale": "Identity Week Europe covers digital identity, biometrics, and secure credentialing technologies.",
+      "valid": true
+    },
+    {
+      "slug": "identiverse-2026",
+      "name": "Identiverse 2026",
+      "industry": "Cybersecurity",
+      "confidence": 0.93,
+      "rationale": "Identiverse is the premier conference dedicated to digital identity and access management security.",
+      "valid": true
+    },
+    {
+      "slug": "ifat-munich-2026",
+      "name": "IFAT Munich",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.97,
+      "rationale": "IFAT Munich is the world's leading trade fair for water, sewage, waste, and environmental tech.",
+      "valid": true
+    },
+    {
+      "slug": "ife-international-food-drink-event-2026",
+      "name": "IFE - International Food & Drink Event",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.99,
+      "rationale": "IFE is the UK's premier food and drink trade show.",
+      "valid": true
+    },
+    {
+      "slug": "ife-london-2026",
+      "name": "IFE London",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.99,
+      "rationale": "IFE London is the International Food & Drink Event, same flagship show.",
+      "valid": true
+    },
+    {
+      "slug": "ife-manufacturing-2026",
+      "name": "IFE Manufacturing",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.98,
+      "rationale": "IFE Manufacturing covers food and drink processing, packaging, and ingredients.",
+      "valid": true
+    },
+    {
+      "slug": "ift-first-2026",
+      "name": "IFT FIRST 2026",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.99,
+      "rationale": "IFT FIRST stands for Food Improved by Research, Science, and Technology.",
+      "valid": true
+    },
+    {
+      "slug": "ifx-expo-international-2026",
+      "name": "iFX EXPO International 2026",
+      "industry": "Finance & FinTech",
+      "confidence": 0.97,
+      "rationale": "iFX EXPO is the leading forex, CFD, and fintech industry conference.",
+      "valid": true
+    },
+    {
+      "slug": "iiar-natural-refrigeration-conference-heavy-equipment-expo-2026",
+      "name": "IIAR Natural Refrigeration Conference & Heavy Equipment Expo",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.93,
+      "rationale": "IIAR focuses on industrial natural refrigeration systems and heavy equipment.",
+      "valid": true
+    },
+    {
+      "slug": "ila-berlin-air-show-2026",
+      "name": "ILA Berlin Air Show 2026",
+      "industry": "Aerospace & Defense",
+      "confidence": 0.99,
+      "rationale": "ILA Berlin Air Show is a major international aerospace and defense exhibition.",
+      "valid": true
+    },
+    {
+      "slug": "ilm-offenbach-2026",
+      "name": "ILM Offenbach 2026",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.92,
+      "rationale": "ILM Offenbach is the International Leather Goods Fair for fashion accessories.",
+      "valid": true
+    },
+    {
+      "slug": "imex-frankfurt-2026",
+      "name": "IMEX Frankfurt 2026",
+      "industry": "Hospitality, Travel & Events",
+      "confidence": 0.99,
+      "rationale": "IMEX Frankfurt is the global trade show for meetings, incentives, and events.",
+      "valid": true
+    },
+    {
+      "slug": "immunology2026",
+      "name": "IMMUNOLOGY2026",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.96,
+      "rationale": "IMMUNOLOGY2026 is a medical/scientific immunology research conference.",
+      "valid": true
+    },
+    {
+      "slug": "in-cosmetics-global-2026",
+      "name": "in-cosmetics Global",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.99,
+      "rationale": "World's leading trade show for cosmetic and personal care ingredients.",
+      "valid": true
+    },
+    {
+      "slug": "independent-hotel-show-2026",
+      "name": "Independent Hotel Show",
+      "industry": "Hospitality, Travel & Events",
+      "confidence": 0.99,
+      "rationale": "Dedicated entirely to luxury and boutique hoteliers in the hospitality sector.",
+      "valid": true
+    },
+    {
+      "slug": "indian-gaming-tradeshow-convention-2026",
+      "name": "Indian Gaming Tradeshow & Convention",
+      "industry": "Hospitality, Travel & Events",
+      "confidence": 0.92,
+      "rationale": "Annual tribal/Indian gaming industry convention covering casino and gaming operations.",
+      "valid": true
+    },
+    {
+      "slug": "infarma-madrid-2026",
+      "name": "infarma Madrid",
+      "industry": "Pharma & Life Sciences",
+      "confidence": 0.95,
+      "rationale": "infarma is Spain's leading pharmacy and pharmaceutical industry trade show.",
+      "valid": true
+    },
+    {
+      "slug": "infocomm-2026",
+      "name": "InfoComm 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.93,
+      "rationale": "InfoComm is the premier audiovisual and communications technology trade show by AVIXA.",
+      "valid": true
+    },
+    {
+      "slug": "informs-healthcare-2026",
+      "name": "INFORMS Healthcare 2026",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.95,
+      "rationale": "INFORMS Healthcare focuses on operations research and analytics applied to healthcare.",
+      "valid": true
+    },
+    {
+      "slug": "infosecurity-europe-2026",
+      "name": "InfoSecurity Europe 2026",
+      "industry": "Cybersecurity",
+      "confidence": 0.99,
+      "rationale": "InfoSecurity Europe is Europe's largest dedicated cybersecurity conference and exhibition.",
+      "valid": true
+    },
+    {
+      "slug": "inman-connect-san-diego-2026",
+      "name": "Inman Connect San Diego 2026",
+      "industry": "Construction & Real Estate",
+      "confidence": 0.98,
+      "rationale": "Inman Connect is the leading real estate industry news and conference brand.",
+      "valid": true
+    },
+    {
+      "slug": "innatex-summer-2026",
+      "name": "Innatex Summer 2026",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.96,
+      "rationale": "Innatex is a sustainable and organic textile/fashion trade fair held in Germany.",
+      "valid": true
+    },
+    {
+      "slug": "installer-show-uk-2026",
+      "name": "Installer Show UK 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.88,
+      "rationale": "Installer Show UK serves heating, plumbing, electrical, and renewable energy trade installers.",
+      "valid": true
+    },
+    {
+      "slug": "insurtech-insights-usa-2026",
+      "name": "Insurtech Insights USA 2026",
+      "industry": "Finance & FinTech",
+      "confidence": 0.97,
+      "rationale": "Insurtech Insights is a dedicated insurance technology and fintech conference.",
+      "valid": true
+    },
+    {
+      "slug": "interclean-amsterdam-2026",
+      "name": "Interclean Amsterdam",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.88,
+      "rationale": "World's leading trade show for professional cleaning equipment and hygiene industry.",
+      "valid": true
+    },
+    {
+      "slug": "international-biomass-conference-2026",
+      "name": "International Biomass Conference",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.97,
+      "rationale": "Biomass conference focuses on renewable bioenergy and sustainable fuel solutions.",
+      "valid": true
+    },
+    {
+      "slug": "international-franchise-expo-2026",
+      "name": "International Franchise Expo",
+      "industry": "Retail & E-commerce",
+      "confidence": 0.82,
+      "rationale": "Premier U.S. franchise expo connecting entrepreneurs with retail and consumer franchise brands.",
+      "valid": true
+    },
+    {
+      "slug": "international-franchise-show-2026",
+      "name": "International Franchise Show",
+      "industry": "Retail & E-commerce",
+      "confidence": 0.82,
+      "rationale": "UK franchise show connecting investors with consumer and retail franchise opportunities.",
+      "valid": true
+    },
+    {
+      "slug": "international-glass-manufacturing-show-2026",
+      "name": "International Glass Manufacturing Show",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.97,
+      "rationale": "Dedicated to glass manufacturing processes, equipment, and industrial technology.",
+      "valid": true
+    },
+    {
+      "slug": "international-hardware-fair-2026",
+      "name": "International Hardware Fair 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.97,
+      "rationale": "EISENWARENMESSE is the world's leading trade fair for hardware and tools manufacturing.",
+      "valid": true
+    },
+    {
+      "slug": "international-php-conference-berlin-2026",
+      "name": "International PHP Conference Berlin 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.98,
+      "rationale": "PHP developer conference focused on web programming languages and software development.",
+      "valid": true
+    },
+    {
+      "slug": "international-property-show-2026",
+      "name": "International Property Show",
+      "industry": "Construction & Real Estate",
+      "confidence": 0.98,
+      "rationale": "Dubai property expo dedicated to real estate investment and development opportunities.",
+      "valid": true
+    },
+    {
+      "slug": "internorga-2026",
+      "name": "INTERNORGA",
+      "industry": "Hospitality, Travel & Events",
+      "confidence": 0.97,
+      "rationale": "INTERNORGA is Hamburg's leading trade fair for foodservice, hospitality, and catering.",
+      "valid": true
+    },
+    {
+      "slug": "interpack-2026",
+      "name": "interpack 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.88,
+      "rationale": "World's leading packaging and processing machinery trade fair across industrial sectors.",
+      "valid": true
+    },
+    {
+      "slug": "interphex-2026",
+      "name": "INTERPHEX",
+      "industry": "Pharma & Life Sciences",
+      "confidence": 0.99,
+      "rationale": "Premier global pharmaceutical and biotechnology manufacturing trade show.",
+      "valid": true
+    },
+    {
+      "slug": "interplas-2026",
+      "name": "Interplas 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.95,
+      "rationale": "UK's leading plastics industry trade show covering materials and processing machinery.",
+      "valid": true
+    },
+    {
+      "slug": "interschutz-2026",
+      "name": "Interschutz 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.85,
+      "rationale": "International trade fair for fire, rescue, civil protection, and safety equipment.",
+      "valid": true
+    },
+    {
+      "slug": "intersolar-europe-2026",
+      "name": "Intersolar Europe 2026",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.99,
+      "rationale": "World's largest solar energy trade fair held annually in Munich.",
+      "valid": true
+    },
+    {
+      "slug": "intersolar-middle-east-2026",
+      "name": "Intersolar Middle East",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.99,
+      "rationale": "Regional solar energy exhibition focused on Middle East renewable energy markets.",
+      "valid": true
+    },
+    {
+      "slug": "interzoo-2026",
+      "name": "Interzoo 2026",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.82,
+      "rationale": "World's leading trade fair for pet food, supplies, and accessories industry.",
+      "valid": true
+    },
+    {
+      "slug": "intralogistex-2026",
+      "name": "IntraLogistex",
+      "industry": "Supply Chain & Logistics",
+      "confidence": 0.97,
+      "rationale": "UK intralogistics and warehouse automation exhibition dedicated to supply chain.",
+      "valid": true
+    },
+    {
+      "slug": "ire-international-rental-exhibition-2026",
+      "name": "IRE International Rental Exhibition 2026",
+      "industry": "Construction & Real Estate",
+      "confidence": 0.88,
+      "rationale": "Leading European equipment rental exhibition serving construction and related sectors.",
+      "valid": true
+    },
+    {
+      "slug": "irs-international-railway-summit-2026",
+      "name": "IRS International Railway Summit 2026",
+      "industry": "Supply Chain & Logistics",
+      "confidence": 0.88,
+      "rationale": "Summit dedicated to international railway infrastructure, operations, and transport logistics.",
+      "valid": true
+    },
+    {
+      "slug": "irx-2026",
+      "name": "IRX 2026",
+      "industry": "Retail & E-commerce",
+      "confidence": 0.98,
+      "rationale": "IRX stands for Internet Retailing Expo, the UK's leading eCommerce trade show.",
+      "valid": true
+    },
+    {
+      "slug": "isa-sign-expo-2026",
+      "name": "ISA Sign Expo",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.85,
+      "rationale": "ISA Sign Expo serves the sign, graphics, and visual communications manufacturing industry.",
+      "valid": true
+    },
+    {
+      "slug": "isc-high-performance-2026",
+      "name": "ISC High Performance 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.96,
+      "rationale": "ISC High Performance is the premier global supercomputing and HPC conference.",
+      "valid": true
+    },
+    {
+      "slug": "isc-west-2026",
+      "name": "ISC West",
+      "industry": "Cybersecurity",
+      "confidence": 0.97,
+      "rationale": "ISC West is the leading physical security, surveillance, and cybersecurity trade show.",
+      "valid": true
+    },
+    {
+      "slug": "ism-world-2026",
+      "name": "ISM World 2026",
+      "industry": "Supply Chain & Logistics",
+      "confidence": 0.97,
+      "rationale": "ISM World is the Institute for Supply Management's flagship annual conference.",
+      "valid": true
+    },
+    {
+      "slug": "ismb-2026",
+      "name": "ISMB 2026",
+      "industry": "Pharma & Life Sciences",
+      "confidence": 0.95,
+      "rationale": "ISMB is the top bioinformatics and computational biology conference globally.",
+      "valid": true
+    },
+    {
+      "slug": "iss-world-europe-2026",
+      "name": "ISS World Europe 2026",
+      "industry": "Cybersecurity",
+      "confidence": 0.93,
+      "rationale": "ISS World covers lawful interception, cyber intelligence, and telecom surveillance technology.",
+      "valid": true
+    },
+    {
+      "slug": "istelive-26",
+      "name": "ISTELive 26",
+      "industry": "Education & HR",
+      "confidence": 0.98,
+      "rationale": "ISTELive is ISTE's annual conference focused on technology in education.",
+      "valid": true
+    },
+    {
+      "slug": "itb-berlin-2026",
+      "name": "ITB Berlin 2026",
+      "industry": "Hospitality, Travel & Events",
+      "confidence": 0.99,
+      "rationale": "ITB Berlin is the world's largest travel and tourism trade show.",
+      "valid": true
+    },
+    {
+      "slug": "itm-industry-europe-2026",
+      "name": "ITM Industry Europe 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.96,
+      "rationale": "ITM Industry Europe is a major machine tools and industrial manufacturing expo in Poznan.",
+      "valid": true
+    },
+    {
+      "slug": "its-america-2026",
+      "name": "ITS America 2026",
+      "industry": "Automotive & Mobility",
+      "confidence": 0.92,
+      "rationale": "ITS America focuses on intelligent transportation systems, connected vehicles, and mobility tech.",
+      "valid": true
+    },
+    {
+      "slug": "ivt-expo-2026",
+      "name": "iVT Expo 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.95,
+      "rationale": "iVT Expo showcases industrial off-highway vehicle technology for OEMs, engineers, and suppliers.",
+      "valid": true
+    },
+    {
+      "slug": "iwa-outdoor-classics-2026",
+      "name": "IWA Outdoor Classics 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.82,
+      "rationale": "IWA Nuremberg is the leading trade show for firearms, hunting, and outdoor equipment manufacturers.",
+      "valid": true
+    },
+    {
+      "slug": "iwce-2026",
+      "name": "IWCE 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.88,
+      "rationale": "IWCE is the International Wireless Communications Expo covering critical comms and wireless tech.",
+      "valid": true
+    },
+    {
+      "slug": "jck-show-2026",
+      "name": "JCK Show 2026",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.97,
+      "rationale": "JCK Las Vegas is the premier jewelry industry trade show for buyers and brands.",
+      "valid": true
+    },
+    {
+      "slug": "jec-world-2026",
+      "name": "JEC World",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.97,
+      "rationale": "JEC World is the world's largest composites and advanced materials manufacturing trade show.",
+      "valid": true
+    },
+    {
+      "slug": "jlc-live-2026",
+      "name": "JLC LIVE",
+      "industry": "Construction & Real Estate",
+      "confidence": 0.96,
+      "rationale": "JLC LIVE is a residential construction trade show for builders and contractors.",
+      "valid": true
+    },
+    {
+      "slug": "k5-future-retail-conference-2026",
+      "name": "K5 Future Retail Conference 2026",
+      "industry": "Retail & E-commerce",
+      "confidence": 0.97,
+      "rationale": "K5 Future Retail is a Berlin conference dedicated to retail and e-commerce innovation.",
+      "valid": true
+    },
+    {
+      "slug": "kbis-2026",
+      "name": "KBIS",
+      "industry": "Construction & Real Estate",
+      "confidence": 0.96,
+      "rationale": "KBIS is the Kitchen & Bath Industry Show, focused on home building and design products.",
+      "valid": true
+    },
+    {
+      "slug": "kubecon-eu-2026",
+      "name": "KubeCon EU",
+      "industry": "Technology & SaaS",
+      "confidence": 0.99,
+      "rationale": "KubeCon is the flagship cloud-native and Kubernetes open-source technology conference.",
+      "valid": true
+    },
+    {
+      "slug": "laborama-360-2026",
+      "name": "Laborama 360",
+      "industry": "Pharma & Life Sciences",
+      "confidence": 0.82,
+      "rationale": "Belgium's premier lab technology trade fair covering analytical chemistry and life sciences.",
+      "valid": true
+    },
+    {
+      "slug": "lamca-2026",
+      "name": "LAMCA 2026",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.97,
+      "rationale": "LA Multi-Specialty Cosmetic Academy annual meeting focused on aesthetic medical procedures.",
+      "valid": true
+    },
+    {
+      "slug": "lasys-2026",
+      "name": "Lasys 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.95,
+      "rationale": "Lasys Stuttgart is a leading international trade fair for laser material processing.",
+      "valid": true
+    },
+    {
+      "slug": "leaders-in-logistics-summit-2026",
+      "name": "Leaders in Logistics Summit",
+      "industry": "Supply Chain & Logistics",
+      "confidence": 0.99,
+      "rationale": "Event name explicitly targets logistics industry leaders and professionals.",
+      "valid": true
+    },
+    {
+      "slug": "leadscon-las-vegas-2026",
+      "name": "LeadsCon, Las Vegas",
+      "industry": "Marketing, Sales & MarTech",
+      "confidence": 0.97,
+      "rationale": "LeadsCon is a dedicated performance marketing and lead generation conference.",
+      "valid": true
+    },
+    {
+      "slug": "leap-conference-2026",
+      "name": "Leap Conference",
+      "industry": "Technology & SaaS",
+      "confidence": 0.93,
+      "rationale": "LEAP Riyadh is Saudi Arabia's flagship technology and innovation conference.",
+      "valid": true
+    },
+    {
+      "slug": "learning-technologies-conference-2026",
+      "name": "Learning Technologies Conference",
+      "industry": "Education & HR",
+      "confidence": 0.97,
+      "rationale": "Learning Technologies Conference focuses on workplace learning, L&D, and HR tech.",
+      "valid": true
+    },
+    {
+      "slug": "legal-innovators-california-2026",
+      "name": "Legal Innovators California 2026",
+      "industry": "Legal & LegalTech",
+      "confidence": 0.99,
+      "rationale": "Event explicitly targets legal innovation and technology professionals in California.",
+      "valid": true
+    },
+    {
+      "slug": "legaltechtalk-2026",
+      "name": "LegalTechTalk 2026",
+      "industry": "Legal & LegalTech",
+      "confidence": 0.99,
+      "rationale": "LegalTechTalk is a dedicated legal technology conference in London.",
+      "valid": true
+    },
+    {
+      "slug": "legalweek-2026",
+      "name": "LegalWeek 2026",
+      "industry": "Legal & LegalTech",
+      "confidence": 0.99,
+      "rationale": "LegalWeek New York is a premier annual conference for the legal industry.",
+      "valid": true
+    },
+    {
+      "slug": "lexpo-2026",
+      "name": "Lexpo 2026",
+      "industry": "Legal & LegalTech",
+      "confidence": 0.99,
+      "rationale": "Lexpo is Europe's premier legal innovation and technology conference for law firms.",
+      "valid": true
+    },
+    {
+      "slug": "libramont-fair-2026",
+      "name": "Libramont Fair 2026",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.99,
+      "rationale": "Libramont is Europe's largest open-air agricultural, forestry, and agri-food fair.",
+      "valid": true
+    },
+    {
+      "slug": "licensing-expo-las-vegas-2026",
+      "name": "Licensing Expo Las Vegas 2026",
+      "industry": "Media, Entertainment & Gaming",
+      "confidence": 0.92,
+      "rationale": "Licensing Expo is the global hub for brand, character, and entertainment IP licensing.",
+      "valid": true
+    },
+    {
+      "slug": "logimat-trade-show-2026",
+      "name": "LogiMAT Trade Show 2026",
+      "industry": "Supply Chain & Logistics",
+      "confidence": 0.98,
+      "rationale": "LogiMAT is the world's largest trade show for intralogistics and distribution.",
+      "valid": true
+    },
+    {
+      "slug": "logistics-automation-hamburg-2026",
+      "name": "Logistics & Automation Hamburg 2026",
+      "industry": "Supply Chain & Logistics",
+      "confidence": 0.98,
+      "rationale": "Dedicated logistics and warehouse automation trade show based in Hamburg.",
+      "valid": true
+    },
+    {
+      "slug": "london-book-fair-2026",
+      "name": "London Book Fair",
+      "industry": "Media, Entertainment & Gaming",
+      "confidence": 0.97,
+      "rationale": "London Book Fair is the global marketplace for publishing and book rights.",
+      "valid": true
+    },
+    {
+      "slug": "london-tech-week-2026",
+      "name": "London Tech Week 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.98,
+      "rationale": "London Tech Week is the UK's flagship technology and innovation conference series.",
+      "valid": true
+    },
+    {
+      "slug": "london-textile-fair-2026",
+      "name": "London Textile Fair 2026",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.95,
+      "rationale": "London Textile Fair is a sourcing event for fabrics and fashion materials.",
+      "valid": true
+    },
+    {
+      "slug": "luxepack-2026",
+      "name": "LUXEPACK",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.93,
+      "rationale": "LUXEPACK is a luxury packaging trade show serving beauty and premium consumer brands.",
+      "valid": true
+    },
+    {
+      "slug": "madfest-london-2026",
+      "name": "MAD//Fest London 2026",
+      "industry": "Marketing, Sales & MarTech",
+      "confidence": 0.97,
+      "rationale": "MAD//Fest is a leading marketing, advertising, and brand innovation festival.",
+      "valid": true
+    },
+    {
+      "slug": "magic-las-vegas-2026",
+      "name": "MAGIC Las Vegas 2026",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.99,
+      "rationale": "MAGIC Las Vegas is a premier fashion trade show for apparel, footwear, and accessories brands.",
+      "valid": true
+    },
+    {
+      "slug": "maintec-2026",
+      "name": "Maintec 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.97,
+      "rationale": "Maintec is the UK's leading exhibition for predictive maintenance, reliability, and asset management.",
+      "valid": true
+    },
+    {
+      "slug": "manchester-furniture-show-2026",
+      "name": "Manchester Furniture Show 2026",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.91,
+      "rationale": "Manchester Furniture Show is a dedicated trade show for the furniture and home goods sector.",
+      "valid": true
+    },
+    {
+      "slug": "manchester-tech-week-2026",
+      "name": "Manchester Tech Week",
+      "industry": "Technology & SaaS",
+      "confidence": 0.97,
+      "rationale": "Manchester Tech Week is a regional technology festival celebrating the UK's tech ecosystem.",
+      "valid": true
+    },
+    {
+      "slug": "manufacturing-digitalisation-summit-2026",
+      "name": "Manufacturing Digitalisation Summit 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.95,
+      "rationale": "The summit focuses on digital transformation specifically within the manufacturing industry.",
+      "valid": true
+    },
+    {
+      "slug": "maritime-industry-gorinchem-2026",
+      "name": "Maritime Industry Gorinchem 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.9,
+      "rationale": "Maritime Industry Gorinchem is a leading Dutch trade show for maritime equipment and shipbuilding.",
+      "valid": true
+    },
+    {
+      "slug": "mats2026",
+      "name": "MATS2026",
+      "industry": "Supply Chain & Logistics",
+      "confidence": 0.95,
+      "rationale": "MATS is the Mid-America Trucking Show, the world's largest annual trucking industry event.",
+      "valid": true
+    },
+    {
+      "slug": "mau-vegas-2026",
+      "name": "MAU Vegas 2026",
+      "industry": "Marketing, Sales & MarTech",
+      "confidence": 0.9,
+      "rationale": "MAU Vegas focuses on mobile app user acquisition, growth, and marketing strategies.",
+      "valid": true
+    },
+    {
+      "slug": "mdm-south-2026",
+      "name": "MD&M South",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.97,
+      "rationale": "MD&M South is a medical design and manufacturing trade show serving the healthcare device sector.",
+      "valid": true
+    },
+    {
+      "slug": "med-tech-innovation-expo",
+      "name": "Med-Tech Innovation Expo",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.98,
+      "rationale": "Med-Tech Innovation Expo showcases medical technology innovation and devices for the healthcare industry.",
+      "valid": true
+    },
+    {
+      "slug": "medicarians-2026",
+      "name": "Medicarians",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.95,
+      "rationale": "Premier Medicare and senior health distribution conference focused on health plans and agents.",
+      "valid": true
+    },
+    {
+      "slug": "medtech-summit-2026",
+      "name": "MedTech Summit 2026",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.95,
+      "rationale": "MedTech Summit focuses on medical technology innovation and devices.",
+      "valid": true
+    },
+    {
+      "slug": "medteclive-2026",
+      "name": "MedtecLIVE 2026",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.95,
+      "rationale": "MedtecLIVE is a leading trade fair for medical device and technology manufacturers.",
+      "valid": true
+    },
+    {
+      "slug": "metal-recycling-conference-expo-2026",
+      "name": "Metal Recycling Conference Expo 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.9,
+      "rationale": "Metal recycling and scrap industry expo is firmly in the industrial/manufacturing sector.",
+      "valid": true
+    },
+    {
+      "slug": "metpack-2026",
+      "name": "METPACK 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.97,
+      "rationale": "World's leading trade fair for the international metal packaging manufacturing industry.",
+      "valid": true
+    },
+    {
+      "slug": "microsoft-build-2026",
+      "name": "Microsoft Build",
+      "industry": "Technology & SaaS",
+      "confidence": 0.99,
+      "rationale": "Microsoft Build is the flagship developer and software platform conference.",
+      "valid": true
+    },
+    {
+      "slug": "middle-east-coatings-show-2026",
+      "name": "Middle East Coatings Show",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.92,
+      "rationale": "Industrial coatings and paints trade show targeting manufacturing and construction sectors.",
+      "valid": true
+    },
+    {
+      "slug": "middle-east-energy-2026",
+      "name": "Middle East Energy",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.98,
+      "rationale": "Leading energy trade event in the Middle East covering power and utilities.",
+      "valid": true
+    },
+    {
+      "slug": "milano-unica-2026",
+      "name": "Milano Unica 2026",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.97,
+      "rationale": "Milano Unica is a premier trade fair for luxury Italian fabrics and textiles.",
+      "valid": true
+    },
+    {
+      "slug": "mipim-2026",
+      "name": "MIPIM",
+      "industry": "Construction & Real Estate",
+      "confidence": 0.99,
+      "rationale": "MIPIM is the world's leading international property and real estate market event.",
+      "valid": true
+    },
+    {
+      "slug": "mobile-world-congress-mwc-2026",
+      "name": "Mobile World Congress (MWC) 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.97,
+      "rationale": "MWC is the world's largest mobile and telecom technology trade show.",
+      "valid": true
+    },
+    {
+      "slug": "modex-2026",
+      "name": "MODEX",
+      "industry": "Supply Chain & Logistics",
+      "confidence": 0.99,
+      "rationale": "MODEX is North America's premier supply chain and material handling trade show.",
+      "valid": true
+    },
+    {
+      "slug": "momad-metropolis-2026",
+      "name": "Momad Metropolis 2026",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.99,
+      "rationale": "MOMAD is Spain's leading international fashion, footwear, and accessories trade fair.",
+      "valid": true
+    },
+    {
+      "slug": "money-20-20-europe-2026",
+      "name": "Money 20/20 Europe 2026",
+      "industry": "Finance & FinTech",
+      "confidence": 0.99,
+      "rationale": "Money 20/20 is the premier global fintech and payments industry conference.",
+      "valid": true
+    },
+    {
+      "slug": "move-europe-2026",
+      "name": "Move Europe 2026",
+      "industry": "Automotive & Mobility",
+      "confidence": 0.91,
+      "rationale": "Move Europe focuses on future mobility, transport technology, and smart movement.",
+      "valid": true
+    },
+    {
+      "slug": "mozcon-2026",
+      "name": "MozCon",
+      "industry": "Marketing, Sales & MarTech",
+      "confidence": 0.98,
+      "rationale": "MozCon is Moz's flagship SEO and digital marketing conference.",
+      "valid": true
+    },
+    {
+      "slug": "mpi-wec-2026",
+      "name": "MPI WEC",
+      "industry": "Hospitality, Travel & Events",
+      "confidence": 0.98,
+      "rationale": "MPI WEC is the Meeting Professionals International World Education Congress for event planners.",
+      "valid": true
+    },
+    {
+      "slug": "mrc-vegas-2026",
+      "name": "MRC Vegas 2026",
+      "industry": "Finance & FinTech",
+      "confidence": 0.93,
+      "rationale": "MRC Vegas is the Merchant Risk Council conference focused on payments fraud and risk.",
+      "valid": true
+    },
+    {
+      "slug": "mro-americas-2026",
+      "name": "MRO Americas 2026",
+      "industry": "Aerospace & Defense",
+      "confidence": 0.97,
+      "rationale": "MRO Americas is the leading aviation maintenance, repair, and overhaul conference.",
+      "valid": true
+    },
+    {
+      "slug": "mtx-2026",
+      "name": "MTX 2026",
+      "industry": "Marketing, Sales & MarTech",
+      "confidence": 0.72,
+      "rationale": "MTX Singapore is a marketing transformation and technology summit.",
+      "valid": true
+    },
+    {
+      "slug": "multi-unit-franchising-conference-2026",
+      "name": "Multi-Unit Franchising Conference 2026",
+      "industry": "Retail & E-commerce",
+      "confidence": 0.82,
+      "rationale": "Multi-unit franchising predominantly covers retail, restaurant, and consumer service franchise operations.",
+      "valid": true
+    },
+    {
+      "slug": "multimodal-2026",
+      "name": "Multimodal 2026",
+      "industry": "Supply Chain & Logistics",
+      "confidence": 0.97,
+      "rationale": "Multimodal Birmingham is a leading UK freight, transport, and logistics trade exhibition.",
+      "valid": true
+    },
+    {
+      "slug": "munich-fabric-start-2026",
+      "name": "Munich Fabric Start 2026",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.98,
+      "rationale": "Munich Fabric Start is a premier international textile and fabric trade show for the fashion industry.",
+      "valid": true
+    },
+    {
+      "slug": "mwaa-conference-2026",
+      "name": "MWAA Conference 2026",
+      "industry": "Finance & FinTech",
+      "confidence": 0.97,
+      "rationale": "MWAA is the Midwest Acquirers Association conference focused on payments and merchant services.",
+      "valid": true
+    },
+    {
+      "slug": "naa-apartmentalize-2026",
+      "name": "NAA Apartmentalize 2026",
+      "industry": "Construction & Real Estate",
+      "confidence": 0.97,
+      "rationale": "NAA Apartmentalize is the National Apartment Association's flagship real estate and rental housing conference.",
+      "valid": true
+    },
+    {
+      "slug": "nacfb-commercial-finance-expo",
+      "name": "NACFB Commercial Finance Expo",
+      "industry": "Finance & FinTech",
+      "confidence": 0.98,
+      "rationale": "NACFB Commercial Finance Expo focuses on commercial lending and business finance brokers.",
+      "valid": true
+    },
+    {
+      "slug": "napa-401k-summit-2026",
+      "name": "NAPA 401(k) Summit",
+      "industry": "Finance & FinTech",
+      "confidence": 0.97,
+      "rationale": "NAPA 401(k) Summit is dedicated to retirement plan advisors and financial planning professionals.",
+      "valid": true
+    },
+    {
+      "slug": "natcon26-2026",
+      "name": "NatCon26",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.96,
+      "rationale": "NatCon26 is the National Council for Mental Wellbeing's largest behavioral health conference.",
+      "valid": true
+    },
+    {
+      "slug": "national-convenience-show-2026",
+      "name": "National Convenience Show",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.92,
+      "rationale": "The National Convenience Show focuses on convenience retail, food, and drink products.",
+      "valid": true
+    },
+    {
+      "slug": "national-hardware-show-2026",
+      "name": "National Hardware Show",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.88,
+      "rationale": "The National Hardware Show covers tools, hardware, and home improvement products and manufacturers.",
+      "valid": true
+    },
+    {
+      "slug": "national-heavy-equipment-show-2026",
+      "name": "National Heavy Equipment Show",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.97,
+      "rationale": "Focused on heavy construction, road-building, and infrastructure equipment for industry professionals.",
+      "valid": true
+    },
+    {
+      "slug": "national-restaurant-association-show-2026",
+      "name": "National Restaurant Association Show",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.99,
+      "rationale": "The flagship trade show for the foodservice and restaurant industry.",
+      "valid": true
+    },
+    {
+      "slug": "natp-taxposium-2026",
+      "name": "NATP Taxposium 2026",
+      "industry": "Finance & FinTech",
+      "confidence": 0.96,
+      "rationale": "NATP is the National Association of Tax Professionals; event centers on tax practice.",
+      "valid": true
+    },
+    {
+      "slug": "natural-products-expo-2026",
+      "name": "Natural Products Expo",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.95,
+      "rationale": "Premier trade show for natural, organic, and specialty food and supplement products.",
+      "valid": true
+    },
+    {
+      "slug": "nbj-summit-2026",
+      "name": "NBJ Summit 2026",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.95,
+      "rationale": "Nutrition Business Journal Summit targets supplement and nutrition industry executives.",
+      "valid": true
+    },
+    {
+      "slug": "neocon-2026",
+      "name": "NeoCon 2026",
+      "industry": "Construction & Real Estate",
+      "confidence": 0.92,
+      "rationale": "NeoCon is the leading trade show for commercial interiors, furniture, and workplace design.",
+      "valid": true
+    },
+    {
+      "slug": "new-england-restaurant-bar-show-2026",
+      "name": "New England Restaurant & Bar Show",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.98,
+      "rationale": "Regional trade show serving the restaurant and bar foodservice industry.",
+      "valid": true
+    },
+    {
+      "slug": "new-york-build-2026",
+      "name": "New York Build",
+      "industry": "Construction & Real Estate",
+      "confidence": 0.97,
+      "rationale": "New York Build is a major construction and real estate development expo.",
+      "valid": true
+    },
+    {
+      "slug": "new-york-energy-capital-assembly-2026",
+      "name": "New York Energy Capital Assembly 2026",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.94,
+      "rationale": "Event focused on energy sector capital, investment, and infrastructure in New York.",
+      "valid": true
+    },
+    {
+      "slug": "new-york-international-auto-show-2026",
+      "name": "New York International Auto Show",
+      "industry": "Automotive & Mobility",
+      "confidence": 0.99,
+      "rationale": "One of the world's largest consumer and industry automobile shows.",
+      "valid": true
+    },
+    {
+      "slug": "newtopia-now-2026",
+      "name": "Newtopia Now 2026",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.92,
+      "rationale": "Natural and organic CPG/food & beverage trade show connecting brands with retail buyers.",
+      "valid": true
+    },
+    {
+      "slug": "next-summit-new-york-2026",
+      "name": "Next Summit New York",
+      "industry": "Media, Entertainment & Gaming",
+      "confidence": 0.97,
+      "rationale": "North America's largest dedicated iGaming and sports betting summit.",
+      "valid": true
+    },
+    {
+      "slug": "nexus-luxembourg-2026",
+      "name": "Nexus Luxembourg 2026",
+      "industry": "Finance & FinTech",
+      "confidence": 0.82,
+      "rationale": "Luxembourg-based fintech and startup investment conference in a major financial hub.",
+      "valid": true
+    },
+    {
+      "slug": "nhia26-2026",
+      "name": "NHIA26",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.95,
+      "rationale": "NHIA is the National Home Infusion Association, a home healthcare industry event.",
+      "valid": true
+    },
+    {
+      "slug": "niada-convention-expo-2026",
+      "name": "NIADA Convention & Expo",
+      "industry": "Automotive & Mobility",
+      "confidence": 0.97,
+      "rationale": "NIADA is the National Independent Automobile Dealers Association annual convention.",
+      "valid": true
+    },
+    {
+      "slug": "nice-world-2026",
+      "name": "NiCE World 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.9,
+      "rationale": "NiCE is a CX/contact center SaaS platform; NiCE World is its annual user conference.",
+      "valid": true
+    },
+    {
+      "slug": "nj-water-environment-association-conference-2026",
+      "name": "NJ Water Environment Association Conference",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.93,
+      "rationale": "Water environment association conference focused on water quality and sustainability.",
+      "valid": true
+    },
+    {
+      "slug": "no-dig-show-2026",
+      "name": "No-Dig Show",
+      "industry": "Construction & Real Estate",
+      "confidence": 0.92,
+      "rationale": "No-Dig Show covers trenchless technology and underground construction infrastructure.",
+      "valid": true
+    },
+    {
+      "slug": "nordbygg-2026",
+      "name": "Nordbygg 2026",
+      "industry": "Construction & Real Estate",
+      "confidence": 0.97,
+      "rationale": "Nordbygg is Scandinavia's largest building and construction trade fair in Stockholm.",
+      "valid": true
+    },
+    {
+      "slug": "nordstil-summer-2026",
+      "name": "Nordstil Summer 2026",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.92,
+      "rationale": "Nordstil is a Hamburg trade fair for gifts, interior design, and lifestyle consumer goods.",
+      "valid": true
+    },
+    {
+      "slug": "npla-conference-2026",
+      "name": "NPLA Conference",
+      "industry": "Finance & FinTech",
+      "confidence": 0.97,
+      "rationale": "NPLA is the National Private Lenders Association; event centers on private real estate lending.",
+      "valid": true
+    },
+    {
+      "slug": "nrf-protect-2026",
+      "name": "NRF Protect 2026",
+      "industry": "Retail & E-commerce",
+      "confidence": 0.95,
+      "rationale": "NRF Protect is retail's loss prevention, digital fraud, and enterprise risk event.",
+      "valid": true
+    },
+    {
+      "slug": "nvidia-gtc-event-2026",
+      "name": "NVIDIA GTC event",
+      "industry": "AI & Data",
+      "confidence": 0.97,
+      "rationale": "NVIDIA GTC is centered on GPU computing, deep learning, and AI innovation.",
+      "valid": true
+    },
+    {
+      "slug": "ny-now-2026",
+      "name": "NY NOW 2026",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.92,
+      "rationale": "NY NOW is a wholesale trade show for gift, home, and lifestyle consumer goods.",
+      "valid": true
+    },
+    {
+      "slug": "ny-tech-week-2026",
+      "name": "NY Tech Week 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.96,
+      "rationale": "NY Tech Week is New York's flagship technology and startup ecosystem event.",
+      "valid": true
+    },
+    {
+      "slug": "oceanology-international-2026",
+      "name": "Oceanology International 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.82,
+      "rationale": "Oceanology International covers marine technology, instrumentation, and ocean science.",
+      "valid": true
+    },
+    {
+      "slug": "odsc-ai-east-2026",
+      "name": "ODSC AI East 2026",
+      "industry": "AI & Data",
+      "confidence": 0.98,
+      "rationale": "ODSC (Open Data Science Conference) is explicitly focused on AI and data science.",
+      "valid": true
+    },
+    {
+      "slug": "ofc-2026",
+      "name": "OFC",
+      "industry": "Technology & SaaS",
+      "confidence": 0.91,
+      "rationale": "OFC is the Optical Fiber Communication Conference covering photonics and networking tech.",
+      "valid": true
+    },
+    {
+      "slug": "offset-symposium",
+      "name": "Offset Symposium",
+      "industry": "Aerospace & Defense",
+      "confidence": 0.9,
+      "rationale": "Offset Symposium in DC focuses on defense procurement offset agreements and policy.",
+      "valid": true
+    },
+    {
+      "slug": "offshore-northern-seas-2026",
+      "name": "Offshore Northern Seas 2026",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.96,
+      "rationale": "ONS Stavanger is a major oil, gas, and energy industry conference in Norway.",
+      "valid": true
+    },
+    {
+      "slug": "offshore-technology-conference-2026",
+      "name": "Offshore Technology Conference",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.95,
+      "rationale": "Offshore oil and gas technology conference.",
+      "valid": true
+    },
+    {
+      "slug": "omr-festival-2026",
+      "name": "OMR Festival 2026",
+      "industry": "Marketing, Sales & MarTech",
+      "confidence": 0.95,
+      "rationale": "OMR digital marketing festival in Hamburg.",
+      "valid": true
+    },
+    {
+      "slug": "omtec-2026",
+      "name": "OMTEC 2026",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.9,
+      "rationale": "OMTEC orthopaedic medical device manufacturing conference.",
+      "valid": true
+    },
+    {
+      "slug": "optatec-international-2026",
+      "name": "Optatec International 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.85,
+      "rationale": "Optics, photonics and laser components industrial trade fair.",
+      "valid": true
+    },
+    {
+      "slug": "organic-produce-summit-2026",
+      "name": "Organic Produce Summit 2026",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.98,
+      "rationale": "Organic fresh produce industry summit for growers and buyers.",
+      "valid": true
+    },
+    {
+      "slug": "oslo-design-fair-2026",
+      "name": "Oslo Design Fair 2026",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.85,
+      "rationale": "Oslo Design Fair interiors, gifts and lifestyle trade fair.",
+      "valid": true
+    },
+    {
+      "slug": "otworld-2026",
+      "name": "OTWorld 2026",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.9,
+      "rationale": "Orthopaedic treatment, prosthetics and rehabilitation technology world congress.",
+      "valid": true
+    },
+    {
+      "slug": "outdoor-retailer-summer-2026",
+      "name": "Outdoor Retailer Summer 2026",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.9,
+      "rationale": "Outdoor recreation gear and apparel retail trade show.",
+      "valid": true
+    },
+    {
+      "slug": "palm-beach-international-boat-show-2026",
+      "name": "Palm Beach International Boat Show",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.85,
+      "rationale": "Luxury yacht and boat consumer/dealer show.",
+      "valid": true
+    },
+    {
+      "slug": "paris-space-week-2026",
+      "name": "Paris Space Week",
+      "industry": "Aerospace & Defense",
+      "confidence": 0.95,
+      "rationale": "Space industry B2B convention in Paris.",
+      "valid": true
+    },
+    {
+      "slug": "partnertechx-2026",
+      "name": "PartnerTechX",
+      "industry": "Marketing, Sales & MarTech",
+      "confidence": 0.8,
+      "rationale": "Partner ecosystem/channel sales and PRM technology conference.",
+      "valid": true
+    },
+    {
+      "slug": "payroll-congress-2026",
+      "name": "Payroll Congress",
+      "industry": "Education & HR",
+      "confidence": 0.85,
+      "rationale": "American Payroll Association Congress for payroll and HR professionals.",
+      "valid": true
+    },
+    {
+      "slug": "pcim-europe-2026",
+      "name": "PCIM Europe 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.85,
+      "rationale": "Power electronics, intelligent motion and energy management conference.",
+      "valid": true
+    },
+    {
+      "slug": "pdac-2026",
+      "name": "PDAC",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.9,
+      "rationale": "PDAC mineral exploration and mining convention.",
+      "valid": true
+    },
+    {
+      "slug": "performancedays-2026",
+      "name": "PerformanceDays",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.85,
+      "rationale": "Functional fabric fair for sportswear, athleisure and workwear brands.",
+      "valid": true
+    },
+    {
+      "slug": "pflege-plus-2026",
+      "name": "PFLEGE Plus 2026",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.95,
+      "rationale": "German trade fair for nursing care and elderly care.",
+      "valid": true
+    },
+    {
+      "slug": "pharmagoraplus-2026",
+      "name": "PharmagoraPlus",
+      "industry": "Pharma & Life Sciences",
+      "confidence": 0.85,
+      "rationale": "Pharmacy industry trade show in Paris.",
+      "valid": true
+    },
+    {
+      "slug": "phosphatespotash-expoconference-2026",
+      "name": "Phosphates+Potash Expoconference",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.7,
+      "rationale": "CRU phosphate and potash fertilizer industry conference.",
+      "valid": true
+    },
+    {
+      "slug": "pits-2026",
+      "name": "PITS 2026",
+      "industry": "Cybersecurity",
+      "confidence": 0.95,
+      "rationale": "Public IT Security congress for government cybersecurity.",
+      "valid": true
+    },
+    {
+      "slug": "pittcon-2026",
+      "name": "Pittcon",
+      "industry": "Pharma & Life Sciences",
+      "confidence": 0.8,
+      "rationale": "Analytical chemistry, spectroscopy and laboratory science conference.",
+      "valid": true
+    },
+    {
+      "slug": "pizza-expo-2026",
+      "name": "Pizza Expo",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.95,
+      "rationale": "International Pizza Expo for restaurant and foodservice operators.",
+      "valid": true
+    },
+    {
+      "slug": "plma-world-of-private-label-2026",
+      "name": "PLMA World of Private Label",
+      "industry": "Retail & E-commerce",
+      "confidence": 0.9,
+      "rationale": "Private Label Manufacturers Association trade show for retailers and brands.",
+      "valid": true
+    },
+    {
+      "slug": "poi-spring-summit-2026",
+      "name": "POI Spring Summit",
+      "industry": "Marketing, Sales & MarTech",
+      "confidence": 0.75,
+      "rationale": "Promotion Optimization Institute summit for trade promotion and revenue growth management.",
+      "valid": true
+    },
+    {
+      "slug": "posidonia-2026",
+      "name": "Posidonia 2026",
+      "industry": "Supply Chain & Logistics",
+      "confidence": 0.9,
+      "rationale": "Posidonia international shipping and maritime exhibition.",
+      "valid": true
+    },
+    {
+      "slug": "possible-2026",
+      "name": "POSSIBLE 2026",
+      "industry": "Marketing, Sales & MarTech",
+      "confidence": 0.95,
+      "rationale": "POSSIBLE marketing, advertising and creator economy conference.",
+      "valid": true
+    },
+    {
+      "slug": "postgres-conf-2026",
+      "name": "Postgres Conf 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.95,
+      "rationale": "PostgreSQL database developer and engineering conference.",
+      "valid": true
+    },
+    {
+      "slug": "powertage-2026",
+      "name": "Powertage 2026",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.95,
+      "rationale": "Swiss electricity industry trade fair.",
+      "valid": true
+    },
+    {
+      "slug": "premiere-vision-new-york-2026",
+      "name": "Première Vision New York 2026",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.95,
+      "rationale": "Première Vision fashion textiles and fabric sourcing show.",
+      "valid": true
+    },
+    {
+      "slug": "procurecon-contingent-talent",
+      "name": "ProcureCon Contingent Talent",
+      "industry": "Education & HR",
+      "confidence": 0.7,
+      "rationale": "Procurement leaders sourcing contingent workforce and talent; HR/talent acquisition focus.",
+      "valid": true
+    },
+    {
+      "slug": "professional-woodworking-expo",
+      "name": "Professional Woodworking Expo",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.9,
+      "rationale": "Professional woodworking machinery and trade expo.",
+      "valid": true
+    },
+    {
+      "slug": "proptech-symposium-copenhagen-2026",
+      "name": "PropTech Symposium Copenhagen",
+      "industry": "Construction & Real Estate",
+      "confidence": 0.9,
+      "rationale": "PropTech and real estate technology symposium.",
+      "valid": true
+    },
+    {
+      "slug": "prse2026",
+      "name": "PRSE2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.85,
+      "rationale": "Plastics Recycling Show Europe.",
+      "valid": true
+    },
+    {
+      "slug": "ptc-berlin-2026",
+      "name": "ptc Berlin",
+      "industry": "Technology & SaaS",
+      "confidence": 0.7,
+      "rationale": "PTC Berlin tech event (Power Transmission/IT-related).",
+      "valid": true
+    },
+    {
+      "slug": "pulse-ecommerce-summit-2026",
+      "name": "Pulse eCommerce Summit",
+      "industry": "Retail & E-commerce",
+      "confidence": 0.95,
+      "rationale": "E-commerce industry summit.",
+      "valid": true
+    },
+    {
+      "slug": "qcon-ai-boston-2026",
+      "name": "QCon AI Boston 2026",
+      "industry": "AI & Data",
+      "confidence": 0.95,
+      "rationale": "QCon AI software engineering and AI conference.",
+      "valid": true
+    },
+    {
+      "slug": "racquetx-2026",
+      "name": "RacquetX 2026",
+      "industry": "Media, Entertainment & Gaming",
+      "confidence": 0.75,
+      "rationale": "Racquet sports (tennis, padel, pickleball) industry B2B festival.",
+      "valid": true
+    },
+    {
+      "slug": "rapid-tct-boston-2026",
+      "name": "Rapid + TCT Boston 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.9,
+      "rationale": "Rapid + TCT additive manufacturing and 3D printing event.",
+      "valid": true
+    },
+    {
+      "slug": "re-mid-atlantic-2026",
+      "name": "RE+ Mid-Atlantic 2026",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.95,
+      "rationale": "RE+ regional clean energy and solar industry event.",
+      "valid": true
+    },
+    {
+      "slug": "realcomm-ibcon-2026",
+      "name": "Realcomm IBcon 2026",
+      "industry": "Construction & Real Estate",
+      "confidence": 0.9,
+      "rationale": "Realcomm IBcon CRE technology and smart buildings conference.",
+      "valid": true
+    },
+    {
+      "slug": "realtors-legislative-meetings-2026",
+      "name": "REALTORS Legislative Meetings",
+      "industry": "Construction & Real Estate",
+      "confidence": 0.9,
+      "rationale": "National Association of Realtors legislative meetings; real estate industry.",
+      "valid": true
+    },
+    {
+      "slug": "rebuild-2026-madrid",
+      "name": "REBUILD 2026, Madrid",
+      "industry": "Construction & Real Estate",
+      "confidence": 0.9,
+      "rationale": "REBUILD Madrid construction and architecture industry congress.",
+      "valid": true
+    },
+    {
+      "slug": "red-hot-cyber-conference-2026",
+      "name": "Red Hot Cyber Conference",
+      "industry": "Cybersecurity",
+      "confidence": 0.98,
+      "rationale": "Cybersecurity conference.",
+      "valid": true
+    },
+    {
+      "slug": "rema-2026",
+      "name": "ReMA 2026",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.85,
+      "rationale": "Recycled Materials Association recycling industry convention.",
+      "valid": true
+    },
+    {
+      "slug": "remtech-east-2026",
+      "name": "RemTech East",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.85,
+      "rationale": "Environmental remediation technologies symposium for contaminated sites.",
+      "valid": true
+    },
+    {
+      "slug": "retail-technology-show-2026",
+      "name": "Retail Technology Show",
+      "industry": "Retail & E-commerce",
+      "confidence": 0.98,
+      "rationale": "Retail tech trade show for retailers and solution providers.",
+      "valid": true
+    },
+    {
+      "slug": "reuters-downstream-usa-2026",
+      "name": "Reuters Downstream USA 2026",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.95,
+      "rationale": "Downstream oil, gas and refining industry conference.",
+      "valid": true
+    },
+    {
+      "slug": "rev-barcelona",
+      "name": "REV BARCELONA",
+      "industry": "Supply Chain & Logistics",
+      "confidence": 0.8,
+      "rationale": "Jaggaer REV procurement leadership conference.",
+      "valid": true
+    },
+    {
+      "slug": "rise-of-ai-conference-2026",
+      "name": "Rise of AI Conference 2026",
+      "industry": "AI & Data",
+      "confidence": 0.98,
+      "rationale": "AI industry conference in Berlin.",
+      "valid": true
+    },
+    {
+      "slug": "riskworld-2026",
+      "name": "RISKWORLD 2026",
+      "industry": "Finance & FinTech",
+      "confidence": 0.8,
+      "rationale": "RIMS risk management and insurance industry conference.",
+      "valid": true
+    },
+    {
+      "slug": "robotics-summit-expo-2026",
+      "name": "Robotics Summit & Expo 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.85,
+      "rationale": "Commercial robotics development and engineering summit.",
+      "valid": true
+    },
+    {
+      "slug": "rsac-2026",
+      "name": "RSAC 2026",
+      "industry": "Cybersecurity",
+      "confidence": 0.99,
+      "rationale": "RSA Conference, world's leading cybersecurity event.",
+      "valid": true
+    },
+    {
+      "slug": "saasiest-2026",
+      "name": "SaaSiest 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.95,
+      "rationale": "Nordic B2B SaaS conference.",
+      "valid": true
+    },
+    {
+      "slug": "saastr-ai-annual-2026",
+      "name": "SaaStr AI Annual 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.95,
+      "rationale": "SaaStr B2B SaaS founders and operators conference.",
+      "valid": true
+    },
+    {
+      "slug": "salesforce-connections-2026",
+      "name": "Salesforce Connections 2026",
+      "industry": "Marketing, Sales & MarTech",
+      "confidence": 0.95,
+      "rationale": "Salesforce marketing, commerce and digital experience conference.",
+      "valid": true
+    },
+    {
+      "slug": "sama-annual-conference-2026",
+      "name": "SAMA Annual Conference",
+      "industry": "Marketing, Sales & MarTech",
+      "confidence": 0.9,
+      "rationale": "Strategic Account Management Association; key account sales leaders.",
+      "valid": true
+    },
+    {
+      "slug": "santexpo-2026",
+      "name": "SantExpo 2026",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.95,
+      "rationale": "French healthcare/hospital industry trade show by FHF.",
+      "valid": true
+    },
+    {
+      "slug": "sap-sapphire-asug-conference-2026",
+      "name": "SAP Sapphire & ASUG Conference",
+      "industry": "Technology & SaaS",
+      "confidence": 0.95,
+      "rationale": "SAP enterprise software flagship conference.",
+      "valid": true
+    },
+    {
+      "slug": "sap-sapphire-madrid-2026",
+      "name": "SAP Sapphire Madrid 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.95,
+      "rationale": "SAP enterprise software conference.",
+      "valid": true
+    },
+    {
+      "slug": "sapinsider-2026",
+      "name": "SAPInsider",
+      "industry": "Technology & SaaS",
+      "confidence": 0.95,
+      "rationale": "SAP enterprise software user community conference.",
+      "valid": true
+    },
+    {
+      "slug": "satshow-2026",
+      "name": "SATShow 2026",
+      "industry": "Aerospace & Defense",
+      "confidence": 0.9,
+      "rationale": "SATELLITE 2026 commercial satellite and space conference.",
+      "valid": true
+    },
+    {
+      "slug": "saudi-signage-labelling-expo-2026",
+      "name": "Saudi Signage & Labelling Expo",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.65,
+      "rationale": "Signage, labelling and printing industry trade expo.",
+      "valid": true
+    },
+    {
+      "slug": "sbc-summit-americas-2026",
+      "name": "SBC Summit Americas 2026",
+      "industry": "Media, Entertainment & Gaming",
+      "confidence": 0.95,
+      "rationale": "iGaming and sports betting industry summit.",
+      "valid": true
+    },
+    {
+      "slug": "sbc-summit-malta-2026",
+      "name": "SBC Summit Malta",
+      "industry": "Media, Entertainment & Gaming",
+      "confidence": 0.95,
+      "rationale": "iGaming, betting and gambling industry summit.",
+      "valid": true
+    },
+    {
+      "slug": "scale-expo-summit-2026",
+      "name": "SCALE Expo & Summit",
+      "industry": "Finance & FinTech",
+      "confidence": 0.55,
+      "rationale": "SME/scaleup founders and investors expo; pitch competitions and growth funding focus.",
+      "valid": true
+    },
+    {
+      "slug": "scaling-new-heights-2026",
+      "name": "Scaling New Heights 2026",
+      "industry": "Finance & FinTech",
+      "confidence": 0.85,
+      "rationale": "Scaling New Heights conference for accounting, bookkeeping and QuickBooks pros.",
+      "valid": true
+    },
+    {
+      "slug": "shop-marketplace-2026",
+      "name": "Shop! MarketPlace",
+      "industry": "Retail & E-commerce",
+      "confidence": 0.9,
+      "rationale": "Retail in-store experience, fixtures and visual merchandising trade show.",
+      "valid": true
+    },
+    {
+      "slug": "shoptalk-europe-2026",
+      "name": "Shoptalk Europe 2026",
+      "industry": "Retail & E-commerce",
+      "confidence": 0.98,
+      "rationale": "Shoptalk retail and e-commerce conference.",
+      "valid": true
+    },
+    {
+      "slug": "shoptalk-spring-2026",
+      "name": "Shoptalk Spring",
+      "industry": "Retail & E-commerce",
+      "confidence": 0.98,
+      "rationale": "Shoptalk retail and e-commerce industry conference.",
+      "valid": true
+    },
+    {
+      "slug": "shrm-annual-conference-2026",
+      "name": "SHRM Annual Conference 2026",
+      "industry": "Education & HR",
+      "confidence": 0.98,
+      "rationale": "SHRM annual HR professional conference.",
+      "valid": true
+    },
+    {
+      "slug": "shrm-talent-2026",
+      "name": "SHRM Talent 2026",
+      "industry": "Education & HR",
+      "confidence": 0.98,
+      "rationale": "SHRM Talent conference for HR and talent acquisition leaders.",
+      "valid": true
+    },
+    {
+      "slug": "siggraph-2026",
+      "name": "SIGGRAPH 2026",
+      "industry": "Media, Entertainment & Gaming",
+      "confidence": 0.9,
+      "rationale": "SIGGRAPH computer graphics, animation and visual effects conference.",
+      "valid": true
+    },
+    {
+      "slug": "sil-barcelona-2026",
+      "name": "SIL Barcelona 2026",
+      "industry": "Supply Chain & Logistics",
+      "confidence": 0.95,
+      "rationale": "SIL Barcelona logistics, transport and supply chain trade show.",
+      "valid": true
+    },
+    {
+      "slug": "single-use-event-basel-2026",
+      "name": "Single-Use Event Basel 2026",
+      "industry": "Pharma & Life Sciences",
+      "confidence": 0.9,
+      "rationale": "Single-use bioprocessing event for biopharma and biotech.",
+      "valid": true
+    },
+    {
+      "slug": "sitl-2026",
+      "name": "SITL",
+      "industry": "Supply Chain & Logistics",
+      "confidence": 0.95,
+      "rationale": "SITL Paris is France's leading logistics and supply chain trade show.",
+      "valid": true
+    },
+    {
+      "slug": "smart-manufacturing-week-2026",
+      "name": "Smart Manufacturing Week 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.98,
+      "rationale": "UK smart manufacturing and Industry 4.0 trade show.",
+      "valid": true
+    },
+    {
+      "slug": "smarter-faster-payments-2026",
+      "name": "Smarter Faster Payments 2026",
+      "industry": "Finance & FinTech",
+      "confidence": 0.98,
+      "rationale": "Nacha payments industry conference.",
+      "valid": true
+    },
+    {
+      "slug": "snowflake-summit-2026",
+      "name": "Snowflake Summit 2026",
+      "industry": "AI & Data",
+      "confidence": 0.95,
+      "rationale": "Snowflake data cloud and analytics user conference.",
+      "valid": true
+    },
+    {
+      "slug": "sof-week-2026",
+      "name": "SOF Week 2026",
+      "industry": "Aerospace & Defense",
+      "confidence": 0.95,
+      "rationale": "Special Operations Forces Week defense conference and expo.",
+      "valid": true
+    },
+    {
+      "slug": "solarplaza-summit-italy-2026",
+      "name": "Solarplaza Summit Italy 2026",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.98,
+      "rationale": "Italian solar PV industry summit.",
+      "valid": true
+    },
+    {
+      "slug": "solarplus-usa-2026",
+      "name": "SolarPLUS USA",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.95,
+      "rationale": "US solar energy industry conference.",
+      "valid": true
+    },
+    {
+      "slug": "solex-2026",
+      "name": "SOLEX 2026",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.85,
+      "rationale": "Summer Outdoor Living Exhibition for garden furniture and BBQ trade.",
+      "valid": true
+    },
+    {
+      "slug": "sommcon-dc-2026",
+      "name": "SommCon DC",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.9,
+      "rationale": "Wine, beer and spirits sommelier/beverage education conference.",
+      "valid": true
+    },
+    {
+      "slug": "south-summit-madrid-2026",
+      "name": "South Summit Madrid 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.9,
+      "rationale": "South Summit startup and innovation conference in Madrid.",
+      "valid": true
+    },
+    {
+      "slug": "space-tech-expo-usa-2026",
+      "name": "Space Tech Expo USA",
+      "industry": "Aerospace & Defense",
+      "confidence": 0.98,
+      "rationale": "US space industry trade show.",
+      "valid": true
+    },
+    {
+      "slug": "spoga-gafa-2026",
+      "name": "Spoga+Gafa 2026",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.9,
+      "rationale": "Garden, outdoor lifestyle and BBQ consumer goods trade fair.",
+      "valid": true
+    },
+    {
+      "slug": "sps-italia-2026",
+      "name": "SPS Italia 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.95,
+      "rationale": "SPS Italia industrial automation and smart manufacturing trade fair.",
+      "valid": true
+    },
+    {
+      "slug": "srs-2026",
+      "name": "SRS 2026",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.95,
+      "rationale": "Society of Robotic Surgery annual meeting.",
+      "valid": true
+    },
+    {
+      "slug": "stanztec-2026",
+      "name": "Stanztec 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.95,
+      "rationale": "Stanztec stamping technology and metal forming trade fair.",
+      "valid": true
+    },
+    {
+      "slug": "stcglobal-2026",
+      "name": "STCGlobal 2026",
+      "industry": "Hospitality, Travel & Events",
+      "confidence": 0.9,
+      "rationale": "Seatrade Cruise Global, premier cruise industry event.",
+      "valid": true
+    },
+    {
+      "slug": "stone-tec-2026",
+      "name": "Stone+Tec 2026",
+      "industry": "Construction & Real Estate",
+      "confidence": 0.9,
+      "rationale": "Natural stone industry trade fair for architecture and construction.",
+      "valid": true
+    },
+    {
+      "slug": "styl-brno-2026",
+      "name": "STYL Brno 2026",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.85,
+      "rationale": "STYL Brno fashion and footwear trade fair.",
+      "valid": true
+    },
+    {
+      "slug": "subcon-2026",
+      "name": "Subcon 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.9,
+      "rationale": "UK subcontract manufacturing and engineering supply chain show.",
+      "valid": true
+    },
+    {
+      "slug": "subsummit-2026",
+      "name": "SubSummit 2026",
+      "industry": "Retail & E-commerce",
+      "confidence": 0.8,
+      "rationale": "Subscription commerce and DTC e-commerce industry summit.",
+      "valid": true
+    },
+    {
+      "slug": "summer-fancy-food-show-2026",
+      "name": "Summer Fancy Food Show",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.98,
+      "rationale": "Specialty food industry trade show.",
+      "valid": true
+    },
+    {
+      "slug": "superreturn-international-2026",
+      "name": "SuperReturn International 2026",
+      "industry": "Finance & FinTech",
+      "confidence": 0.98,
+      "rationale": "Private equity and venture capital industry conference.",
+      "valid": true
+    },
+    {
+      "slug": "sushi-tech-tokyo-2026",
+      "name": "Sushi Tech Tokyo 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.85,
+      "rationale": "Tokyo's global startup and innovation tech conference.",
+      "valid": true
+    },
+    {
+      "slug": "sweets-snacks-expo-2026",
+      "name": "Sweets & Snacks Expo 2026",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.98,
+      "rationale": "Confectionery and snack industry trade show.",
+      "valid": true
+    },
+    {
+      "slug": "swiss-biotech-day-2026",
+      "name": "Swiss Biotech Day 2026",
+      "industry": "Pharma & Life Sciences",
+      "confidence": 0.95,
+      "rationale": "Swiss biotech industry annual conference.",
+      "valid": true
+    },
+    {
+      "slug": "sxsw-london-2026",
+      "name": "SXSW London 2026",
+      "industry": "Media, Entertainment & Gaming",
+      "confidence": 0.85,
+      "rationale": "SXSW London festival for music, film, tech and culture.",
+      "valid": true
+    },
+    {
+      "slug": "sydney-build-expo-2026",
+      "name": "Sydney Build Expo",
+      "industry": "Construction & Real Estate",
+      "confidence": 0.98,
+      "rationale": "Australian construction and infrastructure expo.",
+      "valid": true
+    },
+    {
+      "slug": "tableau-conference-2026",
+      "name": "Tableau Conference",
+      "industry": "AI & Data",
+      "confidence": 0.9,
+      "rationale": "Tableau data analytics and BI user conference.",
+      "valid": true
+    },
+    {
+      "slug": "tappicon-2026",
+      "name": "TAPPICon 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.85,
+      "rationale": "TAPPI pulp, paper and packaging industry conference.",
+      "valid": true
+    },
+    {
+      "slug": "tct-show-2026",
+      "name": "TCT Show 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.95,
+      "rationale": "TCT Show additive manufacturing and 3D printing trade show.",
+      "valid": true
+    },
+    {
+      "slug": "tech-show-frankfurt-2026",
+      "name": "Tech Show Frankfurt 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.9,
+      "rationale": "DACH region IT tech event covering cloud, data center, cybersecurity and AI.",
+      "valid": true
+    },
+    {
+      "slug": "tektnica-2026",
+      "name": "Tektónica",
+      "industry": "Construction & Real Estate",
+      "confidence": 0.9,
+      "rationale": "Portugal's premier construction and building materials trade fair.",
+      "valid": true
+    },
+    {
+      "slug": "texas-pharmacy-association-conference-2026",
+      "name": "Texas Pharmacy Association Conference 2026",
+      "industry": "Pharma & Life Sciences",
+      "confidence": 0.9,
+      "rationale": "Texas Pharmacy Association pharmacist conference.",
+      "valid": true
+    },
+    {
+      "slug": "texas-restaurant-show-2026",
+      "name": "Texas Restaurant Show 2026",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.95,
+      "rationale": "Texas Restaurant Association foodservice and hospitality trade show.",
+      "valid": true
+    },
+    {
+      "slug": "texprocess-2026",
+      "name": "Texprocess 2026",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.8,
+      "rationale": "Garment manufacturing and textile processing trade fair.",
+      "valid": true
+    },
+    {
+      "slug": "the-advanced-ceramics-show",
+      "name": "The Advanced Ceramics Show",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.95,
+      "rationale": "Advanced ceramics manufacturing materials show.",
+      "valid": true
+    },
+    {
+      "slug": "the-advanced-materials-show",
+      "name": "The Advanced Materials Show",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.95,
+      "rationale": "Advanced materials engineering and manufacturing show.",
+      "valid": true
+    },
+    {
+      "slug": "the-ai-summit-london",
+      "name": "The AI Summit London",
+      "industry": "AI & Data",
+      "confidence": 0.98,
+      "rationale": "AI Summit London for enterprise AI adoption.",
+      "valid": true
+    },
+    {
+      "slug": "the-ara-show-2026",
+      "name": "The ARA Show 2026",
+      "industry": "Construction & Real Estate",
+      "confidence": 0.7,
+      "rationale": "American Rental Association equipment rental trade show; heavy in construction equipment.",
+      "valid": true
+    },
+    {
+      "slug": "the-battery-show-europe-2026",
+      "name": "The Battery Show Europe 2026",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.9,
+      "rationale": "Battery technology and electric vehicle component show.",
+      "valid": true
+    },
+    {
+      "slug": "the-martech-summit",
+      "name": "The Martech Summit",
+      "industry": "Marketing, Sales & MarTech",
+      "confidence": 0.98,
+      "rationale": "Marketing technology summit explicitly for MarTech professionals.",
+      "valid": true
+    },
+    {
+      "slug": "the-meetings-show-asia-pacific-2026",
+      "name": "The Meetings Show Asia Pacific",
+      "industry": "Hospitality, Travel & Events",
+      "confidence": 0.95,
+      "rationale": "Trade show for MICE and corporate event/meeting planners in APAC.",
+      "valid": true
+    },
+    {
+      "slug": "the-meetings-show-europe-2026",
+      "name": "The Meetings Show Europe 2026",
+      "industry": "Hospitality, Travel & Events",
+      "confidence": 0.95,
+      "rationale": "MICE and corporate event planner trade show.",
+      "valid": true
+    },
+    {
+      "slug": "the-nama-show-2026",
+      "name": "The NAMA Show 2026",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.85,
+      "rationale": "Vending, micromarkets and refreshment services trade show.",
+      "valid": true
+    },
+    {
+      "slug": "the-security-event-2026",
+      "name": "The Security Event 2026",
+      "industry": "Cybersecurity",
+      "confidence": 0.7,
+      "rationale": "UK Security Event for physical and electronic security professionals.",
+      "valid": true
+    },
+    {
+      "slug": "the-smarter-e-europe-2026",
+      "name": "The Smarter E Europe 2026",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.98,
+      "rationale": "Europe's largest renewable energy and solar industry trade show.",
+      "valid": true
+    },
+    {
+      "slug": "the-world-biogas-expo",
+      "name": "The World Biogas Expo",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.98,
+      "rationale": "Biogas and anaerobic digestion industry expo.",
+      "valid": true
+    },
+    {
+      "slug": "themaxevent-2026",
+      "name": "THEMAXEVENT",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.95,
+      "rationale": "Manufacturing & Automation eXchange combining Assembly Show and Quality Show.",
+      "valid": true
+    },
+    {
+      "slug": "tia-capital-ideas-conference-2026",
+      "name": "TIA Capital Ideas Conference",
+      "industry": "Supply Chain & Logistics",
+      "confidence": 0.95,
+      "rationale": "Transportation Intermediaries Association event for freight brokers and 3PLs.",
+      "valid": true
+    },
+    {
+      "slug": "tissue-world-miami-2026",
+      "name": "Tissue World Miami",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.85,
+      "rationale": "Tissue paper manufacturing and converting industry trade show.",
+      "valid": true
+    },
+    {
+      "slug": "toxexpo-2026",
+      "name": "ToxExpo",
+      "industry": "Pharma & Life Sciences",
+      "confidence": 0.85,
+      "rationale": "Society of Toxicology annual meeting and exhibit.",
+      "valid": true
+    },
+    {
+      "slug": "transact2026",
+      "name": "TRANSACT2026",
+      "industry": "Finance & FinTech",
+      "confidence": 0.95,
+      "rationale": "ETA TRANSACT payments technology conference for fintech and processors.",
+      "valid": true
+    },
+    {
+      "slug": "trendset-munich-2026",
+      "name": "TrendSet Munich 2026",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.85,
+      "rationale": "Lifestyle, gift, home and fashion trade fair for retail buyers.",
+      "valid": true
+    },
+    {
+      "slug": "trendz-showup-2026",
+      "name": "Trendz showUP 2026",
+      "industry": "Beauty, Fashion & Consumer Goods",
+      "confidence": 0.85,
+      "rationale": "Trendz showUP home, gift and lifestyle wholesale trade fair.",
+      "valid": true
+    },
+    {
+      "slug": "tte-travel-technology-europe-2026",
+      "name": "TTE Travel Technology Europe 2026",
+      "industry": "Hospitality, Travel & Events",
+      "confidence": 0.95,
+      "rationale": "Travel industry technology trade show.",
+      "valid": true
+    },
+    {
+      "slug": "uberconf-2026",
+      "name": "UberConf 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.95,
+      "rationale": "Java/JVM software developer conference.",
+      "valid": true
+    },
+    {
+      "slug": "uk-construction-week-london-2026",
+      "name": "UK Construction Week London",
+      "industry": "Construction & Real Estate",
+      "confidence": 0.98,
+      "rationale": "UK construction industry trade show.",
+      "valid": true
+    },
+    {
+      "slug": "uk-games-expo-2026",
+      "name": "UK Games Expo",
+      "industry": "Media, Entertainment & Gaming",
+      "confidence": 0.95,
+      "rationale": "UK tabletop and board games industry expo.",
+      "valid": true
+    },
+    {
+      "slug": "uk-garage-bodyshop-event",
+      "name": "UK Garage & Bodyshop Event",
+      "industry": "Automotive & Mobility",
+      "confidence": 0.95,
+      "rationale": "UK automotive aftermarket and bodyshop trade event.",
+      "valid": true
+    },
+    {
+      "slug": "uk-solar-summit-2026",
+      "name": "UK Solar Summit 2026",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.98,
+      "rationale": "UK solar energy industry summit.",
+      "valid": true
+    },
+    {
+      "slug": "ukreiif-2026",
+      "name": "UKREiiF 2026",
+      "industry": "Construction & Real Estate",
+      "confidence": 0.95,
+      "rationale": "UK Real Estate Investment & Infrastructure Forum.",
+      "valid": true
+    },
+    {
+      "slug": "vancouver-international-auto-show-2026",
+      "name": "Vancouver International Auto Show",
+      "industry": "Automotive & Mobility",
+      "confidence": 0.95,
+      "rationale": "Vancouver consumer auto show.",
+      "valid": true
+    },
+    {
+      "slug": "vehicle-electrification-expo",
+      "name": "Vehicle Electrification Expo",
+      "industry": "Automotive & Mobility",
+      "confidence": 0.98,
+      "rationale": "EV and vehicle electrification technology expo.",
+      "valid": true
+    },
+    {
+      "slug": "verticon-2026",
+      "name": "Verticon",
+      "industry": "Aerospace & Defense",
+      "confidence": 0.95,
+      "rationale": "Vertical Aviation International event for helicopters and advanced air mobility.",
+      "valid": true
+    },
+    {
+      "slug": "vertriebsmanagement-kongress-2026",
+      "name": "Vertriebsmanagement Kongress 2026",
+      "industry": "Marketing, Sales & MarTech",
+      "confidence": 0.9,
+      "rationale": "German B2B sales management congress.",
+      "valid": true
+    },
+    {
+      "slug": "victam-international-2026",
+      "name": "VICTAM International 2026",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.95,
+      "rationale": "Animal feed, grain and aquafeed processing trade show.",
+      "valid": true
+    },
+    {
+      "slug": "vinexpo-america-2026",
+      "name": "Vinexpo America",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.95,
+      "rationale": "Wine and spirits trade show.",
+      "valid": true
+    },
+    {
+      "slug": "vitafoods-europe-2026",
+      "name": "Vitafoods Europe 2026",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.9,
+      "rationale": "Nutraceuticals, supplements and functional food ingredients trade show.",
+      "valid": true
+    },
+    {
+      "slug": "viv-europe-2026",
+      "name": "VIV Europe 2026",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.95,
+      "rationale": "VIV Europe poultry and animal protein production trade show.",
+      "valid": true
+    },
+    {
+      "slug": "viva-technology-2026",
+      "name": "Viva Technology 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.95,
+      "rationale": "VivaTech Paris startup and tech innovation event.",
+      "valid": true
+    },
+    {
+      "slug": "vive-2026",
+      "name": "VIVE",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.95,
+      "rationale": "ViVE digital health conference uniting CHIME and HLTH for healthcare leaders.",
+      "valid": true
+    },
+    {
+      "slug": "vm-display-show-2026",
+      "name": "VM & Display Show 2026",
+      "industry": "Retail & E-commerce",
+      "confidence": 0.85,
+      "rationale": "Visual merchandising and retail display trade show.",
+      "valid": true
+    },
+    {
+      "slug": "warehouse-yard-2026",
+      "name": "Warehouse. & Yard. 2026",
+      "industry": "Supply Chain & Logistics",
+      "confidence": 0.9,
+      "rationale": "UK logistics, warehousing and yard operations show.",
+      "valid": true
+    },
+    {
+      "slug": "washington-energy-summit-2026",
+      "name": "Washington Energy Summit",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.9,
+      "rationale": "Energy policy and industry summit in Washington DC.",
+      "valid": true
+    },
+    {
+      "slug": "wcx-2026",
+      "name": "WCX 2026",
+      "industry": "Automotive & Mobility",
+      "confidence": 0.98,
+      "rationale": "SAE World Congress for automotive engineering and mobility.",
+      "valid": true
+    },
+    {
+      "slug": "web-summit-vancouver-2026",
+      "name": "Web Summit Vancouver 2026",
+      "industry": "Technology & SaaS",
+      "confidence": 0.9,
+      "rationale": "Global tech conference for startups, VCs and big tech.",
+      "valid": true
+    },
+    {
+      "slug": "werc-annual-conference-2026",
+      "name": "WERC Annual Conference",
+      "industry": "Supply Chain & Logistics",
+      "confidence": 0.95,
+      "rationale": "Warehousing Education and Research Council annual conference.",
+      "valid": true
+    },
+    {
+      "slug": "western-foodservice-hospitality-expo-2026",
+      "name": "Western Foodservice & Hospitality Expo 2026",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.95,
+      "rationale": "Foodservice and hospitality industry trade show.",
+      "valid": true
+    },
+    {
+      "slug": "whx-miami-2026",
+      "name": "WHX Miami 2026",
+      "industry": "Healthcare & Medical",
+      "confidence": 0.85,
+      "rationale": "WHX (formerly Arab Health/Medlab) healthcare exhibition.",
+      "valid": true
+    },
+    {
+      "slug": "wimglobalsummit-2026",
+      "name": "WIMGlobalSummit",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.55,
+      "rationale": "Women in Mining global summit; mining and natural-resources industry attendees.",
+      "valid": true
+    },
+    {
+      "slug": "windeurope-2026",
+      "name": "WindEurope 2026",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.98,
+      "rationale": "WindEurope annual wind energy event.",
+      "valid": true
+    },
+    {
+      "slug": "wire-dsseldorf-2026",
+      "name": "Wire Düsseldorf 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.95,
+      "rationale": "Wire and cable industry international trade fair.",
+      "valid": true
+    },
+    {
+      "slug": "world-of-coffee-europe-2026",
+      "name": "World of Coffee Europe 2026",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.95,
+      "rationale": "Specialty coffee industry trade show.",
+      "valid": true
+    },
+    {
+      "slug": "world-of-coffee-san-diego-2026",
+      "name": "World of Coffee San Diego 2026",
+      "industry": "Food, Beverage & Agriculture",
+      "confidence": 0.95,
+      "rationale": "Specialty coffee industry trade show.",
+      "valid": true
+    },
+    {
+      "slug": "world-orphan-drug-congress-usa-2026",
+      "name": "World Orphan Drug Congress USA 2026",
+      "industry": "Pharma & Life Sciences",
+      "confidence": 0.98,
+      "rationale": "Rare disease and orphan drug development congress.",
+      "valid": true
+    },
+    {
+      "slug": "world-vaccine-congress-2026",
+      "name": "World Vaccine Congress",
+      "industry": "Pharma & Life Sciences",
+      "confidence": 0.95,
+      "rationale": "Vaccine R&D and life sciences congress.",
+      "valid": true
+    },
+    {
+      "slug": "wqa2026",
+      "name": "WQA2026",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.7,
+      "rationale": "Water Quality Association water treatment industry convention.",
+      "valid": true
+    },
+    {
+      "slug": "wwett-show-2026",
+      "name": "WWETT Show 2026",
+      "industry": "Energy, Sustainability & CleanTech",
+      "confidence": 0.7,
+      "rationale": "Water and wastewater equipment, treatment and transport trade show.",
+      "valid": true
+    },
+    {
+      "slug": "xponential-europe-2026",
+      "name": "XPONENTIAL Europe",
+      "industry": "Aerospace & Defense",
+      "confidence": 0.85,
+      "rationale": "Uncrewed systems, robotics and defense autonomy trade fair.",
+      "valid": true
+    },
+    {
+      "slug": "xylexpo-2026",
+      "name": "Xylexpo 2026",
+      "industry": "Manufacturing & Industrial",
+      "confidence": 0.85,
+      "rationale": "Xylexpo woodworking technology and furniture manufacturing trade fair.",
+      "valid": true
+    }
+  ],
+  "merged_from_subagent_at": "2026-05-17T17:17:31.831Z"
+}

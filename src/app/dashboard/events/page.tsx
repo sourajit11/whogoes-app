@@ -57,12 +57,19 @@ export default async function EventsPage() {
     ),
   ].sort() as string[];
 
+  const industries = [
+    ...new Set(
+      eventsWithSubscriptions.map((e) => e.event_industry).filter(Boolean)
+    ),
+  ].sort() as string[];
+
   return (
     <EventsBrowser
       initialEvents={eventsWithSubscriptions}
       credits={credits}
       years={years}
       regions={regions}
+      industries={industries}
       isAuthenticated={!!user}
       loadError={loadError}
     />

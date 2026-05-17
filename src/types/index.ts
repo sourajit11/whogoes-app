@@ -12,6 +12,7 @@ export interface BrowsableEvent {
   event_region: string | null;
   event_location: string | null;
   event_start_date: string | null;
+  event_industry: string | null;
   event_slug?: string;
   is_active: boolean;
   total_contacts: number;
@@ -114,3 +115,14 @@ export interface EventUnlockStatus {
 
 export type SortKey = "full_name" | "current_title" | "company_name" | "email" | "post_date";
 export type SortDir = "asc" | "desc";
+
+export interface ApiKeyDisplay {
+  id: string;
+  name: string;
+  key_prefix: string;
+  is_active: boolean;
+  daily_credit_cap: number | null;
+  created_at: string;
+  last_used_at: string | null;
+  revoked_at: string | null;
+}

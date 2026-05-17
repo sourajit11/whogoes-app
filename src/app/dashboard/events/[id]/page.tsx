@@ -22,7 +22,7 @@ export default async function EventDetailPage({ params }: Props) {
   const [eventRowRes, countsRes] = await Promise.all([
     adminClient
       .from("events")
-      .select("id, name, year, region, location, start_date, slug, is_active")
+      .select("id, name, year, region, location, start_date, slug, is_active, industry")
       .eq("id", id)
       .maybeSingle(),
     adminClient.rpc("get_event_unlock_status", { p_event_id: id }),
@@ -45,6 +45,7 @@ export default async function EventDetailPage({ params }: Props) {
     event_region: eventRow.region,
     event_location: eventRow.location,
     event_start_date: eventRow.start_date,
+    event_industry: eventRow.industry ?? null,
     event_slug: eventRow.slug,
     is_active: eventRow.is_active,
     total_contacts: counts?.total_contacts ?? 0,

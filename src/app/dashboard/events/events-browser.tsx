@@ -12,6 +12,7 @@ interface EventsBrowserProps {
   credits: number;
   years: number[];
   regions: string[];
+  industries: string[];
   isAuthenticated?: boolean;
   loadError?: boolean;
 }
@@ -21,6 +22,7 @@ export default function EventsBrowser({
   credits,
   years,
   regions,
+  industries,
   isAuthenticated,
   loadError = false,
 }: EventsBrowserProps) {
@@ -28,6 +30,7 @@ export default function EventsBrowser({
   const [isRefreshing, startRefreshing] = useTransition();
   const [selectedYear, setSelectedYear] = useState<string>("");
   const [selectedRegion, setSelectedRegion] = useState<string>("");
+  const [selectedIndustry, setSelectedIndustry] = useState<string>("");
   const [minContacts, setMinContacts] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
@@ -40,7 +43,7 @@ export default function EventsBrowser({
 
   // Reset pagination when filters change — using the "adjust state during render"
   // pattern (https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes).
-  const filterKey = `${selectedYear}|${selectedRegion}|${minContacts}|${statusFilter}|${deferredSearchQuery}`;
+  const filterKey = `${selectedYear}|${selectedRegion}|${selectedIndustry}|${minContacts}|${statusFilter}|${deferredSearchQuery}`;
   const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
   if (prevFilterKey !== filterKey) {
     setPrevFilterKey(filterKey);
@@ -50,6 +53,7 @@ export default function EventsBrowser({
   const hasActiveFilters =
     !!selectedYear ||
     !!selectedRegion ||
+    !!selectedIndustry ||
     !!minContacts ||
     !!statusFilter ||
     !!searchQuery.trim();
@@ -57,6 +61,7 @@ export default function EventsBrowser({
   function clearFilters() {
     setSelectedYear("");
     setSelectedRegion("");
+    setSelectedIndustry("");
     setMinContacts("");
     setStatusFilter("");
     setSearchQuery("");
@@ -70,6 +75,9 @@ export default function EventsBrowser({
     }
     if (selectedRegion) {
       result = result.filter((e) => e.event_region === selectedRegion);
+    }
+    if (selectedIndustry) {
+      result = result.filter((e) => e.event_industry === selectedIndustry);
     }
     if (minContacts) {
       result = result.filter(
@@ -104,7 +112,7 @@ export default function EventsBrowser({
     });
 
     return result;
-  }, [initialEvents, selectedYear, selectedRegion, minContacts, deferredSearchQuery, statusFilter, now]);
+  }, [initialEvents, selectedYear, selectedRegion, selectedIndustry, minContacts, deferredSearchQuery, statusFilter, now]);
 
   const visibleEvents = filteredEvents.slice(0, visibleCount);
   const hasMore = filteredEvents.length > visibleCount;
@@ -220,6 +228,19 @@ export default function EventsBrowser({
           {regions.map((r) => (
             <option key={r} value={r}>
               {r}
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={selectedIndustry}
+          onChange={(e) => setSelectedIndustry(e.target.value)}
+          className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 shadow-sm focus:border-zinc-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+        >
+          <option value="">All Industries</option>
+          {industries.map((i) => (
+            <option key={i} value={i}>
+              {i}
             </option>
           ))}
         </select>
