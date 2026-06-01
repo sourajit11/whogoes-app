@@ -90,6 +90,14 @@ export const mdxComponents: MDXComponents = {
       {...props}
     />
   ),
+  img: (props) => (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      className="rounded-lg border border-zinc-200 dark:border-zinc-800 my-6 mx-auto max-w-full h-auto shadow-sm"
+      loading="lazy"
+      {...props}
+    />
+  ),
   // Custom components usable inside MDX files
   Callout: ({
     children,
@@ -123,6 +131,25 @@ export const mdxComponents: MDXComponents = {
         className="inline-block rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-emerald-500 transition-colors"
       >
         Browse Events Free
+      </Link>
+    </div>
+  ),
+  // Compact, event-specific mid-page CTA. Use inside event posts:
+  // <EventCTA slug="ifat-munich-2026" name="IFAT Munich 2026" />
+  // Never bake an attendee count in here; the list is live and updates daily.
+  EventCTA: ({ slug, name }: { slug: string; name: string }) => (
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-lg border border-emerald-200 bg-emerald-50/70 dark:bg-emerald-950/50 dark:border-emerald-800 px-5 py-4 my-6">
+      <p className="text-sm text-zinc-700 dark:text-zinc-300">
+        <span className="font-semibold text-zinc-900 dark:text-white">
+          Want the {name} attendee list now?
+        </span>{" "}
+        Preview 5 verified contacts free, each with LinkedIn proof of attendance.
+      </p>
+      <Link
+        href={`/events/${slug}`}
+        className="shrink-0 inline-block rounded-lg bg-emerald-600 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-500 transition-colors text-center"
+      >
+        Preview {name} free
       </Link>
     </div>
   ),
