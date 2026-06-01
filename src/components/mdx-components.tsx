@@ -134,6 +134,33 @@ export const mdxComponents: MDXComponents = {
       </Link>
     </div>
   ),
+  // Image with a visible caption + alt text. Preferred over raw markdown images.
+  // <Figure src="/blog/whogoes-proof-view.jpg" alt="..." caption="..." />
+  // alt = for search engines / screen readers; caption = visible, extractable context.
+  Figure: ({
+    src,
+    alt,
+    caption,
+  }: {
+    src: string;
+    alt: string;
+    caption?: string;
+  }) => (
+    <figure className="my-6">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt={alt}
+        loading="lazy"
+        className="rounded-lg border border-zinc-200 dark:border-zinc-800 mx-auto max-w-full h-auto shadow-sm"
+      />
+      {caption ? (
+        <figcaption className="mt-2 text-center text-sm text-zinc-500 dark:text-zinc-400">
+          {caption}
+        </figcaption>
+      ) : null}
+    </figure>
+  ),
   // Compact, event-specific mid-page CTA. Use inside event posts:
   // <EventCTA slug="ifat-munich-2026" name="IFAT Munich 2026" />
   // Never bake an attendee count in here; the list is live and updates daily.
