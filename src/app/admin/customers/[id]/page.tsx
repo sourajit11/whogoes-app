@@ -10,58 +10,57 @@ export default async function AdminCustomerDetailPage({
   const { id } = await params;
   const admin = createAdminClient();
 
-  // Get customer info
+  // Get customer info (gates the page — must resolve before the rest)
   const { data: userRes, error: userErr } = await admin.auth.admin.getUserById(id);
   if (userErr || !userRes?.user) notFound();
   const user = userRes.user;
 
-  // Get free credits (from user_signups)
-  const { data: signup } = await admin
-    .from("user_signups")
-    .select("free_credits")
-    .eq("user_id", id)
-    .single();
-
-  // Get paid credits + totals (from customers)
-  const { data: customer } = await admin
-    .from("customers")
-    .select("credits_balance, total_paid_amount, total_purchased_credits")
-    .eq("user_id", id)
-    .single();
-
-  // Get payment history
-  const { data: payments } = await admin
-    .from("payments")
-    .select("id, amount_usd, credits, package_name, status, created_at, paid_at")
-    .eq("user_id", id)
-    .order("created_at", { ascending: false });
-
-  // Get subscribed events
-  const { data: subscriptions } = await admin
-    .from("customer_event_subscriptions")
-    .select("event_id, subscribed_at, is_paused, events(name)")
-    .eq("user_id", id)
-    .order("subscribed_at", { ascending: false });
-
-  // Get recent unlocks (table display)
-  const { data: unlocks } = await admin
-    .from("customer_contact_access")
-    .select("contact_id, event_id, charged_at, events(name), contacts(full_name)")
-    .eq("user_id", id)
-    .order("charged_at", { ascending: false })
-    .limit(50);
-
-  // Get exact total unlocks for the stat card
-  const { count: totalUnlocks } = await admin
-    .from("customer_contact_access")
-    .select("contact_id", { count: "exact", head: true })
-    .eq("user_id", id);
-
-  // Get monthly usage for this user
-  const { data: monthlyUsage } = await admin
-    .from("customer_contact_access")
-    .select("charged_at")
-    .eq("user_id", id);
+  // Everything below is keyed only on the user id and independent of each
+  // other — fetch in parallel instead of seven sequential round-trips.
+  const [
+    { data: signup },
+    { data: customer },
+    { data: payments },
+    { data: subscriptions },
+    { data: unlocks },
+    { count: totalUnlocks },
+    { data: monthlyUsage },
+  ] = await Promise.all([
+    admin
+      .from("user_signups")
+      .select("free_credits")
+      .eq("user_id", id)
+      .single(),
+    admin
+      .from("customers")
+      .select("credits_balance, total_paid_amount, total_purchased_credits")
+      .eq("user_id", id)
+      .single(),
+    admin
+      .from("payments")
+      .select("id, amount_usd, credits, package_name, status, created_at, paid_at")
+      .eq("user_id", id)
+      .order("created_at", { ascending: false }),
+    admin
+      .from("customer_event_subscriptions")
+      .select("event_id, subscribed_at, is_paused, events(name)")
+      .eq("user_id", id)
+      .order("subscribed_at", { ascending: false }),
+    admin
+      .from("customer_contact_access")
+      .select("contact_id, event_id, charged_at, events(name), contacts(full_name)")
+      .eq("user_id", id)
+      .order("charged_at", { ascending: false })
+      .limit(50),
+    admin
+      .from("customer_contact_access")
+      .select("contact_id", { count: "exact", head: true })
+      .eq("user_id", id),
+    admin
+      .from("customer_contact_access")
+      .select("charged_at")
+      .eq("user_id", id),
+  ]);
 
   // Aggregate monthly usage client-side
   const usageByMonth: Record<string, number> = {};
