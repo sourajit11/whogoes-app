@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { SubscribedEvent, Contact, SortKey, SortDir, UnlockResult } from "@/types";
 import ContactTable from "./contact-table";
@@ -11,6 +11,7 @@ import Link from "next/link";
 
 interface MyEventsViewProps {
   subscribedEvents: SubscribedEvent[];
+  loadError?: boolean;
 }
 
 type TabFilter = "all" | "new" | "processed";
@@ -19,13 +20,16 @@ const PAGE_SIZE = 50;
 
 export default function MyEventsView({
   subscribedEvents,
+  loadError = false,
 }: MyEventsViewProps) {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const initialEventId = searchParams.get("event") ?? "";
 
   const [selectedEventId, setSelectedEventId] = useState(initialEventId);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(false);
+  const [contactsError, setContactsError] = useState(false);
   const [activeTab, setActiveTab] = useState<TabFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [emailOnly, setEmailOnly] = useState(false);
@@ -73,6 +77,7 @@ export default function MyEventsView({
   const fetchContacts = useCallback(async () => {
     if (!selectedEventId) return;
     setLoading(true);
+    setContactsError(false);
 
     const allContacts: Contact[] = [];
     let from = 0;
@@ -88,7 +93,9 @@ export default function MyEventsView({
         .range(from, from + batchSize - 1);
 
       if (error) {
+        // Surface the failure instead of silently leaving an empty table.
         console.error("Error fetching contacts:", error);
+        setContactsError(true);
         setLoading(false);
         return;
       }
@@ -265,6 +272,28 @@ export default function MyEventsView({
 
     // Auto-clear success message after 5 seconds
     setTimeout(() => setUnlockSuccess(null), 5000);
+  }
+
+  if (subscribedEvents.length === 0 && loadError) {
+    return (
+      <div className="mx-auto max-w-7xl px-6 py-8">
+        <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+          Unlocked Events
+        </h1>
+        <div className="mt-6 flex items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-900/20 dark:text-amber-200">
+          <span>
+            We couldn&apos;t load your unlocked events. This is usually
+            temporary.
+          </span>
+          <button
+            onClick={() => router.refresh()}
+            className="cursor-pointer rounded-md border border-amber-300 bg-white px-3 py-1.5 font-medium text-amber-800 transition-colors hover:bg-amber-100 dark:border-amber-800 dark:bg-zinc-900 dark:text-amber-200 dark:hover:bg-zinc-800"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (subscribedEvents.length === 0) {
@@ -567,7 +596,19 @@ export default function MyEventsView({
         </div>
       )}
 
-      {!loading && (
+      {!loading && contactsError && (
+        <div className="mt-6 flex items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-900/20 dark:text-amber-200">
+          <span>We couldn&apos;t load these contacts. This is usually temporary.</span>
+          <button
+            onClick={() => fetchContacts()}
+            className="cursor-pointer rounded-md border border-amber-300 bg-white px-3 py-1.5 font-medium text-amber-800 transition-colors hover:bg-amber-100 dark:border-amber-800 dark:bg-zinc-900 dark:text-amber-200 dark:hover:bg-zinc-800"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
+      {!loading && !contactsError && (
         <>
           {/* Stats row */}
           {selectedEvent && (

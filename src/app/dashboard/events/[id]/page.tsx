@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
 import EventDetail from "./event-detail";
+import type { ContactPreview } from "@/types";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -10,28 +11,29 @@ interface Props {
 export default async function EventDetailPage({ params }: Props) {
   const { id } = await params;
   const supabase = await createClient();
-
-  // Check if user is authenticated (don't redirect - this is a public page)
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  // Look up just this event — used to fetch the full browsable list (~456 rows)
-  // every time, which crossed Supabase's statement_timeout on cold cache.
   const adminClient = createAdminClient();
-  const [eventRowRes, countsRes] = await Promise.all([
+
+  // Run all event-independent lookups together to avoid a cross-region
+  // (Supabase Tokyo) request waterfall: auth, the event row, public counts,
+  // and the 5-contact preview (server-rendered so it lands in the HTML).
+  const [userRes, eventRowRes, countsRes, previewRes] = await Promise.all([
+    supabase.auth.getUser(),
     adminClient
       .from("events")
       .select("id, name, year, region, location, start_date, slug, is_active, industry")
       .eq("id", id)
       .maybeSingle(),
     adminClient.rpc("get_event_unlock_status", { p_event_id: id }),
+    adminClient.rpc("get_event_preview", { p_event_id: id }),
   ]);
 
+  const user = userRes.data.user;
   const eventRow = eventRowRes.data;
   if (!eventRow) {
     notFound();
   }
+
+  const initialPreviews = (previewRes.data ?? []) as ContactPreview[];
 
   const counts = countsRes.data as {
     total_contacts?: number;
@@ -56,14 +58,15 @@ export default async function EventDetailPage({ params }: Props) {
   // Only fetch credits and unlock status if authenticated
   let credits = 0;
   let unlockStatus = null;
-  if (user) {
-    const { data: creditsData } = await supabase.rpc("get_customer_credits");
-    credits = creditsData ?? 0;
 
-    const { data: statusData } = await supabase.rpc("get_event_unlock_status", {
-      p_event_id: id,
-    });
-    unlockStatus = statusData ?? null;
+  if (user) {
+    // Both depend only on the user, so fetch them together.
+    const [creditsRes, statusRes] = await Promise.all([
+      supabase.rpc("get_customer_credits"),
+      supabase.rpc("get_event_unlock_status", { p_event_id: id }),
+    ]);
+    credits = creditsRes.data ?? 0;
+    unlockStatus = statusRes.data ?? null;
   }
 
   return (
@@ -73,6 +76,7 @@ export default async function EventDetailPage({ params }: Props) {
       isAuthenticated={!!user}
       unlockStatus={unlockStatus}
       userEmail={user?.email ?? undefined}
+      initialPreviews={initialPreviews}
     />
   );
 }

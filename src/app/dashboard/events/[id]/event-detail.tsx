@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -18,6 +18,7 @@ interface EventDetailProps {
   isAuthenticated: boolean;
   unlockStatus: EventUnlockStatus | null;
   userEmail?: string;
+  initialPreviews?: ContactPreview[];
 }
 
 const FREE_PREVIEW_COUNT = 5;
@@ -55,9 +56,15 @@ export default function EventDetail({
   isAuthenticated,
   unlockStatus: initialUnlockStatus,
   userEmail,
+  initialPreviews = [],
 }: EventDetailProps) {
-  const [previews, setPreviews] = useState<ContactPreview[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [previews, setPreviews] = useState<ContactPreview[]>(initialPreviews);
+  // Start without the spinner when the server already sent preview rows.
+  const [loading, setLoading] = useState(initialPreviews.length === 0);
+  // Stable across renders — whether the server seeded the preview on mount.
+  const hadInitialPreviews = useRef(initialPreviews.length > 0);
+  const [previewError, setPreviewError] = useState<string | null>(null);
+  const [previewReloadKey, setPreviewReloadKey] = useState(0);
   const [unlocking, setUnlocking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -101,15 +108,37 @@ export default function EventDetail({
   const remainingCount = unlockStatus?.remaining_count ?? totalContacts;
 
   useEffect(() => {
+    // The server component renders the preview into the initial HTML. Only
+    // hit the network on an explicit Retry (previewReloadKey > 0) or when the
+    // server returned nothing (fallback for a cold/failed server fetch).
+    if (previewReloadKey === 0 && hadInitialPreviews.current) {
+      return;
+    }
+    let cancelled = false;
     async function fetchPreview() {
-      const { data } = await supabase.rpc("get_event_preview", {
+      setLoading(true);
+      setPreviewError(null);
+      const { data, error: rpcError } = await supabase.rpc("get_event_preview", {
         p_event_id: event.event_id,
       });
-      setPreviews(data ?? []);
+      if (cancelled) return;
+      if (rpcError) {
+        setPreviewError(
+          rpcError.code === "57014"
+            ? "The preview took too long to load. Try again in a moment."
+            : "We couldn't load the preview. Please retry."
+        );
+        setPreviews([]);
+      } else {
+        setPreviews(data ?? []);
+      }
       setLoading(false);
     }
     fetchPreview();
-  }, [event.event_id, supabase]);
+    return () => {
+      cancelled = true;
+    };
+  }, [event.event_id, supabase, previewReloadKey]);
 
   // Update slider index when credits or unlock status changes
   useEffect(() => {
@@ -349,6 +378,18 @@ export default function EventDetail({
             ? `Showing ${FREE_PREVIEW_COUNT} preview contacts. You've unlocked ${unlockedCount.toLocaleString()} — view them in Unlocked Events.`
             : "Preview of contacts associated with this event"}
         </p>
+
+        {previewError && !loading && (
+          <div className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-900/20 dark:text-amber-200">
+            <span>{previewError}</span>
+            <button
+              onClick={() => setPreviewReloadKey((k) => k + 1)}
+              className="cursor-pointer rounded-md border border-amber-300 bg-white px-3 py-1.5 font-medium text-amber-800 transition-colors hover:bg-amber-100 dark:border-amber-800 dark:bg-zinc-900 dark:text-amber-200 dark:hover:bg-zinc-800"
+            >
+              Retry
+            </button>
+          </div>
+        )}
 
         {loading ? (
           <div className="mt-6 flex h-48 items-center justify-center">

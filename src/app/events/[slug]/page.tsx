@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import EventDetail from "@/app/dashboard/events/[id]/event-detail";
 import { getPostBySlug } from "@/lib/blog";
-import type { BrowsableEvent } from "@/types";
+import type { BrowsableEvent, ContactPreview } from "@/types";
 import noindexedConfig from "@/config/noindexed-event-slugs.json";
 
 const NOINDEXED_SLUGS = new Set<string>(noindexedConfig.slugs);
@@ -162,30 +162,34 @@ export default async function PublicEventDetailPage({ params }: Props) {
   const { slug } = await params;
   const supabase = await createClient();
 
-  // Check auth (don't redirect — public page)
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Auth + the event lookup are independent — run them together so we don't
+  // pay two sequential cross-region (Supabase Tokyo) round-trips.
+  const [userRes, eventsRes] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase.rpc("get_event_by_slug", { p_slug: slug }),
+  ]);
 
-  const { data: events } = await supabase.rpc("get_event_by_slug", {
-    p_slug: slug,
-  });
-
-  const event = events?.[0] as BrowsableEvent & { event_slug: string } | undefined;
+  const user = userRes.data.user;
+  const event = eventsRes.data?.[0] as
+    | (BrowsableEvent & { event_slug: string })
+    | undefined;
   if (!event) notFound();
 
-  // Only fetch credits and unlock status if authenticated
-  let credits = 0;
-  let unlockStatus = null;
-  if (user) {
-    const { data: creditsData } = await supabase.rpc("get_customer_credits");
-    credits = creditsData ?? 0;
+  // The 5-contact preview, credits and unlock status all depend on the
+  // event_id we just resolved, but not on each other — fetch in parallel.
+  // Rendering the preview server-side puts it straight into the HTML (no
+  // post-hydration fetch, no "all blurred" flash) and helps SEO.
+  const [previewRes, creditsRes, statusRes] = await Promise.all([
+    supabase.rpc("get_event_preview", { p_event_id: event.event_id }),
+    user ? supabase.rpc("get_customer_credits") : Promise.resolve({ data: null }),
+    user
+      ? supabase.rpc("get_event_unlock_status", { p_event_id: event.event_id })
+      : Promise.resolve({ data: null }),
+  ]);
 
-    const { data: statusData } = await supabase.rpc("get_event_unlock_status", {
-      p_event_id: event.event_id,
-    });
-    unlockStatus = statusData ?? null;
-  }
+  const initialPreviews = (previewRes.data ?? []) as ContactPreview[];
+  const credits = user ? (creditsRes.data ?? 0) : 0;
+  const unlockStatus = user ? (statusRes.data ?? null) : null;
 
   // Check if a matching blog post exists for this event
   const relatedPost = getPostBySlug(`${slug}-attendee-list`);
@@ -200,6 +204,7 @@ export default async function PublicEventDetailPage({ params }: Props) {
         isAuthenticated={!!user}
         unlockStatus={unlockStatus}
         userEmail={user?.email ?? undefined}
+        initialPreviews={initialPreviews}
       />
       {relatedPost && (
         <div className="mx-auto max-w-4xl px-4 pb-12">

@@ -4,9 +4,17 @@ import MyEventsView from "./my-events-view";
 export default async function MyEventsPage() {
   const supabase = await createClient();
 
-  const { data: subscribedEvents } = await supabase.rpc(
+  const { data: subscribedEvents, error } = await supabase.rpc(
     "get_subscribed_events"
   );
+  // Distinguish a genuinely-empty list from a failed query so the view shows
+  // Retry instead of the "Browse Events" empty state on a timeout.
+  const loadError = !!error;
 
-  return <MyEventsView subscribedEvents={subscribedEvents ?? []} />;
+  return (
+    <MyEventsView
+      subscribedEvents={subscribedEvents ?? []}
+      loadError={loadError}
+    />
+  );
 }
