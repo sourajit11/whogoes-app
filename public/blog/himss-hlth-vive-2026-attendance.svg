@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 420" role="img" aria-label="Healthcare IT conference attendance comparison: HIMSS, HLTH, ViVE 2026">
+  <rect width="760" height="420" fill="#ffffff"/>
+  <text x="28" y="34" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#111827">Healthcare IT conference attendance, 2026</text>
+  <text x="28" y="56" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#6b7280">Approximate attendees: HIMSS is the largest by a wide margin</text>
+  <line x1="80" y1="330" x2="720" y2="330" stroke="#e5e7eb" stroke-width="1"/>
+
+  <rect x="150" y="100" width="120" height="230" rx="2" fill="#059669"/>
+  <text x="210" y="92" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#111827">~30,000</text>
+  <text x="210" y="350" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#374151">HIMSS</text>
+
+  <rect x="340" y="276" width="120" height="54" rx="2" fill="#10b981"/>
+  <text x="400" y="268" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#111827">~7,000</text>
+  <text x="400" y="350" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#374151">HLTH</text>
+
+  <rect x="530" y="292" width="120" height="38" rx="2" fill="#34d399"/>
+  <text x="590" y="284" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#111827">~5,000</text>
+  <text x="590" y="350" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#374151">ViVE</text>
+
+  <text x="28" y="404" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#9ca3af">Source: conference organizer attendance figures, 2026 editions. Figures approximate.</text>
+</svg>

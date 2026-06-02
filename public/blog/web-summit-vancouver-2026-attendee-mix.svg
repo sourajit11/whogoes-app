@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 420" role="img" aria-label="Web Summit Vancouver 2026 attendee mix by segment">
+  <rect width="760" height="420" fill="#ffffff"/>
+  <text x="28" y="34" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#111827">Web Summit Vancouver 2026 attendee mix</text>
+  <text x="28" y="56" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#6b7280">Key segments within the ~15,000 expected attendees (May 11-14)</text>
+  <line x1="80" y1="330" x2="720" y2="330" stroke="#e5e7eb" stroke-width="1"/>
+
+  <rect x="130" y="100" width="100" height="230" rx="2" fill="#059669"/>
+  <text x="180" y="92" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#111827">1,000-2,000</text>
+  <text x="180" y="350" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#374151">Startups</text>
+
+  <rect x="290" y="215" width="100" height="115" rx="2" fill="#10b981"/>
+  <text x="340" y="207" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#111827">500-1,000</text>
+  <text x="340" y="350" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#374151">Investors</text>
+
+  <rect x="450" y="253" width="100" height="77" rx="2" fill="#34d399"/>
+  <text x="500" y="245" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#111827">500+</text>
+  <text x="500" y="350" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#374151">Speakers</text>
+
+  <rect x="610" y="269" width="100" height="61" rx="2" fill="#34d399"/>
+  <text x="660" y="261" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#111827">400+</text>
+  <text x="660" y="350" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#374151">Media</text>
+
+  <text x="28" y="404" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#9ca3af">Source: Web Summit organizer projections for the inaugural Vancouver edition. Figures approximate.</text>
+</svg>

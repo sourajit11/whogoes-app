@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 450" role="img" aria-label="IFAT Munich 2026 exhibitors by category, approximate counts">
+  <rect width="760" height="450" fill="#ffffff"/>
+  <text x="28" y="34" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#111827">IFAT Munich 2026 exhibitors by category</text>
+  <text x="28" y="56" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#6b7280">Approximate exhibitor counts across 18 halls (about 3,200 total)</text>
+  <line x1="255" y1="72" x2="255" y2="412" stroke="#e5e7eb" stroke-width="1"/>
+
+  <text x="245" y="95" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#374151">Water &amp; wastewater</text>
+  <rect x="255" y="80" width="450" height="20" rx="2" fill="#059669"/>
+  <text x="711" y="95" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#111827">~1,000</text>
+
+  <text x="245" y="139" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#374151">Waste &amp; recycling</text>
+  <rect x="255" y="124" width="360" height="20" rx="2" fill="#059669"/>
+  <text x="621" y="139" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#111827">~800</text>
+
+  <text x="245" y="183" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#374151">Mobile machinery</text>
+  <rect x="255" y="168" width="338" height="20" rx="2" fill="#10b981"/>
+  <text x="599" y="183" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#111827">~750</text>
+
+  <text x="245" y="227" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#374151">Raw materials recovery</text>
+  <rect x="255" y="212" width="135" height="20" rx="2" fill="#10b981"/>
+  <text x="396" y="227" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#111827">~300</text>
+
+  <text x="245" y="271" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#374151">Air pollution control</text>
+  <rect x="255" y="256" width="113" height="20" rx="2" fill="#34d399"/>
+  <text x="374" y="271" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#111827">~250</text>
+
+  <text x="245" y="315" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#374151">Sewer &amp; pipe</text>
+  <rect x="255" y="300" width="113" height="20" rx="2" fill="#34d399"/>
+  <text x="374" y="315" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#111827">~250</text>
+
+  <text x="245" y="359" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#374151">Energy &amp; biogas</text>
+  <rect x="255" y="344" width="90" height="20" rx="2" fill="#34d399"/>
+  <text x="351" y="359" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#111827">~200</text>
+
+  <text x="245" y="403" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#374151">Digital &amp; software</text>
+  <rect x="255" y="388" width="79" height="20" rx="2" fill="#34d399"/>
+  <text x="340" y="403" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#111827">~175</text>
+
+  <text x="28" y="438" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#9ca3af">Source: IFAT organizer figures and 2024 exhibitor directory (Messe Munchen). Figures approximate.</text>
+</svg>
