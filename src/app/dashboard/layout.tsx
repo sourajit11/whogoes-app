@@ -53,12 +53,14 @@ export default async function DashboardLayout({
     );
   }
 
-  // Authenticated layout: full sidebar
-  const { data: credits } = await supabase.rpc("get_customer_credits");
-
-  const { data: subscribedEvents } = await supabase.rpc(
-    "get_subscribed_events"
-  );
+  // Authenticated layout: full sidebar. Credits and the subscribed-event
+  // badge count are independent — fetch them together (one cross-region hop).
+  const [creditsRes, subscribedRes] = await Promise.all([
+    supabase.rpc("get_customer_credits"),
+    supabase.rpc("get_subscribed_events"),
+  ]);
+  const credits = creditsRes.data;
+  const subscribedEvents = subscribedRes.data;
   const totalNewLeads =
     subscribedEvents?.reduce(
       (sum: number, e: { new_contacts: number }) => sum + e.new_contacts,

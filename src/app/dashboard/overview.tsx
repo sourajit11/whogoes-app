@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { DashboardOverview, SubscribedEvent } from "@/types";
 import StatCard from "./components/stat-card";
 import EmptyState from "./components/empty-state";
@@ -8,12 +9,15 @@ import EmptyState from "./components/empty-state";
 interface OverviewProps {
   overview: DashboardOverview;
   subscribedEvents: SubscribedEvent[];
+  loadError?: boolean;
 }
 
 export default function Overview({
   overview,
   subscribedEvents,
+  loadError = false,
 }: OverviewProps) {
+  const router = useRouter();
   return (
     <div className="mx-auto max-w-7xl px-6 py-8">
       <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
@@ -22,6 +26,18 @@ export default function Overview({
       <p className="mt-1 text-sm text-zinc-400">
         Overview of your event attendee data
       </p>
+
+      {loadError && (
+        <div className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-900/20 dark:text-amber-200">
+          <span>We couldn&apos;t load your dashboard. This is usually temporary.</span>
+          <button
+            onClick={() => router.refresh()}
+            className="cursor-pointer rounded-md border border-amber-300 bg-white px-3 py-1.5 font-medium text-amber-800 transition-colors hover:bg-amber-100 dark:border-amber-800 dark:bg-zinc-900 dark:text-amber-200 dark:hover:bg-zinc-800"
+          >
+            Retry
+          </button>
+        </div>
+      )}
 
       {/* Stats */}
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
