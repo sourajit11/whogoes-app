@@ -46,6 +46,12 @@ export default async function sitemap(props: any): Promise<MetadataRoute.Sitemap
         changeFrequency: "weekly" as const,
         priority: 0.9,
       },
+      {
+        url: "https://app.whogoes.co/affiliates",
+        lastModified: new Date(),
+        changeFrequency: "monthly" as const,
+        priority: 0.7,
+      },
       ...blogPosts.map((post) => ({
         url: `https://app.whogoes.co/blog/${post.meta.slug}`,
         lastModified: new Date(post.meta.date),
