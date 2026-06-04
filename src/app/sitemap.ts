@@ -65,7 +65,7 @@ export default async function sitemap(props: any): Promise<MetadataRoute.Sitemap
   if (sitemapId === 1) {
     return getAllComparisons().map((c) => ({
       url: `https://app.whogoes.co/compare/${c.meta.slug}`,
-      lastModified: new Date(c.meta.date),
+      lastModified: new Date(c.meta.updatedDate ?? c.meta.date),
       changeFrequency: "monthly" as const,
       priority: 0.85,
     }));
