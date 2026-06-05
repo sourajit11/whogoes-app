@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import AffiliateForm from "./affiliate-form";
 
 export const metadata: Metadata = {
   title: "WhoGoes Affiliate Program: Earn 30% on Every Sale, Forever",
@@ -67,12 +66,20 @@ export default function AffiliatesPage() {
               WhoGoes
             </span>
           </Link>
-          <Link
-            href="/events"
-            className="text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
-          >
-            Browse Events
-          </Link>
+          <div className="flex items-center gap-5">
+            <Link
+              href="/affiliate/login"
+              className="text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+            >
+              Affiliate login
+            </Link>
+            <Link
+              href="/affiliate/register"
+              className="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700"
+            >
+              Become an affiliate
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -91,12 +98,12 @@ export default function AffiliatesPage() {
             credit purchase and every top-up they ever buy after. No expiry, no
             cap.
           </p>
-          <a
-            href="#apply"
+          <Link
+            href="/affiliate/register"
             className="mt-8 inline-block rounded-full bg-emerald-600 px-7 py-3 font-semibold text-white transition-colors hover:bg-emerald-700"
           >
             Become an affiliate
-          </a>
+          </Link>
         </div>
       </section>
 
@@ -226,19 +233,28 @@ export default function AffiliatesPage() {
           </dl>
         </section>
 
-        {/* Apply form */}
+        {/* Apply CTA */}
         <section id="apply" className="mt-16 scroll-mt-8">
-          <div className="mx-auto max-w-xl rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="mx-auto max-w-xl rounded-2xl border border-zinc-200 bg-white p-8 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
             <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">
-              Apply to become an affiliate
+              Ready to start earning?
             </h2>
             <p className="mt-2 text-zinc-600 dark:text-zinc-400">
-              Fill this out and we&apos;ll get back to you with your affiliate
-              link.
+              Create your affiliate account in under a minute. Once approved, you&apos;ll
+              get your referral link and dashboard to track every signup and payout.
             </p>
-            <div className="mt-6">
-              <AffiliateForm />
-            </div>
+            <Link
+              href="/affiliate/register"
+              className="mt-6 inline-block rounded-full bg-emerald-600 px-7 py-3 font-semibold text-white transition-colors hover:bg-emerald-700"
+            >
+              Apply to become an affiliate
+            </Link>
+            <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400">
+              Already an affiliate?{" "}
+              <Link href="/affiliate/login" className="font-medium text-emerald-600 hover:underline">
+                Sign in
+              </Link>
+            </p>
           </div>
         </section>
       </div>

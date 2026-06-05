@@ -29,6 +29,17 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Capture affiliate referral codes (?ref=CODE) into a 90-day cookie so the
+  // signup flow can attribute the eventual account to the affiliate.
+  const refCode = request.nextUrl.searchParams.get("ref");
+  if (refCode && refCode.length <= 32) {
+    supabaseResponse.cookies.set("wg_ref", refCode, {
+      maxAge: 60 * 60 * 24 * 90,
+      sameSite: "lax",
+      path: "/",
+    });
+  }
+
   // Public routes that don't require authentication
   const isPublicRoute =
     request.nextUrl.pathname === "/" ||
@@ -46,6 +57,8 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/compare/") ||
     request.nextUrl.pathname === "/affiliates" ||
     request.nextUrl.pathname.startsWith("/affiliates/") ||
+    request.nextUrl.pathname === "/affiliate/login" ||
+    request.nextUrl.pathname === "/affiliate/register" ||
     request.nextUrl.pathname.startsWith("/api/payments/") ||
     request.nextUrl.pathname.startsWith("/api/loops/signup") ||
     request.nextUrl.pathname.startsWith("/api/indexnow") ||
@@ -59,10 +72,13 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Redirect unauthenticated users to login (except public routes)
+  // Redirect unauthenticated users to login (except public routes).
+  // Affiliate portal pages get sent to the affiliate login.
   if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
+    url.pathname = request.nextUrl.pathname.startsWith("/affiliate")
+      ? "/affiliate/login"
+      : "/login";
     return NextResponse.redirect(url);
   }
 

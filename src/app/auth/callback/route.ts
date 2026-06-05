@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createLoopsContact, sendLoopsEvent } from "@/lib/loops";
 
 export async function GET(request: Request) {
@@ -45,6 +47,18 @@ export async function GET(request: Request) {
             email: user.email!,
             eventName: "signup",
           }).catch((err) => console.error("Loops signup event failed:", err));
+
+          // Attribute this signup to an affiliate (referral cookie or email match).
+          try {
+            const refCode = (await cookies()).get("wg_ref")?.value ?? null;
+            await createAdminClient().rpc("match_affiliate_for_signup", {
+              p_user_id: user.id,
+              p_email: user.email,
+              p_referral_code: refCode,
+            });
+          } catch (err) {
+            console.error("Affiliate match failed:", err);
+          }
         }
       }
 

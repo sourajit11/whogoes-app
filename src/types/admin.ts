@@ -105,6 +105,81 @@ export interface AdminPaymentWithEmail {
   user_email: string;
 }
 
+// --- Affiliate program types ---
+
+export interface AdminAffiliate {
+  affiliate_id: string;
+  user_id: string;
+  email: string;
+  display_name: string | null;
+  status: "pending" | "active" | "suspended";
+  referral_code: string | null;
+  pending_balance_usd: number;
+  paid_balance_usd: number;
+  total_earned_usd: number;
+  created_at: string;
+  approved_at: string | null;
+  referral_count: number;
+  paying_count: number;
+  last_referral_at: string | null;
+}
+
+export interface AdminAffiliateReferral {
+  id: string;
+  email: string | null;
+  source: "email_match" | "link";
+  status: "active" | "voided";
+  referred_at: string;
+  first_purchase_at: string | null;
+  earned_usd: number;
+}
+
+export interface AdminAffiliateCommission {
+  id: string;
+  amount_usd: number;
+  commission_usd: number;
+  status: "pending" | "paid" | "voided";
+  created_at: string;
+}
+
+export interface AdminAffiliateContact {
+  email: string | null;
+  status: "pending" | "matched" | "expired";
+  added_at: string;
+  matched_at: string | null;
+}
+
+export interface AdminAffiliatePayout {
+  id: string;
+  amount_usd: number;
+  status: "pending" | "paid";
+  method: string | null;
+  reference: string | null;
+  created_at: string;
+  paid_at: string | null;
+}
+
+export interface AdminAffiliateDetail {
+  affiliate: {
+    id: string;
+    email: string;
+    display_name: string | null;
+    status: "pending" | "active" | "suspended";
+    referral_code: string | null;
+    pending_balance_usd: number;
+    paid_balance_usd: number;
+    total_earned_usd: number;
+    payout_method: string | null;
+    payout_details: Record<string, unknown> | null;
+    created_at: string;
+    approved_at: string | null;
+  };
+  referrals: AdminAffiliateReferral[];
+  commissions: AdminAffiliateCommission[];
+  contacts: AdminAffiliateContact[];
+  payouts: AdminAffiliatePayout[];
+}
+
 // --- CEO Dashboard types ---
 
 export type TimeRange = "today" | "7d" | "4w" | "3m" | "all";
