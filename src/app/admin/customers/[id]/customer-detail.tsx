@@ -25,6 +25,9 @@ interface CustomerDetailProps {
   recentUnlocks: AdminCustomerUnlock[];
   contactsUnlockedCount: number;
   monthlyBreakdown: { month: string; credits_used: number }[];
+  referredByEmail: string | null;
+  referredByCode: string | null;
+  referralSource: "email_match" | "link" | null;
 }
 
 export default function CustomerDetail({
@@ -40,6 +43,9 @@ export default function CustomerDetail({
   recentUnlocks,
   contactsUnlockedCount,
   monthlyBreakdown,
+  referredByEmail,
+  referredByCode,
+  referralSource,
 }: CustomerDetailProps) {
   const router = useRouter();
   const totalBalance = freeCredits + paidCredits;
@@ -164,6 +170,16 @@ export default function CustomerDetail({
       <p className="mt-1 text-sm text-zinc-400">
         Signed up {new Date(signedUpAt).toLocaleDateString()}
       </p>
+
+      {referredByEmail && (
+        <div className="mt-3 inline-flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-1.5 text-sm font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
+          <span>
+            Referred by {referredByEmail}
+            {referredByCode ? ` (${referredByCode})` : ""} ·{" "}
+            {referralSource === "link" ? "referral link" : "submitted email"}
+          </span>
+        </div>
+      )}
 
       {/* Stats — 5 columns */}
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">

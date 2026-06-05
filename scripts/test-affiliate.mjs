@@ -98,7 +98,7 @@ async function run() {
   });
   let aff = await affiliateRow(created.affiliateId);
   check("affiliate is active", aff.status === "active");
-  check("referral_code assigned", !!aff.referral_code && aff.referral_code.length === 8, aff.referral_code);
+  check("referral_code assigned (name-based slug)", !!aff.referral_code && /^[a-z0-9_]+$/.test(aff.referral_code), aff.referral_code);
   const CODE = aff.referral_code;
 
   console.log("[2] Email-match attribution (within 7-day window)");

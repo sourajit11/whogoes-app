@@ -25,6 +25,7 @@ export default async function AdminCustomerDetailPage({
     { data: unlocks },
     { count: totalUnlocks },
     { data: monthlyUsage },
+    { data: refRow },
   ] = await Promise.all([
     admin
       .from("user_signups")
@@ -60,6 +61,11 @@ export default async function AdminCustomerDetailPage({
       .from("customer_contact_access")
       .select("charged_at")
       .eq("user_id", id),
+    admin
+      .from("admin_customer_overview")
+      .select("referred_by_email, referred_by_code, referral_source")
+      .eq("user_id", id)
+      .maybeSingle(),
   ]);
 
   // Aggregate monthly usage client-side
@@ -119,6 +125,9 @@ export default async function AdminCustomerDetailPage({
         }) ?? []
       }
       monthlyBreakdown={monthlyBreakdown}
+      referredByEmail={refRow?.referred_by_email ?? null}
+      referredByCode={refRow?.referred_by_code ?? null}
+      referralSource={refRow?.referral_source ?? null}
     />
   );
 }

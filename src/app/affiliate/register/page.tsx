@@ -22,6 +22,7 @@ function AffiliateRegisterForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [agreed, setAgreed] = useState(false);
   // null = still checking session; false = anonymous; string = signed-in email
   const [signedInEmail, setSignedInEmail] = useState<string | null | false>(null);
   const router = useRouter();
@@ -51,6 +52,7 @@ function AffiliateRegisterForm() {
   async function applyAndEnter(displayName: string) {
     const { error } = await supabase.rpc("affiliate_apply", {
       p_display_name: displayName,
+      p_accept_terms: true,
     });
     if (error) {
       setError(error.message);
@@ -123,6 +125,24 @@ function AffiliateRegisterForm() {
     </div>
   );
 
+  const termsCheckbox = (
+    <label className="flex items-start gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+      <input
+        type="checkbox"
+        checked={agreed}
+        onChange={(e) => setAgreed(e.target.checked)}
+        className="mt-0.5 h-4 w-4 rounded border-zinc-300 text-emerald-600 focus:ring-emerald-500"
+      />
+      <span>
+        I agree to the{" "}
+        <Link href="/affiliate/terms" target="_blank" className="font-medium text-emerald-600 hover:underline">
+          Affiliate Program Terms
+        </Link>
+        .
+      </span>
+    </label>
+  );
+
   if (signedInEmail === null) {
     return <Shell subtitle="Loading..."><div /></Shell>;
   }
@@ -135,8 +155,9 @@ function AffiliateRegisterForm() {
           <div className="rounded-lg border border-zinc-200 bg-white p-4 text-sm text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
             You&apos;re signed in as <span className="font-medium text-zinc-900 dark:text-white">{signedInEmail}</span>. Apply with this account to start earning 30% on every referral.
           </div>
+          {termsCheckbox}
           {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
-          <button onClick={handleApplyExisting} disabled={loading}
+          <button onClick={handleApplyExisting} disabled={loading || !agreed}
             className="w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 disabled:opacity-50">
             {loading ? "Submitting..." : "Apply to become an affiliate"}
           </button>
@@ -182,8 +203,9 @@ function AffiliateRegisterForm() {
             className="mt-1 block w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
             placeholder="••••••••" />
         </div>
+        {termsCheckbox}
         {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
-        <button type="submit" disabled={loading}
+        <button type="submit" disabled={loading || !agreed}
           className="w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 disabled:opacity-50">
           {loading ? "Submitting..." : "Apply to become an affiliate"}
         </button>

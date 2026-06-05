@@ -41,6 +41,9 @@ export interface AffiliateDashboard {
   paid_balance_usd: number;
   total_earned_usd: number;
   payout_threshold_usd: number;
+  daily_contact_limit: number;
+  contacts_added_today: number;
+  terms_accepted_at: string | null;
   signups: number;
   paying_customers: number;
   referrals: AffiliateReferral[];

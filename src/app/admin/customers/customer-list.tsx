@@ -288,6 +288,14 @@ export default function CustomerList({ customers }: CustomerListProps) {
                     >
                       {customer.email}
                     </Link>
+                    {customer.referred_by_email && (
+                      <span
+                        className="mt-1 flex w-fit items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
+                        title={`Referred by ${customer.referred_by_email} (${customer.referral_source === "link" ? "link" : "email"})`}
+                      >
+                        ↳ ref: {customer.referred_by_email}
+                      </span>
+                    )}
                   </td>
                   {activeTab === "paid" ? (
                     <>

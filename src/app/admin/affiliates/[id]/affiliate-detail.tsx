@@ -20,6 +20,21 @@ export default function AffiliateDetail({
   const [busy, setBusy] = useState(false);
   const a = detail.affiliate;
   const payoutDetails = a.payout_details as { info?: string } | null;
+  const [limit, setLimit] = useState(a.daily_contact_limit ?? 10);
+  const [limitSaved, setLimitSaved] = useState(false);
+
+  async function saveLimit() {
+    setBusy(true);
+    setLimitSaved(false);
+    await fetch("/admin/api/set-contact-limit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ affiliate_id: affiliateId, limit: Number(limit) }),
+    });
+    setBusy(false);
+    setLimitSaved(true);
+    router.refresh();
+  }
 
   async function markPaid() {
     const reference = window.prompt("Payout reference (transaction id / note)?") ?? "";
@@ -85,6 +100,27 @@ export default function AffiliateDetail({
         <span className="text-zinc-600 dark:text-zinc-400">
           {a.payout_method ? `${a.payout_method} — ${payoutDetails?.info ?? "no details"}` : "Not provided"}
         </span>
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-zinc-200 bg-white p-4 text-sm dark:border-zinc-800 dark:bg-zinc-900">
+        <span className="font-medium text-zinc-700 dark:text-zinc-300">Daily contact limit:</span>
+        <input
+          type="number"
+          min={0}
+          max={1000}
+          value={limit}
+          onChange={(e) => { setLimit(Number(e.target.value)); setLimitSaved(false); }}
+          className="w-24 rounded-lg border border-zinc-300 px-2.5 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+        />
+        <button
+          onClick={saveLimit}
+          disabled={busy}
+          className="rounded-lg bg-zinc-100 px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-200 disabled:opacity-50 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
+        >
+          Save
+        </button>
+        {limitSaved && <span className="text-emerald-600 dark:text-emerald-400">Saved</span>}
+        <span className="text-xs text-zinc-400">Default 10. Raise for trusted affiliates.</span>
       </div>
 
       {/* Commissions */}

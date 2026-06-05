@@ -12,6 +12,9 @@ export interface AdminCustomer {
   subscribed_events: number;
   last_activity: string | null;
   last_package: string | null;
+  referred_by_email: string | null;
+  referred_by_code: string | null;
+  referral_source: "email_match" | "link" | null;
 }
 
 export interface AdminBusinessStats {
@@ -171,6 +174,7 @@ export interface AdminAffiliateDetail {
     total_earned_usd: number;
     payout_method: string | null;
     payout_details: Record<string, unknown> | null;
+    daily_contact_limit: number;
     created_at: string;
     approved_at: string | null;
   };

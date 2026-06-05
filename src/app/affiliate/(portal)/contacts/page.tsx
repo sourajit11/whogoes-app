@@ -11,10 +11,16 @@ export default function AffiliateContactsPage() {
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [contacts, setContacts] = useState<AffiliateContact[]>([]);
+  const [limit, setLimit] = useState(10);
+  const [usedToday, setUsedToday] = useState(0);
 
   async function refresh() {
     const { data } = await supabase.rpc("affiliate_get_dashboard");
-    if (data) setContacts((data.contacts ?? []) as AffiliateContact[]);
+    if (data) {
+      setContacts((data.contacts ?? []) as AffiliateContact[]);
+      setLimit(data.daily_contact_limit ?? 10);
+      setUsedToday(data.contacts_added_today ?? 0);
+    }
   }
 
   useEffect(() => {
@@ -57,8 +63,10 @@ export default function AffiliateContactsPage() {
     const parts = [`${data.added} added`];
     if (data.duplicates) parts.push(`${data.duplicates} already on your list`);
     if (data.matched) parts.push(`${data.matched} matched to a signup`);
-    if (data.capped) parts.push("daily limit reached");
+    if (data.capped) parts.push(`daily limit of ${data.daily_limit} reached`);
     setResult(parts.join(", ") + ".");
+    if (typeof data.daily_limit === "number") setLimit(data.daily_limit);
+    if (typeof data.used_today === "number") setUsedToday(data.used_today);
     setRaw("");
     setLoading(false);
     refresh();
@@ -76,6 +84,10 @@ export default function AffiliateContactsPage() {
       <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
         Paste the emails of people you think will sign up. If an email registers within 7 days before or after you add it, the customer is credited to you.
       </p>
+      <div className="mt-3 inline-flex items-center gap-2 rounded-lg bg-zinc-100 px-3 py-1.5 text-xs font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+        <span>Today: {usedToday} / {limit} added</span>
+        {usedToday >= limit && <span className="text-amber-600 dark:text-amber-400">· daily limit reached</span>}
+      </div>
 
       <form onSubmit={handleSubmit} className="mt-6">
         <textarea
@@ -85,7 +97,9 @@ export default function AffiliateContactsPage() {
           placeholder={"jane@company.com\njohn@business.com\n..."}
           className="w-full rounded-lg border border-zinc-300 px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
         />
-        <p className="mt-1 text-xs text-zinc-400">Separate emails with new lines, commas, or spaces.</p>
+        <p className="mt-1 text-xs text-zinc-400">
+          Separate emails with new lines, commas, or spaces. You can add up to {limit} per day. Unmatched contacts expire after 30 days.
+        </p>
         {error && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>}
         {result && <p className="mt-2 text-sm text-emerald-600 dark:text-emerald-400">{result}</p>}
         <button type="submit" disabled={loading}

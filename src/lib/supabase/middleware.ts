@@ -59,6 +59,7 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/affiliates/") ||
     request.nextUrl.pathname === "/affiliate/login" ||
     request.nextUrl.pathname === "/affiliate/register" ||
+    request.nextUrl.pathname === "/affiliate/terms" ||
     request.nextUrl.pathname.startsWith("/api/payments/") ||
     request.nextUrl.pathname.startsWith("/api/loops/signup") ||
     request.nextUrl.pathname.startsWith("/api/indexnow") ||
