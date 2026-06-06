@@ -88,12 +88,9 @@ export default function RegisterPage() {
       });
     }
 
-    // Create contact in Loops for email automation (await to ensure it completes before navigation)
-    await fetch("/api/loops/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, firstName, lastName }),
-    }).catch(() => {});
+    // Fire the onboarding email sequence + affiliate attribution (resolves the
+    // user server-side from the session). Await so it completes before navigation.
+    await fetch("/api/email/signup", { method: "POST" }).catch(() => {});
 
     router.push("/dashboard");
   }

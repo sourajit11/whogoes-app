@@ -28,6 +28,7 @@ interface CustomerDetailProps {
   referredByEmail: string | null;
   referredByCode: string | null;
   referralSource: "email_match" | "link" | null;
+  initialSuppressed: boolean;
 }
 
 export default function CustomerDetail({
@@ -46,6 +47,7 @@ export default function CustomerDetail({
   referredByEmail,
   referredByCode,
   referralSource,
+  initialSuppressed,
 }: CustomerDetailProps) {
   const router = useRouter();
   const totalBalance = freeCredits + paidCredits;
@@ -54,6 +56,30 @@ export default function CustomerDetail({
   const [creditsToAdd, setCreditsToAdd] = useState(0);
   const [isAdding, setIsAdding] = useState(false);
   const [addMessage, setAddMessage] = useState("");
+
+  // Email suppression (automated email opt-out) state
+  const [suppressed, setSuppressed] = useState(initialSuppressed);
+  const [isToggling, setIsToggling] = useState(false);
+
+  async function handleToggleSuppression() {
+    setIsToggling(true);
+    try {
+      const res = await fetch("/admin/api/unsubscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          action: suppressed ? "unsuppress" : "suppress",
+        }),
+      });
+      const data = await res.json();
+      if (data.success) setSuppressed(data.suppressed);
+    } catch {
+      // no-op; leave the toggle as-is on error
+    } finally {
+      setIsToggling(false);
+    }
+  }
 
   // Payment history filter
   const [paymentPeriod, setPaymentPeriod] = useState<PaymentPeriod>("all");
@@ -231,6 +257,33 @@ export default function CustomerDetail({
             <span className="text-sm text-zinc-500">{addMessage}</span>
           )}
         </div>
+      </div>
+
+      {/* Automated Emails */}
+      <div className="mt-8">
+        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+          Automated Emails
+        </h2>
+        <p className="mt-1 text-xs text-zinc-400">
+          {suppressed
+            ? "This user is unsubscribed and will not receive automated emails."
+            : "This user receives automated onboarding and nurture emails."}
+        </p>
+        <button
+          onClick={handleToggleSuppression}
+          disabled={isToggling}
+          className={`mt-3 cursor-pointer rounded-lg px-4 py-2 text-sm font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+            suppressed
+              ? "bg-emerald-600 hover:bg-emerald-500"
+              : "bg-zinc-700 hover:bg-zinc-600"
+          }`}
+        >
+          {isToggling
+            ? "Saving..."
+            : suppressed
+              ? "Resubscribe to automated emails"
+              : "Unsubscribe from automated emails"}
+        </button>
       </div>
 
       {/* Payment History */}

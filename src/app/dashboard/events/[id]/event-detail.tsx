@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import BuyCreditsModal from "@/app/dashboard/components/buy-credits-modal";
+import ApiAutoUnlock from "./api-auto-unlock";
 import type {
   BrowsableEvent,
   ContactPreview,
@@ -18,6 +19,12 @@ interface EventDetailProps {
   isAuthenticated: boolean;
   unlockStatus: EventUnlockStatus | null;
   userEmail?: string;
+  apiEligible?: boolean;
+  hasApiKey?: boolean;
+  initialSubscription?: {
+    auto_unlock_enabled: boolean;
+    max_unlocks_per_event: number | null;
+  } | null;
   initialPreviews?: ContactPreview[];
 }
 
@@ -56,6 +63,9 @@ export default function EventDetail({
   isAuthenticated,
   unlockStatus: initialUnlockStatus,
   userEmail,
+  apiEligible = false,
+  hasApiKey = false,
+  initialSubscription = null,
   initialPreviews = [],
 }: EventDetailProps) {
   const [previews, setPreviews] = useState<ContactPreview[]>(initialPreviews);
@@ -198,18 +208,8 @@ export default function EventDetail({
       return;
     }
 
-    // Always refresh Loops contact properties on unlock. Fire the
-    // first_unlock event only on the user's first-ever unlock.
-    const wasFirstUnlock =
-      !unlockStatus || unlockStatus.unlocked_count === 0;
-    fetch("/api/loops", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        eventName: wasFirstUnlock ? "first_unlock" : undefined,
-        eventId: event.event_id,
-      }),
-    }).catch(() => {});
+    // Unlock activity is read live by the email automation (active flow is
+    // enqueued by the queue processor's scan), so no client-side ping is needed.
 
     // Update local state and notify sidebar
     setCredits(result.new_balance ?? 0);
@@ -619,6 +619,18 @@ export default function EventDetail({
           </div>
         )}
       </div>
+
+      {/* Auto-unlock via API — only shown to authenticated users on the dashboard route */}
+      {isAuthenticated && (
+        <div className="mt-6">
+          <ApiAutoUnlock
+            eventId={event.event_id}
+            apiEligible={apiEligible}
+            hasApiKey={hasApiKey}
+            initial={initialSubscription}
+          />
+        </div>
+      )}
 
       {/* Buy Credits Modal — embedded so it works on both dashboard and public pages */}
       {showBuyCredits && userEmail && (

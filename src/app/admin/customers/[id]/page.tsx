@@ -26,6 +26,7 @@ export default async function AdminCustomerDetailPage({
     { count: totalUnlocks },
     { data: monthlyUsage },
     { data: refRow },
+    { data: suppression },
   ] = await Promise.all([
     admin
       .from("user_signups")
@@ -65,6 +66,11 @@ export default async function AdminCustomerDetailPage({
       .from("admin_customer_overview")
       .select("referred_by_email, referred_by_code, referral_source")
       .eq("user_id", id)
+      .maybeSingle(),
+    admin
+      .from("email_suppressions")
+      .select("email")
+      .eq("email", (user.email ?? "").toLowerCase())
       .maybeSingle(),
   ]);
 
@@ -128,6 +134,7 @@ export default async function AdminCustomerDetailPage({
       referredByEmail={refRow?.referred_by_email ?? null}
       referredByCode={refRow?.referred_by_code ?? null}
       referralSource={refRow?.referral_source ?? null}
+      initialSuppressed={!!suppression}
     />
   );
 }

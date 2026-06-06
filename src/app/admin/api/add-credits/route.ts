@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { enqueueEmail } from "@/lib/email/enqueue";
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,6 +30,23 @@ export async function POST(request: NextRequest) {
       { success: false, message: error.message },
       { status: 500 }
     );
+  }
+
+  // Notify the user that credits were added (best-effort, never blocks the response).
+  try {
+    const result = data as { new_balance?: number };
+    const { data: userRes } = await admin.auth.admin.getUserById(user_id);
+    const email = userRes?.user?.email;
+    if (email) {
+      await enqueueEmail({
+        userId: user_id,
+        email,
+        templateKey: "credits_added",
+        payload: { creditsAdded: credits_to_add, newBalance: result?.new_balance ?? null },
+      });
+    }
+  } catch (err) {
+    console.error("credits_added email enqueue failed:", err);
   }
 
   return NextResponse.json(data);

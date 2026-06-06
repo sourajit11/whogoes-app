@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { createClient } from "@/lib/supabase/server";
-import { sendLoopsEvent, updateLoopsContact } from "@/lib/loops";
+import { enqueueEmail } from "@/lib/email/enqueue";
 
 export async function POST(request: NextRequest) {
   try {
@@ -52,13 +52,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: result.message }, { status: 400 });
     }
 
-    // Refresh Loops contact properties with fresh credit numbers on every payment
-    // (first purchase OR refill), so follow-up emails render accurate balances.
-    const { count: creditsUsedTotalCount } = await supabase
-      .from("customer_contact_access")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", user.id);
-
+    // Kick off the paid onboarding sequence on the user's FIRST successful
+    // payment only (the dedupe keys make it idempotent regardless).
     const { count: paidCount } = await supabase
       .from("payments")
       .select("id", { count: "exact", head: true })
@@ -67,38 +62,28 @@ export async function POST(request: NextRequest) {
 
     const isFirstPaidPayment = paidCount === 1;
 
-    const contactUpdate: Record<string, string | number | boolean> = {
-      creditsBalance: result.new_balance ?? 0,
-      creditsUsedTotal: creditsUsedTotalCount ?? 0,
-    };
-
-    if (isFirstPaidPayment) {
-      const { data: paymentRow } = await supabase
-        .from("payments")
-        .select("package_name, credits, amount_usd")
-        .eq("razorpay_payment_id", razorpay_payment_id)
-        .single();
-
-      contactUpdate.plan = paymentRow?.package_name ?? "paid";
-
-      await updateLoopsContact(user.email!, contactUpdate).catch((err) =>
-        console.error("Loops contact update failed:", err)
-      );
-
-      await sendLoopsEvent({
-        email: user.email!,
-        eventName: "plan_purchased",
-        eventProperties: {
-          planName: paymentRow?.package_name ?? "",
-          creditsPurchased: paymentRow?.credits ?? 0,
-          amountUsd: paymentRow?.amount_usd ?? 0,
-        },
-      }).catch((err) => console.error("Loops plan_purchased event failed:", err));
-    } else {
-      // Refill — just refresh the fresh numbers, no event fire
-      await updateLoopsContact(user.email!, contactUpdate).catch((err) =>
-        console.error("Loops contact update failed:", err)
-      );
+    if (isFirstPaidPayment && user.email) {
+      const HOUR = 60 * 60 * 1000;
+      await enqueueEmail({
+        userId: user.id,
+        email: user.email,
+        templateKey: "paid_immediate",
+        dedupeKey: `${user.id}:paid_immediate`,
+      });
+      await enqueueEmail({
+        userId: user.id,
+        email: user.email,
+        templateKey: "paid_day2",
+        scheduledFor: new Date(Date.now() + 48 * HOUR),
+        dedupeKey: `${user.id}:paid_day2`,
+      });
+      await enqueueEmail({
+        userId: user.id,
+        email: user.email,
+        templateKey: "paid_day4",
+        scheduledFor: new Date(Date.now() + 96 * HOUR),
+        dedupeKey: `${user.id}:paid_day4`,
+      });
     }
 
     return NextResponse.json({

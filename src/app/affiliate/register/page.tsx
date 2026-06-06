@@ -89,12 +89,8 @@ function AffiliateRegisterForm() {
       return;
     }
 
-    // Fire the onboarding contact + affiliate attribution for the new account.
-    await fetch("/api/loops/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, firstName, lastName: rest.join(" ") }),
-    }).catch(() => {});
+    // Fire the onboarding email sequence + affiliate attribution for the new account.
+    await fetch("/api/email/signup", { method: "POST" }).catch(() => {});
 
     await applyAndEnter(name);
   }
