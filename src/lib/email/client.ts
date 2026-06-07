@@ -31,7 +31,18 @@ export async function sendEmail({
       Authorization: `Bearer ${RESEND_API_KEY}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ from: FROM, to, subject, text, reply_to: REPLY_TO }),
+    body: JSON.stringify({
+      from: FROM,
+      to,
+      subject,
+      text,
+      reply_to: REPLY_TO,
+      // Legitimacy signal + native Gmail/Apple unsubscribe link. Routes to the
+      // same inbox the n8n STOP workflow watches, so opt-outs are handled there.
+      headers: {
+        "List-Unsubscribe": "<mailto:hello@whogoes.co?subject=unsubscribe>",
+      },
+    }),
   });
 
   if (!res.ok) {
