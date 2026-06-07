@@ -45,7 +45,10 @@ export async function onUserSignup(user: SignupUser): Promise<void> {
       p_email: email,
     });
     if (match?.matched) {
-      const inserted = await enqueueEmail({
+      // Enqueue the bonus email. The +100 credits are granted by the queue
+      // processor right before this email is sent (see process.ts), so the
+      // grant and the email that announces it stay coupled and idempotent.
+      await enqueueEmail({
         userId: user.id,
         email,
         templateKey: "prospect_bonus",
@@ -57,13 +60,6 @@ export async function onUserSignup(user: SignupUser): Promise<void> {
         },
         dedupeKey: `${user.id}:prospect_bonus`,
       });
-      // Only grant credits when this is the first time we enqueued the bonus.
-      if (inserted) {
-        await admin.rpc("admin_add_credits", {
-          p_user_id: user.id,
-          p_credits_to_add: 100,
-        });
-      }
     }
   } catch (err) {
     console.error("Prospect bonus failed:", err);

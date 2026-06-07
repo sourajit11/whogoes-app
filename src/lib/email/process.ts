@@ -183,6 +183,35 @@ async function sendDue(admin: Admin): Promise<Omit<ProcessResult, "enqueued">> {
       continue;
     }
 
+    // prospect_bonus: grant the complimentary credits BEFORE sending the email
+    // that announces them. The email only goes out once the grant succeeds, and
+    // the creditsGranted flag makes retries idempotent (no double-granting).
+    if (
+      row.template_key === "prospect_bonus" &&
+      row.user_id &&
+      !(row.payload as Record<string, unknown> | null)?.creditsGranted
+    ) {
+      const amount = Number((row.payload as Record<string, unknown>)?.creditsAdded ?? 100);
+      const { error: grantErr } = await admin.rpc("admin_add_credits", {
+        p_user_id: row.user_id,
+        p_credits_to_add: amount,
+      });
+      if (grantErr) {
+        // Do not send until the credits are actually added — leave it to retry.
+        const attempts = row.attempts + 1;
+        const status = attempts >= 3 ? "failed" : "pending";
+        await admin
+          .from("email_messages")
+          .update({ status, attempts, last_error: `credit grant failed: ${grantErr.message}` })
+          .eq("id", row.id);
+        if (status === "failed") failed++;
+        continue;
+      }
+      const newPayload = { ...(row.payload ?? {}), creditsGranted: true };
+      await admin.from("email_messages").update({ payload: newPayload }).eq("id", row.id);
+      row.payload = newPayload;
+    }
+
     // Live context for rendering + condition re-checks.
     let ctx: UserEmailContext = DEFAULT_CTX;
     if (row.user_id) {
