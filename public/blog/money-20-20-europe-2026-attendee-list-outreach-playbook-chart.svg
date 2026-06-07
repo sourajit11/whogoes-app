@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" font-family="Inter, system-ui, sans-serif">
+  <title>Money 20/20 Europe Attendee Breakdown by Role (2026)</title>
+  <rect width="600" height="400" fill="#ffffff" rx="8"/>
+
+  <!-- Title -->
+  <text x="300" y="32" text-anchor="middle" font-size="16" font-weight="700" fill="#1a1a2e">Money 20/20 Europe 2026: Attendee Breakdown by Role</text>
+
+  <!-- Y-axis label -->
+  <text x="18" y="215" text-anchor="middle" font-size="11" fill="#555" transform="rotate(-90, 18, 215)">Estimated Share of Attendees (%)</text>
+
+  <!-- Grid lines -->
+  <line x1="80" y1="70" x2="560" y2="70" stroke="#eee" stroke-width="1"/>
+  <line x1="80" y1="130" x2="560" y2="130" stroke="#eee" stroke-width="1"/>
+  <line x1="80" y1="190" x2="560" y2="190" stroke="#eee" stroke-width="1"/>
+  <line x1="80" y1="250" x2="560" y2="250" stroke="#eee" stroke-width="1"/>
+  <line x1="80" y1="310" x2="560" y2="310" stroke="#eee" stroke-width="1"/>
+
+  <!-- Y-axis values -->
+  <text x="72" y="74" text-anchor="end" font-size="11" fill="#888">50%</text>
+  <text x="72" y="134" text-anchor="end" font-size="11" fill="#888">40%</text>
+  <text x="72" y="194" text-anchor="end" font-size="11" fill="#888">30%</text>
+  <text x="72" y="254" text-anchor="end" font-size="11" fill="#888">20%</text>
+  <text x="72" y="314" text-anchor="end" font-size="11" fill="#888">10%</text>
+
+  <!-- Baseline -->
+  <line x1="80" y1="370" x2="560" y2="370" stroke="#ccc" stroke-width="1"/>
+
+  <!-- Bars -->
+  <!-- Banks & FIs: 30% => height = 180 -->
+  <rect x="100" y="190" width="70" height="180" fill="#3b82f6" rx="4"/>
+  <text x="135" y="184" text-anchor="middle" font-size="12" font-weight="600" fill="#3b82f6">30%</text>
+
+  <!-- Fintechs/Startups: 28% => height = 168 -->
+  <rect x="195" y="202" width="70" height="168" fill="#8b5cf6" rx="4"/>
+  <text x="230" y="196" text-anchor="middle" font-size="12" font-weight="600" fill="#8b5cf6">28%</text>
+
+  <!-- Payments/Processors: 18% => height = 108 -->
+  <rect x="290" y="262" width="70" height="108" fill="#06b6d4" rx="4"/>
+  <text x="325" y="256" text-anchor="middle" font-size="12" font-weight="600" fill="#06b6d4">18%</text>
+
+  <!-- Investors/VCs: 12% => height = 72 -->
+  <rect x="385" y="298" width="70" height="72" fill="#f59e0b" rx="4"/>
+  <text x="420" y="292" text-anchor="middle" font-size="12" font-weight="600" fill="#f59e0b">12%</text>
+
+  <!-- RegTech/Compliance: 12% => height = 72 -->
+  <rect x="480" y="298" width="70" height="72" fill="#10b981" rx="4"/>
+  <text x="515" y="292" text-anchor="middle" font-size="12" font-weight="600" fill="#10b981">12%</text>
+
+  <!-- X-axis labels -->
+  <text x="135" y="388" text-anchor="middle" font-size="10" fill="#555">Banks &amp;</text>
+  <text x="135" y="399" text-anchor="middle" font-size="10" fill="#555">FIs</text>
+
+  <text x="230" y="388" text-anchor="middle" font-size="10" fill="#555">Fintechs &amp;</text>
+  <text x="230" y="399" text-anchor="middle" font-size="10" fill="#555">Startups</text>
+
+  <text x="325" y="388" text-anchor="middle" font-size="10" fill="#555">Payments &amp;</text>
+  <text x="325" y="399" text-anchor="middle" font-size="10" fill="#555">Processors</text>
+
+  <text x="420" y="388" text-anchor="middle" font-size="10" fill="#555">Investors &amp;</text>
+  <text x="420" y="399" text-anchor="middle" font-size="10" fill="#555">VCs</text>
+
+  <text x="515" y="388" text-anchor="middle" font-size="10" fill="#555">RegTech &amp;</text>
+  <text x="515" y="399" text-anchor="middle" font-size="10" fill="#555">Compliance</text>
+</svg>
