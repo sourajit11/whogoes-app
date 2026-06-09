@@ -12,9 +12,9 @@ import ApiAutoUnlock from "../events/[id]/api-auto-unlock";
 
 interface MyEventsViewProps {
   subscribedEvents: SubscribedEvent[];
-  apiEligible: boolean;
-  hasApiKey: boolean;
-  subscriptionsByEvent: Record<
+  apiEligible?: boolean;
+  hasApiKey?: boolean;
+  subscriptionsByEvent?: Record<
     string,
     { auto_unlock_enabled: boolean; max_unlocks_per_event: number | null }
   >;
@@ -27,9 +27,9 @@ const PAGE_SIZE = 50;
 
 export default function MyEventsView({
   subscribedEvents,
-  apiEligible,
-  hasApiKey,
-  subscriptionsByEvent,
+  apiEligible = false,
+  hasApiKey = false,
+  subscriptionsByEvent = {},
   loadError = false,
 }: MyEventsViewProps) {
   const searchParams = useSearchParams();
