@@ -8,7 +8,6 @@ import ContactTable from "./contact-table";
 import DownloadControls from "./download-controls";
 import EmptyState from "../components/empty-state";
 import Link from "next/link";
-import ApiAutoUnlock from "../events/[id]/api-auto-unlock";
 
 interface MyEventsViewProps {
   subscribedEvents: SubscribedEvent[];
@@ -579,16 +578,6 @@ export default function MyEventsView({
         </div>
       )}
 
-      {selectedEvent && (
-        <div className="mt-5">
-          <ApiAutoUnlock
-            eventId={selectedEvent.event_id}
-            apiEligible={apiEligible}
-            hasApiKey={hasApiKey}
-            initial={subscriptionsByEvent[selectedEvent.event_id] ?? null}
-          />
-        </div>
-      )}
 
       {loading && (
         <div className="mt-12 flex h-48 items-center justify-center">
