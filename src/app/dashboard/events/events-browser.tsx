@@ -336,7 +336,7 @@ function EventCard({
           {event.event_name}
         </h3>
         <div className="flex shrink-0 flex-col items-end gap-1.5">
-          {event.is_active ? (
+          {event.is_whogoes_active ? (
             <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/10 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-500/20">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
               Active

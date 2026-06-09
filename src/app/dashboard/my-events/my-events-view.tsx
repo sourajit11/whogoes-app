@@ -8,9 +8,16 @@ import ContactTable from "./contact-table";
 import DownloadControls from "./download-controls";
 import EmptyState from "../components/empty-state";
 import Link from "next/link";
+import ApiAutoUnlock from "../events/[id]/api-auto-unlock";
 
 interface MyEventsViewProps {
   subscribedEvents: SubscribedEvent[];
+  apiEligible: boolean;
+  hasApiKey: boolean;
+  subscriptionsByEvent: Record<
+    string,
+    { auto_unlock_enabled: boolean; max_unlocks_per_event: number | null }
+  >;
   loadError?: boolean;
 }
 
@@ -20,6 +27,9 @@ const PAGE_SIZE = 50;
 
 export default function MyEventsView({
   subscribedEvents,
+  apiEligible,
+  hasApiKey,
+  subscriptionsByEvent,
   loadError = false,
 }: MyEventsViewProps) {
   const searchParams = useSearchParams();
@@ -406,7 +416,7 @@ export default function MyEventsView({
                     <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-600/10 dark:bg-amber-500/10 dark:text-amber-400 dark:ring-amber-500/20">
                       Paused
                     </span>
-                  ) : event.is_active ? (
+                  ) : event.is_whogoes_active ? (
                     <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/10 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-500/20">
                       <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
                       Active
@@ -556,7 +566,7 @@ export default function MyEventsView({
               {selectedEvent.event_region}
             </span>
           )}
-          {selectedEvent.is_active ? (
+          {selectedEvent.is_whogoes_active ? (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/10 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-500/20">
               <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
               Actively Collecting Data
@@ -566,6 +576,17 @@ export default function MyEventsView({
               Data Collection Complete
             </span>
           )}
+        </div>
+      )}
+
+      {selectedEvent && (
+        <div className="mt-5">
+          <ApiAutoUnlock
+            eventId={selectedEvent.event_id}
+            apiEligible={apiEligible}
+            hasApiKey={hasApiKey}
+            initial={subscriptionsByEvent[selectedEvent.event_id] ?? null}
+          />
         </div>
       )}
 

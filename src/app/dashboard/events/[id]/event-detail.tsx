@@ -282,7 +282,7 @@ export default function EventDetail({
           </div>
 
           <div className="flex flex-col items-end gap-2">
-            {event.is_active ? (
+            {event.is_whogoes_active ? (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 text-sm font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/10 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-500/20">
                 <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
                 Actively Collecting Data

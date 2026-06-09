@@ -15,6 +15,7 @@ export interface BrowsableEvent {
   event_industry: string | null;
   event_slug?: string;
   is_active: boolean;
+  is_whogoes_active: boolean;
   total_contacts: number;
   contacts_with_email: number;
   is_subscribed: boolean;
@@ -28,6 +29,7 @@ export interface SubscribedEvent {
   event_location: string | null;
   event_start_date: string | null;
   is_active: boolean;
+  is_whogoes_active: boolean;
   subscribed_at: string;
   is_paused: boolean;
   total_contacts: number;

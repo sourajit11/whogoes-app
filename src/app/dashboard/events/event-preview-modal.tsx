@@ -89,7 +89,7 @@ export default function EventPreviewModal({
                 </>
               )}
               <span>·</span>
-              {event.is_active ? (
+              {event.is_whogoes_active ? (
                 <span className="inline-flex items-center gap-1 text-emerald-500">
                   <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
                   Actively tracking
