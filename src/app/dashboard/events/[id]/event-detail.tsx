@@ -19,6 +19,9 @@ interface EventDetailProps {
   unlockStatus: EventUnlockStatus | null;
   userEmail?: string;
   initialPreviews?: ContactPreview[];
+  apiEligible?: boolean;
+  hasApiKey?: boolean;
+  initialSubscription?: { auto_unlock_enabled: boolean; max_unlocks_per_event: number | null } | null;
 }
 
 const FREE_PREVIEW_COUNT = 5;
