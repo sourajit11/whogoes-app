@@ -1,18 +1,15 @@
--- Fix get_event_preview returning 0 rows for actively-scraping events.
+-- Fix get_event_preview timing out on large events (Cannes: 4541 contacts,
+-- UKREiiF: 5224 contacts).
 --
--- Root cause: recent_posts CTE pulls the 500 most-recent posts by posted_at.
--- When Phase 1 re-scrapes an active event, fresh posts land with no
--- contact_events entries yet. If those posts fill the LIMIT 500 window,
--- the subsequent JOIN to contact_events produces zero rows — every contact
--- is invisible on the public preview.
--- Concrete examples on 2026-06-10:
---   Cannes Lions 2026  — first match was at rank 659 of posts by posted_at
---   Viva Technology 2026 — first match was at rank 765
+-- Previous fix (EXISTS approach) scanned all posts for the event and did a
+-- contact_events lookup per post — for events with thousands of posts this
+-- exceeds Supabase statement_timeout (error 57014).
 --
--- Fix: restrict recent_posts to posts that already have at least one
--- contact_events entry for this event. This makes the LIMIT 500 window
--- always contain linked contacts, regardless of how many bare scraping
--- posts have arrived since the last enrichment run.
+-- Root fix: start from contact_events, not posts. contact_events is already
+-- indexed on event_id (idx_contact_events_event). For an event with N contacts
+-- this CTE reads at most N rows, then does N primary-key lookups into posts.
+-- No post-level scan needed at all. Also fixes the original bug where Phase 1
+-- re-scraping fills the LIMIT 500 window with bare posts that have no contacts.
 
 CREATE OR REPLACE FUNCTION public.get_event_preview(p_event_id uuid)
 RETURNS TABLE (
@@ -44,14 +41,16 @@ AS $$
     FROM contact_events
     WHERE event_id = p_event_id
   ),
+  linked_posts AS (
+    SELECT DISTINCT ce.post_id
+    FROM contact_events ce
+    WHERE ce.event_id = p_event_id
+      AND ce.post_id IS NOT NULL
+  ),
   recent_posts AS (
     SELECT p.id AS post_id, p.posted_at
-    FROM posts p
-    WHERE p.event_id = p_event_id
-      AND EXISTS (
-        SELECT 1 FROM contact_events ce
-        WHERE ce.post_id = p.id AND ce.event_id = p_event_id
-      )
+    FROM linked_posts lp
+    JOIN posts p ON p.id = lp.post_id
     ORDER BY p.posted_at DESC NULLS LAST
     LIMIT 500
   )
