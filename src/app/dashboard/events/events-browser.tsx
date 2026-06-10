@@ -85,9 +85,9 @@ export default function EventsBrowser({
       );
     }
     if (statusFilter === "active") {
-      result = result.filter((e) => e.is_active);
+      result = result.filter((e) => e.is_whogoes_active);
     } else if (statusFilter === "completed") {
-      result = result.filter((e) => !e.is_active);
+      result = result.filter((e) => !e.is_whogoes_active);
     }
     if (deferredSearchQuery.trim()) {
       const q = deferredSearchQuery.toLowerCase();
