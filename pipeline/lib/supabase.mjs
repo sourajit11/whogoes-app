@@ -43,7 +43,7 @@ export async function fetchAll(supabase, table, query = {}, selectCols = "*", pa
  */
 export async function fetchByIds(supabase, table, column, ids, selectCols = "*") {
   if (ids.length === 0) return [];
-  const BATCH = 500;
+  const BATCH = 100;
   const results = [];
   for (let i = 0; i < ids.length; i += BATCH) {
     const batch = ids.slice(i, i + BATCH);
