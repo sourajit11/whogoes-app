@@ -158,7 +158,7 @@ export default function AffiliatesPage() {
             />
             <Pillar
               title="2. Submit prospect emails"
-              body="Add the emails of people you think will sign up. If that email registers within 7 days before or after you add it, the customer is credited to you."
+              body="Add the emails of people you think will sign up. If that email registers within 30 days before or after you add it, the customer is credited to you permanently."
             />
           </div>
         </section>
@@ -182,7 +182,7 @@ export default function AffiliatesPage() {
             <Step
               n={3}
               title="They sign up and buy."
-              body="A submitted email counts if it registers within a 7-day window either side of the day you added it. When that user purchases credits, the sale is yours."
+              body="A submitted email counts if it registers within 30 days before or after the day you added it. Once matched, that customer is permanently credited to you and you earn on every purchase they ever make."
             />
             <Step
               n={4}
@@ -220,7 +220,7 @@ export default function AffiliatesPage() {
             />
             <TermRow
               label="Email attribution"
-              value="A submitted email is credited to you if it signs up within 7 days before or after the day you add it."
+              value="A submitted email is credited to you if it signs up within 30 days before or after the day you add it. One customer can only ever be credited to one affiliate."
             />
             <TermRow
               label="Minimum payout"
