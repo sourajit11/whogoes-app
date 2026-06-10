@@ -43,7 +43,7 @@ export async function fetchAll(supabase, table, query = {}, selectCols = "*", pa
  */
 export async function fetchByIds(supabase, table, column, ids, selectCols = "*") {
   if (ids.length === 0) return [];
-  const BATCH = 100;
+  const BATCH = 500;
   const results = [];
   for (let i = 0; i < ids.length; i += BATCH) {
     const batch = ids.slice(i, i + BATCH);
@@ -60,7 +60,6 @@ export async function fetchByIds(supabase, table, column, ids, selectCols = "*")
         await new Promise((r) => setTimeout(r, 1000 * attempts));
       }
     }
-    if (i + BATCH < ids.length) await new Promise((r) => setTimeout(r, 200));
   }
   return results;
 }

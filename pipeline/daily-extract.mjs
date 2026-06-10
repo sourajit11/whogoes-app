@@ -16,9 +16,21 @@
 import { createPipelineClient } from "./lib/supabase.mjs";
 import { getQualifyingEvents, updatePipelineState } from "./lib/events.mjs";
 import { fetchContactsForEvent } from "./lib/contacts.mjs";
-import { personalizeContacts } from "./lib/personalize.mjs";
 import { appendToSheet, getExistingEmails } from "./lib/sheets.mjs";
 import { sendSlackNotification } from "./lib/slack.mjs";
+import { normalizeEventName } from "./lib/utils.mjs";
+
+function getTimingBucket(startDate) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const eventDate = new Date(startDate);
+  eventDate.setHours(0, 0, 0, 0);
+  const daysOut = Math.round((eventDate - today) / (1000 * 60 * 60 * 24));
+  if (daysOut <= 7)  return "this_week";
+  if (daysOut <= 14) return "urgent";
+  return "early";
+}
+
 
 const DRY_RUN = process.argv.includes("--dry-run");
 const BACKFILL = process.argv.includes("--backfill");
@@ -26,13 +38,22 @@ const LIMIT = (() => {
   const flag = process.argv.find((a) => a.startsWith("--limit="));
   return flag ? parseInt(flag.split("=")[1], 10) : 0;
 })();
+const REGION_FILTER = (() => {
+  const flag = process.argv.find((a) => a.startsWith("--region="));
+  return flag ? flag.split("=")[1].toUpperCase() : null;
+})();
+
+// Daily per-region limits (overridden by --limit for testing)
+const REGION_DAILY_LIMITS = { US: 1000, EU: 1200 };
 
 async function main() {
   const startTime = Date.now();
 
   if (DRY_RUN) console.log("=== DRY RUN MODE (no Sheet/Slack/state updates) ===\n");
   if (BACKFILL) console.log("=== BACKFILL MODE: re-process all events as INIT, dedup against sheet ===\n");
-  if (LIMIT) console.log(`=== LIMIT MODE: max ${LIMIT} contacts total ===\n`);
+  if (REGION_FILTER) console.log(`=== REGION FILTER: ${REGION_FILTER} only ===\n`);
+  if (LIMIT) console.log(`=== LIMIT MODE: max ${LIMIT} contacts total (overrides region limits) ===\n`);
+  else console.log(`=== REGION LIMITS: US=${REGION_DAILY_LIMITS.US} EU=${REGION_DAILY_LIMITS.EU} ===\n`);
 
   // Validate required env vars
   const required = ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"];
@@ -104,8 +125,20 @@ async function main() {
   let totalCollected = 0;
 
   for (const event of events) {
-    // Stop early if we hit the limit
+    // Stop early if global test limit hit
     if (LIMIT && totalCollected >= LIMIT) break;
+
+    // Skip if region filter is active and this event doesn't match
+    if (REGION_FILTER && event.region !== REGION_FILTER) continue;
+
+    // Skip if this region has hit its daily limit
+    if (!LIMIT) {
+      const regionLimit = REGION_DAILY_LIMITS[event.region];
+      if (regionLimit && regionCounts[event.region] >= regionLimit) {
+        console.log(`  Skipping ${event.event_name} [${event.region}] — daily limit of ${regionLimit} reached`);
+        continue;
+      }
+    }
 
     try {
       console.log(`Processing: ${event.event_name} [${event.region}] (${event.isInit ? "INIT" : "INCR"})...`);
@@ -123,13 +156,13 @@ async function main() {
         }
       }
 
-      // Trim to remaining limit
-      if (LIMIT) {
-        const remaining = LIMIT - totalCollected;
-        if (contacts.length > remaining) {
-          contacts = contacts.slice(0, remaining);
-          console.log(`    Trimmed to ${contacts.length} (--limit=${LIMIT})`);
-        }
+      // Trim to remaining capacity (--limit for testing, region limit for production)
+      const remaining = LIMIT
+        ? LIMIT - totalCollected
+        : (REGION_DAILY_LIMITS[event.region] || Infinity) - regionCounts[event.region];
+      if (contacts.length > remaining) {
+        contacts = contacts.slice(0, remaining);
+        console.log(`    Trimmed to ${contacts.length} (remaining capacity for ${event.region})`);
       }
 
       if (contacts.length === 0) {
@@ -137,14 +170,21 @@ async function main() {
         continue;
       }
 
-      // Generate personalization via Gemini
-      console.log(`    Generating personalization...`);
-      const personalized = await personalizeContacts(contacts, process.env.GEMINI_API_KEY);
+      // Inject event metadata onto each contact
+      const timing = getTimingBucket(event.event_start_date);
+      const eventName = normalizeEventName(event.event_name);
+      const enriched = contacts.map((c) => ({
+        ...c,
+        eventName,
+        eventDate: event.event_start_date,
+        contactCount: event.contacts_with_email,
+        timing,
+      }));
 
       // Write to Google Sheet immediately (per-event, not batched at end)
       if (!DRY_RUN && sheetConfig) {
         try {
-          const count = await appendToSheet(personalized, event.region, sheetConfig);
+          const count = await appendToSheet(enriched, event.region, sheetConfig);
           regionCounts[event.region] += count;
           console.log(`    Sheet: ${count} rows → ${event.region} tab`);
         } catch (err) {
@@ -152,37 +192,36 @@ async function main() {
           errors.push(`GSheet ${event.event_name}: ${err.message}`);
         }
       } else if (DRY_RUN) {
-        regionCounts[event.region] += personalized.length;
-        for (const c of personalized.slice(0, 2)) {
-          console.log(`    ${c.firstName} ${c.lastName} <${c.email}>`);
-          console.log(`      Personalization: ${c.personalization}`);
+        regionCounts[event.region] += enriched.length;
+        for (const c of enriched.slice(0, 2)) {
+          console.log(`    ${c.firstName} ${c.lastName} <${c.email}> [${c.timing}]`);
         }
-        if (personalized.length > 2) {
-          console.log(`    ... and ${personalized.length - 2} more`);
+        if (enriched.length > 2) {
+          console.log(`    ... and ${enriched.length - 2} more`);
         }
       } else {
-        regionCounts[event.region] += personalized.length;
+        regionCounts[event.region] += enriched.length;
       }
 
-      totalCollected += personalized.length;
+      totalCollected += enriched.length;
 
       // Track new events for Slack notification
       if (event.isInit) {
         processedNewEvents.push({
           name: event.event_name,
-          contacts: contacts.length,
+          contacts: enriched.length,
           region: event.region,
         });
       }
 
       // Update pipeline_state watermark
       if (!DRY_RUN) {
-        const maxCreatedAt = contacts.reduce(
+        const maxCreatedAt = enriched.reduce(
           (max, c) => (c.createdAt > max ? c.createdAt : max),
-          contacts[0].createdAt
+          enriched[0].createdAt
         );
         await updatePipelineState(
-          supabase, event.event_id, contacts.length, maxCreatedAt, event.previousTotal
+          supabase, event.event_id, enriched.length, maxCreatedAt, event.previousTotal
         );
         console.log(`    State updated (watermark: ${maxCreatedAt})`);
       }

@@ -23,7 +23,8 @@ const CHUNK_SIZE = 500;
  * Append contact rows to the correct regional tab in the Google Sheet.
  * Writes in chunks of 500 rows to avoid payload limits and improve reliability.
  *
- * Columns: First Name | Last Name | Email Address | Personalization | Event Name
+ * Columns: First Name | Last Name | Email | Event Name | Event Date | Contact Count | Timing
+ * Timing values: this_week (3-7d) | urgent (8-14d) | early (15-42d)
  * Tabs: US, EU, APAC (must already exist in the sheet with headers in row 1)
  */
 export async function appendToSheet(contacts, region, config) {
@@ -36,15 +37,17 @@ export async function appendToSheet(contacts, region, config) {
     c.firstName,
     c.lastName,
     c.email,
-    c.personalization,
     c.eventName,
+    c.eventDate || "",
+    c.contactCount || "",
+    c.timing || "",
   ]);
 
   for (let i = 0; i < rows.length; i += CHUNK_SIZE) {
     const chunk = rows.slice(i, i + CHUNK_SIZE);
     await sheets.spreadsheets.values.append({
       spreadsheetId: config.sheetId,
-      range: `${region}!A:E`,
+      range: `${region}!A:G`,
       valueInputOption: "RAW",
       insertDataOption: "INSERT_ROWS",
       requestBody: { values: chunk },

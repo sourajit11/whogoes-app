@@ -90,10 +90,13 @@ export async function fetchContactsForEvent(supabase, event) {
 
   // 9. Build enriched rows, apply filters, dedup
   const seen = new Set();
-  const skipped = { noEmail: 0, noName: 0, dedup: 0 };
+  const skipped = { noEmail: 0, noName: 0, dedup: 0, repost: 0 };
   const rows = [];
 
   for (const contact of contacts) {
+    const ce = ceMap[contact.id];
+    if (ce?.source_type === 'repost') { skipped.repost++; continue; }
+
     const email = emailMap[contact.id];
     if (!email) { skipped.noEmail++; continue; }
     if (!contact.first_name?.trim()) { skipped.noName++; continue; }
@@ -102,7 +105,6 @@ export async function fetchContactsForEvent(supabase, event) {
     if (seen.has(emailLower)) { skipped.dedup++; continue; }
     seen.add(emailLower);
 
-    const ce = ceMap[contact.id];
     const post = ce?.post_id ? postMap[ce.post_id] : null;
 
     rows.push({
@@ -119,8 +121,8 @@ export async function fetchContactsForEvent(supabase, event) {
     });
   }
 
-  if (skipped.noEmail || skipped.noName || skipped.dedup) {
-    console.log(`    Filtered out: noEmail=${skipped.noEmail} noName=${skipped.noName} dedup=${skipped.dedup}`);
+  if (skipped.repost || skipped.noEmail || skipped.noName || skipped.dedup) {
+    console.log(`    Filtered out: repost=${skipped.repost} noEmail=${skipped.noEmail} noName=${skipped.noName} dedup=${skipped.dedup}`);
   }
 
   return rows;

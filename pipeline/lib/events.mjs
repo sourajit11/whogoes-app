@@ -13,9 +13,10 @@ import { classifyEventRegion } from "./regions.mjs";
  * aggregates across all events and exceeds Supabase's statement_timeout.
  */
 export async function getQualifyingEvents(supabase) {
-  const oneWeekOut = new Date();
-  oneWeekOut.setDate(oneWeekOut.getDate() + 7);
-  const oneWeekOutStr = oneWeekOut.toISOString().slice(0, 10);
+  // Minimum 3 days out — events in ≤2 days are too late to act on
+  const threeDaysOut = new Date();
+  threeDaysOut.setDate(threeDaysOut.getDate() + 3);
+  const oneWeekOutStr = threeDaysOut.toISOString().slice(0, 10);
 
   const { data: qualifying, error } = await supabase.rpc(
     "get_pipeline_qualifying_events",
@@ -24,7 +25,7 @@ export async function getQualifyingEvents(supabase) {
   if (error) throw new Error(`RPC get_pipeline_qualifying_events failed: ${error.message}`);
 
   console.log(
-    `  Qualifying (active, ${MIN_CONTACTS_WITH_EMAIL}+ contacts, starts on/after ${oneWeekOutStr}): ${qualifying.length}`
+    `  Qualifying (active, ${MIN_CONTACTS_WITH_EMAIL}+ contacts, starts on/after ${oneWeekOutStr} [3 days out]): ${qualifying.length}`
   );
   if (qualifying.length === 0) return [];
 
@@ -45,7 +46,7 @@ export async function getQualifyingEvents(supabase) {
     stateMap = Object.fromEntries((states || []).map((s) => [s.event_id, s]));
   }
 
-  return qualifying.map((event) => {
+  const enriched = qualifying.map((event) => {
     const state = stateMap[event.event_id];
     return {
       ...event,
@@ -55,6 +56,10 @@ export async function getQualifyingEvents(supabase) {
       previousTotal: state?.total_contacts_extracted || 0,
     };
   });
+
+  // Process urgent events first so we never miss a short outreach window
+  enriched.sort((a, b) => new Date(a.event_start_date) - new Date(b.event_start_date));
+  return enriched;
 }
 
 /**
