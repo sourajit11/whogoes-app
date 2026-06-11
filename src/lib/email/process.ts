@@ -275,6 +275,13 @@ function shouldSkip(templateKey: string, ctx: UserEmailContext): boolean {
   if (templateKey === "pre_event_5d") {
     return ctx.is_paid; // pre-event nudge targets free users only
   }
+  if (templateKey === "low_balance") {
+    // Re-check the live balance at send time. The Pass 1 scan can enqueue this
+    // before a pending prospect_bonus grants its credits in Pass 2, so a brand
+    // new prospect who burns their initial 20 credits would otherwise get a
+    // "running low" email moments before +100 lands. Only send if still low now.
+    return ctx.balance > 5;
+  }
   return false;
 }
 
