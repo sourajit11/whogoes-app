@@ -2,8 +2,14 @@ name: Daily Lead Extract
 
 on:
   schedule:
-    # 11:00 AM IST = 5:30 UTC
-    - cron: "30 5 * * *"
+    # Primary target ~10:00 AM IST. GitHub's scheduler frequently delays or
+    # drops cron runs under load, so we add staggered backups at odd minutes.
+    # The job is watermark-idempotent (a later run finds no new contacts and
+    # no-ops) and the concurrency group below prevents overlap, so at most one
+    # attempt actually does work.
+    - cron: "7 4 * * *"   # 04:07 UTC ~ 09:37 IST (primary)
+    - cron: "23 6 * * *"  # 06:23 UTC ~ 11:53 IST (backup 1)
+    - cron: "43 8 * * *"  # 08:43 UTC ~ 14:13 IST (backup 2)
   workflow_dispatch:
     inputs:
       backfill:
@@ -19,14 +25,14 @@ concurrency:
 jobs:
   extract:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 120
 
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
 
       - name: Install pipeline dependencies
         run: cd pipeline && npm ci
