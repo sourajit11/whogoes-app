@@ -2,8 +2,11 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import EventDetail from "@/app/dashboard/events/[id]/event-detail";
+import EventSeoContent, {
+  EventSeoFaqJsonLd,
+  getEventFaqs,
+} from "./event-seo-content";
 import { getPostBySlug } from "@/lib/blog";
 import type { BrowsableEvent, ContactPreview } from "@/types";
 import noindexedConfig from "@/config/noindexed-event-slugs.json";
@@ -193,11 +196,13 @@ export default async function PublicEventDetailPage({ params }: Props) {
 
   // Check if a matching blog post exists for this event
   const relatedPost = getPostBySlug(`${slug}-attendee-list`);
+  const faqs = getEventFaqs(event);
 
   return (
     <>
       <EventJsonLd event={event} />
       <BreadcrumbJsonLd eventName={event.event_name} slug={event.event_slug} />
+      <EventSeoFaqJsonLd faqs={faqs} />
       <EventDetail
         event={event}
         credits={credits}
@@ -206,21 +211,13 @@ export default async function PublicEventDetailPage({ params }: Props) {
         userEmail={user?.email ?? undefined}
         initialPreviews={initialPreviews}
       />
-      {relatedPost && (
-        <div className="mx-auto max-w-4xl px-4 pb-12">
-          <Link
-            href={`/blog/${relatedPost.meta.slug}`}
-            className="block rounded-lg border border-blue-200 bg-blue-50 p-4 transition-colors hover:bg-blue-100"
-          >
-            <p className="text-sm font-medium text-blue-900">
-              Read our full guide
-            </p>
-            <p className="mt-1 text-blue-700">
-              {relatedPost.meta.title}
-            </p>
-          </Link>
-        </div>
-      )}
+      <EventSeoContent
+        event={event}
+        previews={initialPreviews}
+        hasBlog={!!relatedPost}
+        blogSlug={relatedPost?.meta.slug}
+        blogTitle={relatedPost?.meta.title}
+      />
     </>
   );
 }
