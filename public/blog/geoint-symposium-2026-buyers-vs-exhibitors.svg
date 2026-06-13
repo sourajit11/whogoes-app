@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300" role="img" aria-label="GEOINT Symposium 2026 attendees versus exhibitors, showing roughly nineteen buyers per exhibiting company">
+  <rect width="760" height="300" fill="#ffffff"/>
+  <text x="28" y="34" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#111827">GEOINT 2026: a buyer-dense room</text>
+  <text x="28" y="56" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#6b7280">Attendees versus exhibitors at the 2026 Symposium, Aurora, Colorado</text>
+  <line x1="150" y1="72" x2="150" y2="232" stroke="#e5e7eb" stroke-width="1"/>
+
+  <text x="140" y="118" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#374151">Attendees</text>
+  <rect x="150" y="100" width="560" height="30" rx="2" fill="#1d4ed8"/>
+  <text x="718" y="121" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#111827">4,045</text>
+
+  <text x="140" y="188" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#374151">Exhibitors</text>
+  <rect x="150" y="170" width="30" height="30" rx="2" fill="#60a5fa"/>
+  <text x="188" y="191" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#111827">216</text>
+
+  <text x="28" y="262" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#374151">That is roughly 19 attendees for every exhibiting company, one of the highest buyer-to-seller ratios on the defense calendar.</text>
+  <text x="28" y="286" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#9ca3af">Source: USGIF GEOINT Symposium 2026 figures (4,045 attendees, 216 exhibitors).</text>
+</svg>

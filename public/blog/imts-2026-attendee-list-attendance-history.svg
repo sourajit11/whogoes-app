@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 350" font-family="Inter, system-ui, sans-serif">
+  <rect width="600" height="350" fill="#f8fafc" rx="8"/>
+  <text x="300" y="30" text-anchor="middle" font-size="16" font-weight="bold" fill="#1e293b">IMTS Attendance by Year</text>
+
+  <!-- Y axis labels -->
+  <text x="55" y="78" text-anchor="end" font-size="11" fill="#64748b">130K</text>
+  <text x="55" y="128" text-anchor="end" font-size="11" fill="#64748b">110K</text>
+  <text x="55" y="178" text-anchor="end" font-size="11" fill="#64748b">90K</text>
+  <text x="55" y="228" text-anchor="end" font-size="11" fill="#64748b">70K</text>
+  <text x="55" y="278" text-anchor="end" font-size="11" fill="#64748b">50K</text>
+
+  <!-- Grid lines -->
+  <line x1="65" y1="75" x2="560" y2="75" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="65" y1="125" x2="560" y2="125" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="65" y1="175" x2="560" y2="175" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="65" y1="225" x2="560" y2="225" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="65" y1="275" x2="560" y2="275" stroke="#e2e8f0" stroke-width="1"/>
+
+  <!-- Baseline -->
+  <line x1="65" y1="285" x2="560" y2="285" stroke="#94a3b8" stroke-width="1.5"/>
+
+  <!-- Bars -->
+  <!-- 2018: 129,000 → height proportional, base at 285, max at 75 (210px range for 50K-130K = 80K range) -->
+  <!-- Scale: 1K = 210/80 = 2.625px. 129K = (129-50)*2.625 = 207.375px from bottom -->
+  <rect x="105" y="77.6" width="70" height="207.4" fill="#3b82f6" rx="4"/>
+  <text x="140" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e293b">129,000</text>
+
+  <!-- 2022: 86,307 → (86.307-50)*2.625 = 95.3px -->
+  <rect x="235" y="189.7" width="70" height="95.3" fill="#3b82f6" rx="4"/>
+  <text x="270" y="183" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e293b">86,307</text>
+
+  <!-- 2024: 89,020 → (89.02-50)*2.625 = 102.4px -->
+  <rect x="365" y="182.6" width="70" height="102.4" fill="#3b82f6" rx="4"/>
+  <text x="400" y="176" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e293b">89,020</text>
+
+  <!-- 2026: 90,000 (projected) → (90-50)*2.625 = 105px -->
+  <rect x="495" y="180" width="70" height="105" fill="#60a5fa" rx="4" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="530" y="173" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e293b">~90,000</text>
+  <text x="530" y="158" text-anchor="middle" font-size="9" fill="#64748b">(projected)</text>
+
+  <!-- X axis labels -->
+  <text x="140" y="305" text-anchor="middle" font-size="13" font-weight="600" fill="#334155">2018</text>
+  <text x="270" y="305" text-anchor="middle" font-size="13" font-weight="600" fill="#334155">2022</text>
+  <text x="400" y="305" text-anchor="middle" font-size="13" font-weight="600" fill="#334155">2024</text>
+  <text x="530" y="305" text-anchor="middle" font-size="13" font-weight="600" fill="#334155">2026</text>
+
+  <!-- Source -->
+  <text x="300" y="335" text-anchor="middle" font-size="10" fill="#94a3b8">Source: AMT / IMTS official data</text>
+</svg>
