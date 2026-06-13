@@ -182,8 +182,16 @@ export default async function PublicEventDetailPage({ params }: Props) {
   // event_id we just resolved, but not on each other — fetch in parallel.
   // Rendering the preview server-side puts it straight into the HTML (no
   // post-hydration fetch, no "all blurred" flash) and helps SEO.
+  //
+  // The preview is public blurred sample data, so we fetch it with the admin
+  // (service_role) client. Signed-out visitors otherwise hit Postgres as the
+  // `anon` role, whose 3s statement_timeout aborts the RPC on a cold cache for
+  // large events (error 57014 -> "preview took too long"). service_role has no
+  // statement_timeout. Credits/unlock status stay on the user-scoped client
+  // because they depend on auth.uid().
+  const adminSupabase = createAdminClient();
   const [previewRes, creditsRes, statusRes] = await Promise.all([
-    supabase.rpc("get_event_preview", { p_event_id: event.event_id }),
+    adminSupabase.rpc("get_event_preview", { p_event_id: event.event_id }),
     user ? supabase.rpc("get_customer_credits") : Promise.resolve({ data: null }),
     user
       ? supabase.rpc("get_event_unlock_status", { p_event_id: event.event_id })
