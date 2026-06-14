@@ -9,10 +9,8 @@ import EventSeoContent, {
 } from "./event-seo-content";
 import { getPostBySlug } from "@/lib/blog";
 import { contentUrl } from "@/lib/site";
+import { isEventIndexable } from "@/lib/events/indexing";
 import type { BrowsableEvent, ContactPreview } from "@/types";
-import noindexedConfig from "@/config/noindexed-event-slugs.json";
-
-const NOINDEXED_SLUGS = new Set<string>(noindexedConfig.slugs);
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -70,7 +68,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
   };
 
-  if (NOINDEXED_SLUGS.has(slug)) {
+  // event_slug may be absent on the metadata fetch; the route param is the
+  // authoritative slug, so pass it through for the denylist check.
+  if (!isEventIndexable({ ...event, event_slug: slug })) {
     metadata.robots = { index: false, follow: true };
   }
 

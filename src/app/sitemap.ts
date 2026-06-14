@@ -3,9 +3,11 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getAllPosts } from "@/lib/blog";
 import { getAllComparisons } from "@/lib/compare";
 import { contentUrl, appUrl } from "@/lib/site";
-import noindexedConfig from "@/config/noindexed-event-slugs.json";
-
-const NOINDEXED_SLUGS = new Set<string>(noindexedConfig.slugs);
+import { getBrowsableEventsCached } from "@/lib/events/get-browsable-events";
+import {
+  EVENT_INDEX_MODE,
+  isEventIndexable,
+} from "@/lib/events/indexing";
 
 /**
  * Split sitemap into 3 parts so Google crawls blogs first:
@@ -72,19 +74,35 @@ export default async function sitemap(props: any): Promise<MetadataRoute.Sitemap
     }));
   }
 
-  // Sitemap 2: Event pages — LOWEST PRIORITY
-  const supabase = createAdminClient();
-  const { data: events } = await supabase
-    .from("events")
-    .select("slug")
-    .order("start_date", { ascending: false });
+  // Sitemap 2: Event pages — LOWEST PRIORITY.
+  // Only list indexable events; isEventIndexable() is the shared policy with
+  // the page's robots meta, so the sitemap never advertises a noindexed page.
+  let indexableSlugs: string[];
 
-  return (events ?? [])
-    .filter((event) => !NOINDEXED_SLUGS.has(event.slug))
-    .map((event) => ({
-      url: contentUrl(`/events/${event.slug}`),
-      lastModified: new Date(),
-      changeFrequency: "weekly" as const,
-      priority: 0.5,
-    }));
+  if (EVENT_INDEX_MODE === "gate") {
+    // Gate mode needs counts/location/industry/date — use the cached browsable
+    // list (1h revalidate) which carries all gate fields.
+    const events = await getBrowsableEventsCached();
+    indexableSlugs = events
+      .filter((event) => isEventIndexable(event))
+      .map((event) => event.event_slug)
+      .filter((slug): slug is string => !!slug);
+  } else {
+    // Denylist mode only needs the slug; keep the cheap raw query.
+    const supabase = createAdminClient();
+    const { data: events } = await supabase
+      .from("events")
+      .select("slug")
+      .order("start_date", { ascending: false });
+    indexableSlugs = (events ?? [])
+      .filter((event) => isEventIndexable({ event_slug: event.slug }))
+      .map((event) => event.slug);
+  }
+
+  return indexableSlugs.map((slug) => ({
+    url: contentUrl(`/events/${slug}`),
+    lastModified: new Date(),
+    changeFrequency: "weekly" as const,
+    priority: 0.5,
+  }));
 }
