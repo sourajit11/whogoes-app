@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getAllPosts, getReadingTime } from "@/lib/blog";
+import { contentUrl } from "@/lib/site";
 import type { BlogPost } from "@/types/blog";
 
 export const metadata: Metadata = {
@@ -11,10 +12,10 @@ export const metadata: Metadata = {
     title: "Blog — Trade Show Outreach Tips & Event Guides",
     description:
       "Actionable guides for trade show attendee outreach and event-specific attendee list guides.",
-    url: "https://app.whogoes.co/blog",
+    url: contentUrl("/blog"),
   },
   alternates: {
-    canonical: "https://app.whogoes.co/blog",
+    canonical: contentUrl("/blog"),
   },
 };
 
@@ -41,7 +42,7 @@ function BlogListJsonLd({ posts }: { posts: BlogPost[] }) {
     itemListElement: posts.map((post, i) => ({
       "@type": "ListItem",
       position: i + 1,
-      url: `https://app.whogoes.co/blog/${post.meta.slug}`,
+      url: contentUrl(`/blog/${post.meta.slug}`),
       name: post.meta.title,
     })),
   };

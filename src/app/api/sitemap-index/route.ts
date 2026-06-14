@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { contentUrl } from "@/lib/site";
 
 /**
  * Sitemap index — Next.js 16 doesn't auto-generate one when using
@@ -7,12 +8,11 @@ import { NextResponse } from "next/server";
  * Keep SITEMAP_IDS in sync with generateSitemaps() in src/app/sitemap.ts.
  */
 const SITEMAP_IDS = [0, 1, 2];
-const BASE = "https://app.whogoes.co";
 
 export function GET() {
   const entries = SITEMAP_IDS.map(
     (id) =>
-      `  <sitemap>\n    <loc>${BASE}/sitemap/${id}.xml</loc>\n  </sitemap>`
+      `  <sitemap>\n    <loc>${contentUrl(`/sitemap/${id}.xml`)}</loc>\n  </sitemap>`
   ).join("\n");
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

@@ -4,6 +4,7 @@ import { MDXRemote } from "next-mdx-remote/rsc";
 import remarkGfm from "remark-gfm";
 import { getPostBySlug, getAllSlugs, getReadingTime } from "@/lib/blog";
 import { mdxComponents } from "@/components/mdx-components";
+import { contentUrl } from "@/lib/site";
 import type { BlogPostMeta } from "@/types/blog";
 
 interface Props {
@@ -21,7 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: post.meta.title,
       description: post.meta.description,
-      url: `https://app.whogoes.co/blog/${slug}`,
+      url: contentUrl(`/blog/${slug}`),
       type: "article",
       publishedTime: post.meta.date,
       ...(post.meta.updatedDate && {
@@ -29,7 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       }),
       authors: [post.meta.author],
       ...(post.meta.image && {
-        images: [`https://app.whogoes.co/blog/${post.meta.image}`],
+        images: [contentUrl(`/blog/${post.meta.image}`)],
       }),
     },
     twitter: {
@@ -38,7 +39,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: post.meta.description,
     },
     alternates: {
-      canonical: `https://app.whogoes.co/blog/${slug}`,
+      canonical: contentUrl(`/blog/${slug}`),
     },
   };
 }
@@ -68,10 +69,10 @@ function ArticleJsonLd({ meta }: { meta: BlogPostMeta }) {
     },
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": `https://app.whogoes.co/blog/${meta.slug}`,
+      "@id": contentUrl(`/blog/${meta.slug}`),
     },
     ...(meta.image && {
-      image: `https://app.whogoes.co/blog/${meta.image}`,
+      image: contentUrl(`/blog/${meta.image}`),
     }),
   };
 
@@ -137,8 +138,8 @@ function BlogBreadcrumbJsonLd({ title, slug }: { title: string; slug: string }) 
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Home", item: "https://whogoes.co" },
-      { "@type": "ListItem", position: 2, name: "Blog", item: "https://app.whogoes.co/blog" },
-      { "@type": "ListItem", position: 3, name: title, item: `https://app.whogoes.co/blog/${slug}` },
+      { "@type": "ListItem", position: 2, name: "Blog", item: contentUrl("/blog") },
+      { "@type": "ListItem", position: 3, name: title, item: contentUrl(`/blog/${slug}`) },
     ],
   };
 

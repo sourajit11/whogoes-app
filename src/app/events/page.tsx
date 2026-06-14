@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import EventsBrowser from "@/app/dashboard/events/events-browser";
 import { getBrowsableEventsCached } from "@/lib/events/get-browsable-events";
+import { contentUrl } from "@/lib/site";
 import type { BrowsableEvent } from "@/types";
 
 export const metadata: Metadata = {
@@ -11,10 +12,10 @@ export const metadata: Metadata = {
     title: "Browse Trade Show & Event Attendee Lists",
     description:
       "Browse 1,200+ trade show and conference attendee lists with LinkedIn proof. Filter by year, region, and event size.",
-    url: "https://app.whogoes.co/events",
+    url: contentUrl("/events"),
   },
   alternates: {
-    canonical: "https://app.whogoes.co/events",
+    canonical: contentUrl("/events"),
   },
 };
 
@@ -36,7 +37,7 @@ function EventsListJsonLd({
       .map((event, index) => ({
         "@type": "ListItem",
         position: index + 1,
-        url: `https://app.whogoes.co/events/${event.event_slug}`,
+        url: contentUrl(`/events/${event.event_slug}`),
         name: `${event.event_name} Attendee List`,
       })),
   };

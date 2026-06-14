@@ -8,6 +8,7 @@ import {
   getReadingTime,
 } from "@/lib/compare";
 import { mdxComponents } from "@/components/mdx-components";
+import { contentUrl } from "@/lib/site";
 import type { ComparisonMeta } from "@/types/compare";
 
 interface Props {
@@ -25,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: post.meta.title,
       description: post.meta.description,
-      url: `https://app.whogoes.co/compare/${slug}`,
+      url: contentUrl(`/compare/${slug}`),
       type: "article",
       publishedTime: post.meta.date,
       ...(post.meta.updatedDate && {
@@ -35,7 +36,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         authors: [post.meta.author],
       }),
       ...(post.meta.image && {
-        images: [`https://app.whogoes.co/compare/${post.meta.image}`],
+        images: [contentUrl(`/compare/${post.meta.image}`)],
       }),
     },
     twitter: {
@@ -44,7 +45,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: post.meta.description,
     },
     alternates: {
-      canonical: `https://app.whogoes.co/compare/${slug}`,
+      canonical: contentUrl(`/compare/${slug}`),
     },
   };
 }
@@ -74,10 +75,10 @@ function ArticleJsonLd({ meta }: { meta: ComparisonMeta }) {
     },
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": `https://app.whogoes.co/compare/${meta.slug}`,
+      "@id": contentUrl(`/compare/${meta.slug}`),
     },
     ...(meta.image && {
-      image: `https://app.whogoes.co/compare/${meta.image}`,
+      image: contentUrl(`/compare/${meta.image}`),
     }),
   };
 
@@ -136,13 +137,13 @@ function BreadcrumbJsonLd({
         "@type": "ListItem",
         position: 2,
         name: "Compare",
-        item: "https://app.whogoes.co/compare",
+        item: contentUrl("/compare"),
       },
       {
         "@type": "ListItem",
         position: 3,
         name: title,
-        item: `https://app.whogoes.co/compare/${slug}`,
+        item: contentUrl(`/compare/${slug}`),
       },
     ],
   };

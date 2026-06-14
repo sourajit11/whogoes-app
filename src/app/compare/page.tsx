@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getAllComparisons } from "@/lib/compare";
+import { contentUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Compare WhoGoes: Trade Show Attendee List Alternatives",
@@ -10,10 +11,10 @@ export const metadata: Metadata = {
     title: "Compare WhoGoes: Trade Show Attendee List Alternatives",
     description:
       "See how WhoGoes compares to alternatives for trade show attendee data.",
-    url: "https://app.whogoes.co/compare",
+    url: contentUrl("/compare"),
   },
   alternates: {
-    canonical: "https://app.whogoes.co/compare",
+    canonical: contentUrl("/compare"),
   },
 };
 
@@ -27,7 +28,7 @@ export default function ComparePage() {
     itemListElement: comparisons.map((c, i) => ({
       "@type": "ListItem",
       position: i + 1,
-      url: `https://app.whogoes.co/compare/${c.meta.slug}`,
+      url: contentUrl(`/compare/${c.meta.slug}`),
       name: c.meta.title,
     })),
   };

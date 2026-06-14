@@ -1,5 +1,25 @@
 import type { NextConfig } from "next";
 
+// Domain-consolidation migration (see DOMAIN_CONSOLIDATION_PLAN.md).
+// When NEXT_PUBLIC_CONTENT_DOMAIN is set to the apex (e.g. https://whogoes.co)
+// and differs from the app subdomain, we 301 the content paths from the old
+// app.whogoes.co URLs to the new apex URLs. The `has` host condition is
+// essential under Path A (reverse proxy): only requests arriving on
+// app.whogoes.co are redirected, so proxied apex requests serve content
+// normally instead of looping. Defaults to inert until the env var is set.
+const APP_HOST = "app.whogoes.co";
+const CONTENT_DOMAIN = process.env.NEXT_PUBLIC_CONTENT_DOMAIN?.trim().replace(/\/+$/, "");
+const CONTENT_MIGRATED = !!CONTENT_DOMAIN && CONTENT_DOMAIN !== `https://${APP_HOST}`;
+
+const migrationRedirects = CONTENT_MIGRATED
+  ? ["blog", "events", "compare"].map((seg) => ({
+      source: `/${seg}/:path*`,
+      has: [{ type: "host" as const, value: APP_HOST }],
+      destination: `${CONTENT_DOMAIN}/${seg}/:path*`,
+      statusCode: 301 as const,
+    }))
+  : [];
+
 const nextConfig: NextConfig = {
   async rewrites() {
     return [
@@ -27,6 +47,7 @@ const nextConfig: NextConfig = {
         destination: "https://whogoes.co/#pricing",
         statusCode: 301,
       },
+      ...migrationRedirects,
     ];
   },
   async headers() {

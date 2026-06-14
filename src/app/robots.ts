@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { contentUrl } from "@/lib/site";
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -10,10 +11,10 @@ export default function robots(): MetadataRoute.Robots {
       },
     ],
     sitemap: [
-      "https://app.whogoes.co/sitemap.xml",
-      "https://app.whogoes.co/sitemap/0.xml",
-      "https://app.whogoes.co/sitemap/1.xml",
-      "https://app.whogoes.co/sitemap/2.xml",
+      contentUrl("/sitemap.xml"),
+      contentUrl("/sitemap/0.xml"),
+      contentUrl("/sitemap/1.xml"),
+      contentUrl("/sitemap/2.xml"),
     ],
   };
 }

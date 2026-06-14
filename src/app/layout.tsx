@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { GoogleAnalytics } from "@/components/analytics";
+import { contentUrl } from "@/lib/site";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -75,10 +76,10 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "WebSite",
               name: "WhoGoes",
-              url: "https://app.whogoes.co",
+              url: contentUrl(),
               potentialAction: {
                 "@type": "SearchAction",
-                target: "https://app.whogoes.co/events?q={search_term_string}",
+                target: contentUrl("/events?q={search_term_string}"),
                 "query-input": "required name=search_term_string",
               },
             }),

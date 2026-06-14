@@ -2,9 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getAllPosts } from "@/lib/blog";
 import { getAllComparisons } from "@/lib/compare";
+import { CONTENT_URL, contentUrl } from "@/lib/site";
 
 const INDEXNOW_KEY = "c46c644d8da9be79f7cf73acfccfb6ac";
-const HOST = "app.whogoes.co";
+// IndexNow requires the bare hostname (no scheme); follows the content domain.
+const HOST = new URL(CONTENT_URL).host;
 
 /**
  * POST /api/indexnow — Submit all public URLs to IndexNow (Bing, Yandex, etc.)
@@ -26,11 +28,11 @@ export async function POST(request: NextRequest) {
   if (type === "blog") {
     // Submit only blog + compare URLs (skip 339 event pages)
     urls = [
-      `https://${HOST}`,
-      `https://${HOST}/blog`,
-      `https://${HOST}/compare`,
-      ...blogPosts.map((p) => `https://${HOST}/blog/${p.meta.slug}`),
-      ...comparisons.map((c) => `https://${HOST}/compare/${c.meta.slug}`),
+      contentUrl(),
+      contentUrl("/blog"),
+      contentUrl("/compare"),
+      ...blogPosts.map((p) => contentUrl(`/blog/${p.meta.slug}`)),
+      ...comparisons.map((c) => contentUrl(`/compare/${c.meta.slug}`)),
     ];
   } else {
     // Submit all URLs (existing behavior)
@@ -41,20 +43,20 @@ export async function POST(request: NextRequest) {
       .order("start_date", { ascending: false });
 
     urls = [
-      `https://${HOST}`,
-      `https://${HOST}/events`,
-      `https://${HOST}/blog`,
-      `https://${HOST}/compare`,
-      ...(events ?? []).map((e) => `https://${HOST}/events/${e.slug}`),
-      ...blogPosts.map((p) => `https://${HOST}/blog/${p.meta.slug}`),
-      ...comparisons.map((c) => `https://${HOST}/compare/${c.meta.slug}`),
+      contentUrl(),
+      contentUrl("/events"),
+      contentUrl("/blog"),
+      contentUrl("/compare"),
+      ...(events ?? []).map((e) => contentUrl(`/events/${e.slug}`)),
+      ...blogPosts.map((p) => contentUrl(`/blog/${p.meta.slug}`)),
+      ...comparisons.map((c) => contentUrl(`/compare/${c.meta.slug}`)),
     ];
   }
 
   const payload = {
     host: HOST,
     key: INDEXNOW_KEY,
-    keyLocation: `https://${HOST}/${INDEXNOW_KEY}.txt`,
+    keyLocation: contentUrl(`/${INDEXNOW_KEY}.txt`),
     urlList: urls.slice(0, 10000), // IndexNow max is 10,000
   };
 

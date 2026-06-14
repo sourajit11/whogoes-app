@@ -8,6 +8,7 @@ import EventSeoContent, {
   getEventFaqs,
 } from "./event-seo-content";
 import { getPostBySlug } from "@/lib/blog";
+import { contentUrl } from "@/lib/site";
 import type { BrowsableEvent, ContactPreview } from "@/types";
 import noindexedConfig from "@/config/noindexed-event-slugs.json";
 
@@ -55,7 +56,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title,
       description,
-      url: `https://app.whogoes.co/events/${slug}`,
+      url: contentUrl(`/events/${slug}`),
       type: "website",
       siteName: "WhoGoes",
     },
@@ -65,7 +66,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
     },
     alternates: {
-      canonical: `https://app.whogoes.co/events/${slug}`,
+      canonical: contentUrl(`/events/${slug}`),
     },
   };
 
@@ -91,11 +92,11 @@ function EventJsonLd({
     "@context": "https://schema.org",
     "@type": "Event",
     name: event.event_name,
-    url: `https://app.whogoes.co/events/${event.event_slug}`,
+    url: contentUrl(`/events/${event.event_slug}`),
     description: `Attendee list for ${event.event_name} with ${event.total_contacts.toLocaleString()} verified contacts.`,
     eventStatus: "https://schema.org/EventScheduled",
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
-    image: `https://app.whogoes.co/events/${event.event_slug}/opengraph-image`,
+    image: contentUrl(`/events/${event.event_slug}/opengraph-image`),
     organizer: {
       "@type": "Organization",
       name: "WhoGoes",
@@ -103,7 +104,7 @@ function EventJsonLd({
     },
     offers: {
       "@type": "Offer",
-      url: `https://app.whogoes.co/events/${event.event_slug}`,
+      url: contentUrl(`/events/${event.event_slug}`),
       price: "29",
       priceCurrency: "USD",
       availability: "https://schema.org/InStock",
@@ -148,8 +149,8 @@ function BreadcrumbJsonLd({ eventName, slug }: { eventName: string; slug: string
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Home", item: "https://whogoes.co" },
-      { "@type": "ListItem", position: 2, name: "Events", item: "https://app.whogoes.co/events" },
-      { "@type": "ListItem", position: 3, name: `${eventName} Attendee List`, item: `https://app.whogoes.co/events/${slug}` },
+      { "@type": "ListItem", position: 2, name: "Events", item: contentUrl("/events") },
+      { "@type": "ListItem", position: 3, name: `${eventName} Attendee List`, item: contentUrl(`/events/${slug}`) },
     ],
   };
 

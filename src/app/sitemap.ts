@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getAllPosts } from "@/lib/blog";
 import { getAllComparisons } from "@/lib/compare";
+import { contentUrl, appUrl } from "@/lib/site";
 import noindexedConfig from "@/config/noindexed-event-slugs.json";
 
 const NOINDEXED_SLUGS = new Set<string>(noindexedConfig.slugs);
@@ -29,31 +30,31 @@ export default async function sitemap(props: any): Promise<MetadataRoute.Sitemap
     const blogPosts = getAllPosts();
     return [
       {
-        url: "https://app.whogoes.co/events",
+        url: contentUrl("/events"),
         lastModified: new Date(),
         changeFrequency: "daily" as const,
         priority: 1.0,
       },
       {
-        url: "https://app.whogoes.co/blog",
+        url: contentUrl("/blog"),
         lastModified: new Date(),
         changeFrequency: "weekly" as const,
         priority: 0.9,
       },
       {
-        url: "https://app.whogoes.co/compare",
+        url: contentUrl("/compare"),
         lastModified: new Date(),
         changeFrequency: "weekly" as const,
         priority: 0.9,
       },
       {
-        url: "https://app.whogoes.co/affiliates",
+        url: appUrl("/affiliates"),
         lastModified: new Date(),
         changeFrequency: "monthly" as const,
         priority: 0.7,
       },
       ...blogPosts.map((post) => ({
-        url: `https://app.whogoes.co/blog/${post.meta.slug}`,
+        url: contentUrl(`/blog/${post.meta.slug}`),
         lastModified: new Date(post.meta.date),
         changeFrequency: "monthly" as const,
         priority: 0.9,
@@ -64,7 +65,7 @@ export default async function sitemap(props: any): Promise<MetadataRoute.Sitemap
   // Sitemap 1: Comparison pages
   if (sitemapId === 1) {
     return getAllComparisons().map((c) => ({
-      url: `https://app.whogoes.co/compare/${c.meta.slug}`,
+      url: contentUrl(`/compare/${c.meta.slug}`),
       lastModified: new Date(c.meta.updatedDate ?? c.meta.date),
       changeFrequency: "monthly" as const,
       priority: 0.85,
@@ -81,7 +82,7 @@ export default async function sitemap(props: any): Promise<MetadataRoute.Sitemap
   return (events ?? [])
     .filter((event) => !NOINDEXED_SLUGS.has(event.slug))
     .map((event) => ({
-      url: `https://app.whogoes.co/events/${event.slug}`,
+      url: contentUrl(`/events/${event.slug}`),
       lastModified: new Date(),
       changeFrequency: "weekly" as const,
       priority: 0.5,
