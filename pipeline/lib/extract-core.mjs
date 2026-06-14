@@ -56,7 +56,9 @@ export async function extractRegionLeads(supabase, { region, limit = DEFAULT_LIM
         company_name: c.companyName,
         event_name: eventName,
         event_date: event.event_start_date,
-        contact_count: event.contacts_with_email,
+        // Total attendees shown on the public event page (social-proof number),
+        // not just the emailable subset. Falls back to the emailable count.
+        contact_count: event.total_contacts ?? event.contacts_with_email,
         timing: bucket,
         campaign_bucket: bucket,
         event_id: event.event_id,
