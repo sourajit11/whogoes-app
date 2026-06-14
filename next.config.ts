@@ -1,17 +1,27 @@
 import type { NextConfig } from "next";
 
-// Domain-consolidation migration (see DOMAIN_CONSOLIDATION_PLAN.md).
-// When NEXT_PUBLIC_CONTENT_DOMAIN is set to the apex (e.g. https://whogoes.co)
-// and differs from the app subdomain, we 301 the content paths from the old
-// app.whogoes.co URLs to the new apex URLs. The `has` host condition is
-// essential under Path A (reverse proxy): only requests arriving on
-// app.whogoes.co are redirected, so proxied apex requests serve content
-// normally instead of looping. Defaults to inert until the env var is set.
+// Domain-consolidation migration (see DOMAIN_CONSOLIDATION_PLAN.md §8).
+//
+// Two SEPARATE switches, on purpose:
+//
+// 1. NEXT_PUBLIC_CONTENT_DOMAIN (the canonical flip) - handled in
+//    src/lib/site.ts. Makes canonicals/sitemap/JSON-LD emit apex URLs. This is
+//    the safe, primary consolidation lever and never causes a redirect loop.
+//
+// 2. ENABLE_CONTENT_301 (this block, the hard redirect) - only turn on AFTER
+//    confirming the serving architecture is loop-safe. Under Path A (the apex
+//    project reverse-proxies /blog,/events,/compare to this app), the proxied
+//    request arrives with Host: app.whogoes.co, so a host-guarded 301 here
+//    would bounce it back to the apex and LOOP. So leave this OFF for Path A
+//    and rely on canonicals; only enable it under Path B (apex and app are the
+//    same deployment on two domains), where the host guard cleanly separates a
+//    direct app.whogoes.co hit (redirect) from a genuine apex hit (serve).
 const APP_HOST = "app.whogoes.co";
 const CONTENT_DOMAIN = process.env.NEXT_PUBLIC_CONTENT_DOMAIN?.trim().replace(/\/+$/, "");
 const CONTENT_MIGRATED = !!CONTENT_DOMAIN && CONTENT_DOMAIN !== `https://${APP_HOST}`;
+const ENABLE_CONTENT_301 = process.env.ENABLE_CONTENT_301 === "true";
 
-const migrationRedirects = CONTENT_MIGRATED
+const migrationRedirects = CONTENT_MIGRATED && ENABLE_CONTENT_301
   ? ["blog", "events", "compare"].map((seg) => ({
       source: `/${seg}/:path*`,
       has: [{ type: "host" as const, value: APP_HOST }],
