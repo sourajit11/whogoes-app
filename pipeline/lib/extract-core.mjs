@@ -17,12 +17,14 @@ const DEFAULT_LIMIT = 1000;
 /**
  * Extract up to `limit` outreach leads for one region (US or EU), urgent first.
  *
- * @returns {Promise<{region, total, byBucket, leads, watermarks}>}
+ * @param {import('@supabase/supabase-js').SupabaseClient} supabase
+ * @param {{ region: string, limit?: number }} options
+ * @returns {Promise<{region: string, total: number, byBucket: Record<string, number>, leads: object[], watermarks: object[]}>}
  *   leads:      ready for Plusvibe (email/first_name/last_name/company_name + custom vars)
  *   watermarks: [{ event_id, last_contact_created_at, count, previous_total }]
  *               — pass these to commit() only after the leads are safely added.
  */
-export async function extractRegionLeads(supabase, { region, limit = DEFAULT_LIMIT } = {}) {
+export async function extractRegionLeads(supabase, { region, limit = DEFAULT_LIMIT }) {
   const events = await getQualifyingEvents(supabase); // already sorted urgent-first
   const regionEvents = events.filter((e) => e.region === region);
 
