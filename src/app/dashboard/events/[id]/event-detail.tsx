@@ -69,6 +69,7 @@ export default function EventDetail({
   const [previewError, setPreviewError] = useState<string | null>(null);
   const [previewReloadKey, setPreviewReloadKey] = useState(0);
   const [unlocking, setUnlocking] = useState(false);
+  const [unlockProgress, setUnlockProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [credits, setCredits] = useState(initialCredits);
@@ -180,35 +181,64 @@ export default function EventDetail({
 
     if (sliderValue <= 0) return;
     setUnlocking(true);
+    setUnlockProgress(0);
     setError(null);
     setSuccessMsg(null);
 
-    const { data, error: rpcError } = await supabase.rpc(
-      "unlock_event_contacts",
-      { p_event_id: event.event_id, p_count: sliderValue }
-    );
+    // Unlock in batches so each RPC call stays well under Postgres'
+    // statement_timeout. A single large unlock (e.g. all ~6,700 Cannes
+    // contacts) does a heavy sort + bulk insert that exceeds the 8s limit;
+    // chunking it keeps every call fast and lets us show progress.
+    const UNLOCK_BATCH_SIZE = 1000;
+    let remaining = sliderValue;
+    let totalUnlocked = 0;
+    let latestBalance = credits;
 
-    if (rpcError) {
-      setError(rpcError.message);
-      setUnlocking(false);
-      return;
-    }
+    while (remaining > 0) {
+      const batchCount = Math.min(UNLOCK_BATCH_SIZE, remaining);
+      const { data, error: rpcError } = await supabase.rpc(
+        "unlock_event_contacts",
+        { p_event_id: event.event_id, p_count: batchCount }
+      );
 
-    const result = data as UnlockResult;
-    if (!result.success) {
-      setError(result.message);
-      setUnlocking(false);
-      return;
+      if (rpcError) {
+        // Surface a clear message but keep whatever we already unlocked.
+        setError(
+          totalUnlocked > 0
+            ? `${rpcError.message} (${totalUnlocked} contacts unlocked before this error — you can retry to continue.)`
+            : rpcError.message
+        );
+        setUnlocking(false);
+        return;
+      }
+
+      const result = data as UnlockResult;
+      if (!result.success) {
+        // "No more contacts to unlock" after a partial run is success, not error.
+        if (totalUnlocked > 0) break;
+        setError(result.message);
+        setUnlocking(false);
+        return;
+      }
+
+      const justUnlocked = result.contacts_unlocked ?? 0;
+      totalUnlocked += justUnlocked;
+      latestBalance = result.new_balance ?? latestBalance;
+      remaining -= batchCount;
+      setUnlockProgress(totalUnlocked);
+
+      // The RPC delivered fewer than requested -> nothing left to unlock.
+      if (justUnlocked < batchCount) break;
     }
 
     // Unlock activity is read live by the email automation (active flow is
     // enqueued by the queue processor's scan), so no client-side ping is needed.
 
     // Update local state and notify sidebar
-    setCredits(result.new_balance ?? 0);
+    setCredits(latestBalance);
     window.dispatchEvent(new CustomEvent("credits-updated"));
     setSuccessMsg(
-      `${result.contacts_unlocked} contacts unlocked! ${result.new_balance} credits remaining.`
+      `${totalUnlocked} contacts unlocked! ${latestBalance} credits remaining.`
     );
 
     // Refresh unlock status
@@ -569,7 +599,9 @@ export default function EventDetail({
                       className="mt-4 w-full cursor-pointer rounded-lg bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-emerald-500 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {unlocking
-                        ? "Unlocking..."
+                        ? unlockProgress > 0
+                          ? `Unlocking... ${unlockProgress.toLocaleString()} / ${sliderValue.toLocaleString()}`
+                          : "Unlocking..."
                         : `Unlock ${sliderValue} Contact${sliderValue !== 1 ? "s" : ""}`}
                     </button>
 

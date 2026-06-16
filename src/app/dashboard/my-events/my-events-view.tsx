@@ -51,6 +51,7 @@ export default function MyEventsView({
   const [showUnlockPanel, setShowUnlockPanel] = useState(false);
   const [credits, setCredits] = useState<number | null>(null);
   const [unlocking, setUnlocking] = useState(false);
+  const [unlockProgress, setUnlockProgress] = useState(0);
   const [unlockError, setUnlockError] = useState<string | null>(null);
   const [unlockSuccess, setUnlockSuccess] = useState<string | null>(null);
   const [sliderIndex, setSliderIndex] = useState(0);
@@ -246,30 +247,55 @@ export default function MyEventsView({
   async function handleUnlockMore() {
     if (unlockSliderValue <= 0 || !selectedEventId) return;
     setUnlocking(true);
+    setUnlockProgress(0);
     setUnlockError(null);
     setUnlockSuccess(null);
 
-    const { data, error: rpcError } = await supabase.rpc("unlock_event_contacts", {
-      p_event_id: selectedEventId,
-      p_count: unlockSliderValue,
-    });
+    // Unlock in batches so each RPC call stays well under Postgres'
+    // statement_timeout. A single large unlock does a heavy sort + bulk
+    // insert that exceeds the 8s limit; chunking keeps every call fast.
+    const UNLOCK_BATCH_SIZE = 1000;
+    let remaining = unlockSliderValue;
+    let totalUnlocked = 0;
+    let latestBalance = credits;
 
-    if (rpcError) {
-      setUnlockError(rpcError.message);
-      setUnlocking(false);
-      return;
+    while (remaining > 0) {
+      const batchCount = Math.min(UNLOCK_BATCH_SIZE, remaining);
+      const { data, error: rpcError } = await supabase.rpc("unlock_event_contacts", {
+        p_event_id: selectedEventId,
+        p_count: batchCount,
+      });
+
+      if (rpcError) {
+        setUnlockError(
+          totalUnlocked > 0
+            ? `${rpcError.message} (${totalUnlocked} contacts unlocked before this error — you can retry to continue.)`
+            : rpcError.message
+        );
+        setUnlocking(false);
+        return;
+      }
+
+      const result = data as UnlockResult;
+      if (!result.success) {
+        if (totalUnlocked > 0) break;
+        setUnlockError(result.message);
+        setUnlocking(false);
+        return;
+      }
+
+      const justUnlocked = result.contacts_unlocked ?? 0;
+      totalUnlocked += justUnlocked;
+      latestBalance = result.new_balance ?? latestBalance;
+      remaining -= batchCount;
+      setUnlockProgress(totalUnlocked);
+
+      if (justUnlocked < batchCount) break;
     }
 
-    const result = data as UnlockResult;
-    if (!result.success) {
-      setUnlockError(result.message);
-      setUnlocking(false);
-      return;
-    }
-
-    setCredits(result.new_balance ?? 0);
+    setCredits(latestBalance);
     setUnlockSuccess(
-      `${result.contacts_unlocked} contacts unlocked! ${result.new_balance} credits remaining.`
+      `${totalUnlocked} contacts unlocked! ${latestBalance} credits remaining.`
     );
     window.dispatchEvent(new CustomEvent("credits-updated"));
 
@@ -763,7 +789,11 @@ export default function MyEventsView({
                       disabled={unlocking || unlockSliderValue <= 0}
                       className="flex-1 cursor-pointer rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      {unlocking ? "Unlocking..." : `Unlock ${unlockSliderValue} Contact${unlockSliderValue !== 1 ? "s" : ""}`}
+                      {unlocking
+                        ? unlockProgress > 0
+                          ? `Unlocking... ${unlockProgress.toLocaleString()} / ${unlockSliderValue.toLocaleString()}`
+                          : "Unlocking..."
+                        : `Unlock ${unlockSliderValue} Contact${unlockSliderValue !== 1 ? "s" : ""}`}
                     </button>
                     <button
                       onClick={() => setShowUnlockPanel(false)}
