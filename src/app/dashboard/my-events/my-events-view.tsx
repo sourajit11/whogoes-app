@@ -95,12 +95,19 @@ export default function MyEventsView({
     let hasMore = true;
 
     while (hasMore) {
-      const { data: batch, error } = await supabase
-        .rpc("get_subscribed_event_contacts", {
+      // Server-side pagination: the RPC limits the access rows before the
+      // heavy joins, so each page stays well under the statement timeout even
+      // on large events. (A bare .range() makes PostgREST recompute the full
+      // result every page, which timed out at ~6,700 contacts.)
+      const { data: batch, error } = await supabase.rpc(
+        "get_subscribed_event_contacts",
+        {
           p_event_id: selectedEventId,
           p_filter: "all",
-        })
-        .range(from, from + batchSize - 1);
+          p_limit: batchSize,
+          p_offset: from,
+        }
+      );
 
       if (error) {
         // Surface the failure instead of silently leaving an empty table.
