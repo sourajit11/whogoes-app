@@ -38,6 +38,7 @@ export default function MyEventsView({
   const [selectedEventId, setSelectedEventId] = useState(initialEventId);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadedCount, setLoadedCount] = useState(0);
   const [contactsError, setContactsError] = useState(false);
   const [activeTab, setActiveTab] = useState<TabFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -87,6 +88,7 @@ export default function MyEventsView({
   const fetchContacts = useCallback(async () => {
     if (!selectedEventId) return;
     setLoading(true);
+    setLoadedCount(0);
     setContactsError(false);
 
     const allContacts: Contact[] = [];
@@ -118,6 +120,7 @@ export default function MyEventsView({
       }
 
       allContacts.push(...(batch ?? []));
+      setLoadedCount(allContacts.length);
       hasMore = (batch?.length ?? 0) === batchSize;
       from += batchSize;
     }
@@ -612,32 +615,41 @@ export default function MyEventsView({
       )}
 
 
-      {loading && (
-        <div className="mt-12 flex h-48 items-center justify-center">
-          <div className="flex items-center gap-3 text-sm text-zinc-400">
-            <svg
-              className="h-5 w-5 animate-spin"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-              />
-            </svg>
-            Loading contacts...
+      {loading && (() => {
+        // We load the user's unlocked contacts in pages of 1,000. The total to
+        // load is the unlocked count (new + processed). Show real progress so a
+        // high-volume event (e.g. several thousand contacts) reads as moving,
+        // not stuck. Fall back to indeterminate until we know the total.
+        const expectedTotal = selectedEvent
+          ? selectedEvent.new_contacts + selectedEvent.processed_contacts
+          : 0;
+        const hasTotal = expectedTotal > 0;
+        const pct = hasTotal
+          ? Math.min(100, Math.round((loadedCount / expectedTotal) * 100))
+          : 0;
+        return (
+          <div className="mt-12 flex h-48 flex-col items-center justify-center gap-3">
+            <div className="w-full max-w-sm">
+              <div className="mb-2 flex items-center justify-between text-sm text-zinc-500 dark:text-zinc-400">
+                <span>Loading contacts...</span>
+                {hasTotal && (
+                  <span className="tabular-nums">
+                    {loadedCount.toLocaleString()} / {expectedTotal.toLocaleString()}
+                  </span>
+                )}
+              </div>
+              <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
+                <div
+                  className={`h-full rounded-full bg-emerald-600 transition-[width] duration-300 ease-out ${
+                    hasTotal ? "" : "w-1/3 animate-pulse"
+                  }`}
+                  style={hasTotal ? { width: `${pct}%` } : undefined}
+                />
+              </div>
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {!loading && contactsError && (
         <div className="mt-6 flex items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-900/20 dark:text-amber-200">
