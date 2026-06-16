@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getAllPosts } from "@/lib/blog";
 import { getAllComparisons } from "@/lib/compare";
-import { contentUrl, appUrl } from "@/lib/site";
+import { contentUrl } from "@/lib/site";
 import { getBrowsableEventsCached } from "@/lib/events/get-browsable-events";
 import {
   EVENT_INDEX_MODE,
@@ -48,12 +48,6 @@ export default async function sitemap(props: any): Promise<MetadataRoute.Sitemap
         lastModified: new Date(),
         changeFrequency: "weekly" as const,
         priority: 0.9,
-      },
-      {
-        url: appUrl("/affiliates"),
-        lastModified: new Date(),
-        changeFrequency: "monthly" as const,
-        priority: 0.7,
       },
       ...blogPosts.map((post) => ({
         url: contentUrl(`/blog/${post.meta.slug}`),
