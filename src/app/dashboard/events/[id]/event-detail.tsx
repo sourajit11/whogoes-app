@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { productHref } from "@/lib/site";
 import BuyCreditsModal from "@/app/dashboard/components/buy-credits-modal";
 import type {
   BrowsableEvent,
@@ -175,7 +176,14 @@ export default function EventDetail({
 
   async function handleUnlock() {
     if (!isAuthenticated) {
-      router.push(`/login?redirect=/events/${event.event_slug ?? event.event_id}`);
+      const loginHref = productHref(`/login?redirect=/events/${event.event_slug ?? event.event_id}`);
+      // On the content/apex domain loginHref is an absolute app-domain URL, so
+      // navigate the browser directly rather than via the SPA router.
+      if (loginHref.startsWith("http")) {
+        window.location.href = loginHref;
+      } else {
+        router.push(loginHref);
+      }
       return;
     }
 
@@ -272,7 +280,7 @@ export default function EventDetail({
     <div className="mx-auto max-w-7xl px-6 py-8">
       {/* Back link */}
       <Link
-        href={isAuthenticated ? "/dashboard/events" : "/events"}
+        href={isAuthenticated ? productHref("/dashboard/events") : "/events"}
         className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-400 transition-colors hover:text-zinc-700 dark:hover:text-zinc-300"
       >
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -491,7 +499,7 @@ export default function EventDetail({
                     </div>
                     <div className="mt-3 flex gap-3">
                       <Link
-                        href={`/dashboard/my-events?event=${event.event_id}`}
+                        href={productHref(`/dashboard/my-events?event=${event.event_id}`)}
                         className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
                       >
                         View Unlocked Contacts
@@ -521,7 +529,7 @@ export default function EventDetail({
                       Sign up free to unlock contacts. You get 20 credits on us.
                     </p>
                     <Link
-                      href={`/login?redirect=/events/${event.event_slug ?? event.event_id}`}
+                      href={productHref(`/login?redirect=/events/${event.event_slug ?? event.event_id}`)}
                       className="mt-4 inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-emerald-500 hover:shadow-md active:scale-[0.98]"
                     >
                       <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

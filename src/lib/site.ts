@@ -32,3 +32,14 @@ export function appUrl(path = ""): string {
   if (!path) return APP_URL;
   return `${APP_URL}${path.startsWith("/") ? path : `/${path}`}`;
 }
+
+/**
+ * Link to a product route (login, register, dashboard) from a page that can be
+ * served on the content/apex domain. Once content has migrated off the
+ * subdomain, the apex no longer serves app-only routes, so a relative href
+ * would 404 there — this returns an absolute app-domain URL in that case. It
+ * stays relative pre-migration and in local dev so SPA navigation still works.
+ */
+export function productHref(path: string): string {
+  return CONTENT_MIGRATED ? appUrl(path) : path;
+}
