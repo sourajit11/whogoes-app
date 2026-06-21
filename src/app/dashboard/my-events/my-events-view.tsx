@@ -7,6 +7,11 @@ import type { SubscribedEvent, Contact, SortKey, SortDir, UnlockResult } from "@
 import ContactTable from "./contact-table";
 import DownloadControls from "./download-controls";
 import EmptyState from "../components/empty-state";
+import EventFilters, {
+  cleanFilters,
+  isFilterActive,
+  type EventFiltersValue,
+} from "../events/[id]/event-filters";
 import Link from "next/link";
 
 interface MyEventsViewProps {
@@ -38,6 +43,10 @@ export default function MyEventsView({
   const [selectedEventId, setSelectedEventId] = useState(initialEventId);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(false);
+  // True once the selected event has loaded at least once. Distinguishes the
+  // first full-height loader from later filter re-fetches (which keep the table
+  // mounted under an overlay). Reset whenever the event changes.
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
   const [loadedCount, setLoadedCount] = useState(0);
   const [contactsError, setContactsError] = useState(false);
   const [activeTab, setActiveTab] = useState<TabFilter>("all");
@@ -53,11 +62,26 @@ export default function MyEventsView({
   const [credits, setCredits] = useState<number | null>(null);
   const [unlocking, setUnlocking] = useState(false);
   const [unlockProgress, setUnlockProgress] = useState(0);
+  const [unlockTarget, setUnlockTarget] = useState(0);
   const [unlockError, setUnlockError] = useState<string | null>(null);
   const [unlockSuccess, setUnlockSuccess] = useState<string | null>(null);
   const [sliderIndex, setSliderIndex] = useState(0);
   const [revealingIds, setRevealingIds] = useState<Set<string>>(new Set());
   const [revealingAll, setRevealingAll] = useState(false);
+  // ICP filters scope the owned-contact table, the "unlock more" count and the
+  // bulk email reveal — same jsonb contract and component as the Browse Events page.
+  const [icpFilters, setIcpFilters] = useState<EventFiltersValue>({});
+  const [matchedCount, setMatchedCount] = useState<number | null>(null);
+  const icpActive = isFilterActive(icpFilters);
+  // Stringify-then-parse so cleanIcp keeps a STABLE identity across re-renders that
+  // don't change the filter content. EventFilters fires onChange with a fresh {}
+  // object on mount/refresh; without this, the fetch effect would re-run on every
+  // such call and the page flickers between loading and loaded.
+  const cleanIcpKey = JSON.stringify(cleanFilters(icpFilters));
+  const cleanIcp = useMemo(
+    () => JSON.parse(cleanIcpKey) as EventFiltersValue,
+    [cleanIcpKey]
+  );
 
   const supabase = createClient();
   const selectedEvent = subscribedEvents.find(
@@ -110,6 +134,7 @@ export default function MyEventsView({
           p_filter: "all",
           p_limit: batchSize,
           p_offset: from,
+          p_filters: cleanIcp,
         }
       );
 
@@ -130,13 +155,20 @@ export default function MyEventsView({
     setContacts(allContacts);
     setPage(0);
     setLoading(false);
-  }, [selectedEventId, supabase]);
+    setInitialLoadDone(true);
+  }, [selectedEventId, supabase, cleanIcp]);
 
   useEffect(() => {
     if (selectedEventId) {
       fetchContacts();
     }
   }, [selectedEventId, fetchContacts]);
+
+  // Reset the first-load flag when the selected event changes so the new event
+  // shows its full-height loader rather than overlaying a stale table.
+  useEffect(() => {
+    setInitialLoadDone(false);
+  }, [selectedEventId]);
 
   // Fetch credits for inline unlock
   useEffect(() => {
@@ -147,9 +179,13 @@ export default function MyEventsView({
     fetchCredits();
   }, [supabase]);
 
-  // Computed values for inline unlock slider
+  // Computed values for inline unlock slider. When a filter is active, the
+  // remaining pool is the contacts that MATCH the filter but aren't owned yet
+  // (matchedCount comes from the facets, contacts.length is the matching owned set).
   const remainingForEvent = selectedEvent
-    ? Math.max(0, selectedEvent.total_contacts - contacts.length)
+    ? icpActive && matchedCount !== null
+      ? Math.max(0, matchedCount - contacts.length)
+      : Math.max(0, selectedEvent.total_contacts - contacts.length)
     : 0;
 
   const maxUnlock = Math.min(credits ?? 0, remainingForEvent);
@@ -317,9 +353,22 @@ export default function MyEventsView({
     });
   }
 
-  async function handleUnlockMore() {
-    if (unlockSliderValue <= 0 || !selectedEventId) return;
+  async function handleUnlockMore(opts?: { ignoreFilters?: boolean }) {
+    if (!selectedEventId || !selectedEvent || credits === null) return;
+
+    // "Unlock all (ignore filters)" sends no filters and targets the whole
+    // remaining pool; otherwise we unlock the slider count among the matches.
+    const useFilters = !opts?.ignoreFilters && icpActive;
+    const payloadFilters = useFilters ? cleanIcp : {};
+    const totalOwned = selectedEvent.new_contacts + selectedEvent.processed_contacts;
+    const wholeRemaining = Math.max(0, selectedEvent.total_contacts - totalOwned);
+    const target = opts?.ignoreFilters
+      ? Math.min(credits, wholeRemaining)
+      : unlockSliderValue;
+
+    if (target <= 0) return;
     setUnlocking(true);
+    setUnlockTarget(target);
     setUnlockProgress(0);
     setUnlockError(null);
     setUnlockSuccess(null);
@@ -328,7 +377,7 @@ export default function MyEventsView({
     // statement_timeout. A single large unlock does a heavy sort + bulk
     // insert that exceeds the 8s limit; chunking keeps every call fast.
     const UNLOCK_BATCH_SIZE = 1000;
-    let remaining = unlockSliderValue;
+    let remaining = target;
     let totalUnlocked = 0;
     let latestBalance = credits;
 
@@ -337,6 +386,7 @@ export default function MyEventsView({
       const { data, error: rpcError } = await supabase.rpc("unlock_event_contacts", {
         p_event_id: selectedEventId,
         p_count: batchCount,
+        p_filters: payloadFilters,
       });
 
       if (rpcError) {
@@ -677,12 +727,30 @@ export default function MyEventsView({
         </div>
       )}
 
+      {/* ICP filter bar — rendered OUTSIDE the loading/error gate so it stays mounted
+          across refetches. It scopes the table below, the "unlock more" count and the
+          bulk reveal. Inside the gate it would unmount on every filter-driven refetch,
+          losing its selection and resetting the filter. */}
+      {selectedEvent && (
+        <div className="mt-6">
+          <EventFilters
+            eventId={selectedEventId}
+            totalContacts={selectedEvent.total_contacts}
+            onChange={(f, matched) => {
+              setIcpFilters(f);
+              setMatchedCount(matched);
+            }}
+          />
+        </div>
+      )}
 
-      {loading && (() => {
-        // We load the user's unlocked contacts in pages of 1,000. The total to
-        // load is the unlocked count (new + processed). Show real progress so a
-        // high-volume event (e.g. several thousand contacts) reads as moving,
-        // not stuck. Fall back to indeterminate until we know the total.
+      {loading && !initialLoadDone && (() => {
+        // Initial load only. We load the user's unlocked contacts in pages of
+        // 1,000. The total to load is the unlocked count (new + processed). Show
+        // real progress so a high-volume event (e.g. several thousand contacts)
+        // reads as moving, not stuck. Fall back to indeterminate until we know
+        // the total. Re-fetches (filter changes) keep the table mounted with an
+        // overlay instead of swapping in this full-height loader — see below.
         const expectedTotal = selectedEvent
           ? selectedEvent.new_contacts + selectedEvent.processed_contacts
           : 0;
@@ -726,21 +794,33 @@ export default function MyEventsView({
         </div>
       )}
 
-      {!loading && !contactsError && (
+      {!contactsError && (initialLoadDone || !loading) && (
         <>
           {/* Stats row */}
           {selectedEvent && (
             <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-zinc-500">
-              <span>
-                <strong className="text-blue-600 dark:text-blue-400">
-                  {contacts.length.toLocaleString()}
-                </strong>
-                <span className="mx-1">of</span>
-                <strong className="text-zinc-900 dark:text-zinc-100">
-                  {selectedEvent.total_contacts.toLocaleString()}
-                </strong>{" "}
-                unlocked
-              </span>
+              {/* When a filter is active, the count reads as "your matching
+                  contacts" (not "of the whole event"), so it no longer conflates
+                  owned-matches with the much larger event-wide match total. */}
+              {icpActive ? (
+                <span>
+                  <strong className="text-blue-600 dark:text-blue-400">
+                    {contacts.length.toLocaleString()}
+                  </strong>{" "}
+                  of your unlocked contacts match
+                </span>
+              ) : (
+                <span>
+                  <strong className="text-blue-600 dark:text-blue-400">
+                    {contacts.length.toLocaleString()}
+                  </strong>
+                  <span className="mx-1">of</span>
+                  <strong className="text-zinc-900 dark:text-zinc-100">
+                    {selectedEvent.total_contacts.toLocaleString()}
+                  </strong>{" "}
+                  unlocked
+                </span>
+              )}
               <span className="text-zinc-300 dark:text-zinc-600">·</span>
               <span>
                 <strong className="text-emerald-600 dark:text-emerald-400">
@@ -755,7 +835,7 @@ export default function MyEventsView({
                 </strong>{" "}
                 processed
               </span>
-              {contacts.length < selectedEvent.total_contacts && (
+              {remainingForEvent > 0 && (
                 <>
                   <span className="text-zinc-300 dark:text-zinc-600">·</span>
                   <button
@@ -770,7 +850,9 @@ export default function MyEventsView({
                     <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
-                    Unlock more
+                    {icpActive
+                      ? `${remainingForEvent.toLocaleString()} more match — unlock`
+                      : "Unlock more"}
                   </button>
                 </>
               )}
@@ -795,7 +877,9 @@ export default function MyEventsView({
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-emerald-800 dark:text-emerald-300">
-                    {remainingForEvent.toLocaleString()} more contacts available
+                    {icpActive
+                      ? `${remainingForEvent.toLocaleString()} more contacts match your filters`
+                      : `${remainingForEvent.toLocaleString()} more contacts available`}
                   </p>
                   <p className="mt-0.5 text-xs text-emerald-600/70 dark:text-emerald-400/60">
                     1 credit each for name, title, company, LinkedIn and post. Reveal emails for 1 more credit.
@@ -820,23 +904,34 @@ export default function MyEventsView({
               {showUnlockPanel && credits !== null && credits > 0 && (
                 <div className="mx-auto mt-4 max-w-lg">
                   <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                    How many contacts to unlock?
+                    {icpActive ? "How many matching contacts to unlock?" : "How many contacts to unlock?"}
                   </label>
-                  <div className="mt-2 flex items-center gap-4">
-                    <span className="text-xs text-zinc-400">{unlockSliderSteps[0] ?? 1}</span>
-                    <input
-                      type="range"
-                      min={0}
-                      max={unlockSliderSteps.length - 1}
-                      value={sliderIndex}
-                      onChange={(e) => setSliderIndex(Number(e.target.value))}
-                      className="h-2 flex-1 cursor-pointer appearance-none rounded-full bg-zinc-200 accent-emerald-600 dark:bg-zinc-700"
-                    />
-                    <span className="text-xs text-zinc-400">{maxUnlock}</span>
-                  </div>
-                  <p className="mt-1 text-center text-lg font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
-                    {unlockSliderValue} contact{unlockSliderValue !== 1 ? "s" : ""}
-                  </p>
+                  {maxUnlock > 0 ? (
+                    <>
+                      <div className="mt-2 flex items-center gap-4">
+                        <span className="text-xs text-zinc-400">{unlockSliderSteps[0] ?? 1}</span>
+                        <input
+                          type="range"
+                          min={0}
+                          max={unlockSliderSteps.length - 1}
+                          value={sliderIndex}
+                          onChange={(e) => setSliderIndex(Number(e.target.value))}
+                          className="h-2 flex-1 cursor-pointer appearance-none rounded-full bg-zinc-200 accent-emerald-600 dark:bg-zinc-700"
+                        />
+                        <span className="text-xs text-zinc-400">{maxUnlock}</span>
+                      </div>
+                      <p className="mt-1 text-center text-lg font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
+                        {unlockSliderValue}{" "}
+                        {icpActive
+                          ? `match${unlockSliderValue !== 1 ? "es" : ""}`
+                          : `contact${unlockSliderValue !== 1 ? "s" : ""}`}
+                      </p>
+                    </>
+                  ) : (
+                    <p className="mt-2 text-center text-sm text-zinc-500">
+                      You already own every contact that matches these filters. Use the option below to unlock the rest of the event.
+                    </p>
+                  )}
 
                   {/* Cost breakdown */}
                   <div className="mt-3 rounded-xl bg-white p-3 ring-1 ring-zinc-200 dark:bg-zinc-800/50 dark:ring-zinc-700">
@@ -867,15 +962,17 @@ export default function MyEventsView({
                   {/* Action buttons */}
                   <div className="mt-3 flex gap-2">
                     <button
-                      onClick={handleUnlockMore}
+                      onClick={() => handleUnlockMore()}
                       disabled={unlocking || unlockSliderValue <= 0}
                       className="flex-1 cursor-pointer rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {unlocking
                         ? unlockProgress > 0
-                          ? `Unlocking... ${unlockProgress.toLocaleString()} / ${unlockSliderValue.toLocaleString()}`
+                          ? `Unlocking... ${unlockProgress.toLocaleString()} / ${unlockTarget.toLocaleString()}`
                           : "Unlocking..."
-                        : `Unlock ${unlockSliderValue} Contact${unlockSliderValue !== 1 ? "s" : ""}`}
+                        : icpActive
+                          ? `Unlock ${unlockSliderValue} Match${unlockSliderValue !== 1 ? "es" : ""}`
+                          : `Unlock ${unlockSliderValue} Contact${unlockSliderValue !== 1 ? "s" : ""}`}
                     </button>
                     <button
                       onClick={() => setShowUnlockPanel(false)}
@@ -884,6 +981,17 @@ export default function MyEventsView({
                       Cancel
                     </button>
                   </div>
+
+                  {/* When filtering, let power users bypass the filter and grab the whole remaining pool. */}
+                  {icpActive && (
+                    <button
+                      onClick={() => handleUnlockMore({ ignoreFilters: true })}
+                      disabled={unlocking}
+                      className="mt-2 w-full cursor-pointer text-center text-xs font-medium text-zinc-500 underline-offset-2 transition-colors hover:text-zinc-700 hover:underline disabled:opacity-50 dark:text-zinc-400 dark:hover:text-zinc-200"
+                    >
+                      Unlock all remaining (ignore filters)
+                    </button>
+                  )}
 
                   {unlockError && (
                     <p className="mt-2 text-center text-sm text-red-600 dark:text-red-400">{unlockError}</p>
@@ -1014,8 +1122,21 @@ export default function MyEventsView({
             />
           </div>
 
-          {/* Table */}
-          <div className="mt-4">
+          {/* Table — stays mounted while a filter-driven re-fetch runs; a subtle
+              overlay signals "updating" so the screen never blanks or appears
+              frozen between the old and new result sets. */}
+          <div className="relative mt-4">
+            {loading && initialLoadDone && (
+              <div className="absolute inset-0 z-10 flex items-start justify-center rounded-xl bg-white/55 pt-20 backdrop-blur-[1px] dark:bg-zinc-950/55">
+                <span className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-600 shadow-sm dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
+                  <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Updating results…
+                </span>
+              </div>
+            )}
             <ContactTable
               contacts={paginatedContacts}
               startIndex={page * PAGE_SIZE}

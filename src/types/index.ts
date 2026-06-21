@@ -88,6 +88,14 @@ export interface Contact {
   first_line_personalization: string | null;
   is_downloaded: boolean;
   downloaded_at: string | null;
+  // Event-role + standardized buckets (added 2026-06-21). event_role is one of
+  // attendee | sponsor | exhibitor | organizer. Buckets are the clean classified
+  // values; the free-text company_industry/company_size above are the legacy fields.
+  event_role?: string | null;
+  company_size_bucket?: string | null;
+  company_industry_bucket?: string | null;
+  // True when this contact spoke at the event (per contact_events.is_speaker).
+  is_speaker?: boolean | null;
 }
 
 export interface SubscribeResult {

@@ -155,10 +155,14 @@ export default function EventFilters({
   eventId,
   totalContacts,
   onChange,
+  defaultBreakdownOpen = false,
 }: {
   eventId: string;
   totalContacts: number;
   onChange: (filters: EventFiltersValue, matched: number | null, withEmail: number | null) => void;
+  // Pre-unlock event page opens the composition breakdown by default (trust signal);
+  // My Events leaves it collapsed since the table itself is the source of truth.
+  defaultBreakdownOpen?: boolean;
 }) {
   const supabase = createClient();
   const [filters, setFilters] = useState<EventFiltersValue>({});
@@ -166,7 +170,7 @@ export default function EventFilters({
   const [live, setLive] = useState<Facets | null>(null); // current matched counts
   const [loading, setLoading] = useState(true);
   const [facetError, setFacetError] = useState(false);
-  const [showBreakdown, setShowBreakdown] = useState(false);
+  const [showBreakdown, setShowBreakdown] = useState(defaultBreakdownOpen);
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Option universe (counts across the whole event), fetched once.
@@ -359,9 +363,10 @@ export default function EventFilters({
 
       {/* Breakdown strip (proof surface) */}
       {showBreakdown && live && (
-        <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <BreakdownCol title="By seniority" items={live.by_seniority} labelMap={SENIORITY_LABELS} />
+        <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <BreakdownCol title="By role" items={live.by_role} labelMap={ROLE_LABELS} />
+          <BreakdownCol title="By seniority" items={live.by_seniority} labelMap={SENIORITY_LABELS} />
+          <BreakdownCol title="By industry" items={live.by_industry} />
           <BreakdownCol title="Top companies" items={live.top_companies} />
         </div>
       )}

@@ -423,6 +423,7 @@ export default function EventDetail({
       <EventFilters
         eventId={event.event_id}
         totalContacts={totalContacts}
+        defaultBreakdownOpen
         onChange={(f, matched) => {
           setActiveFilters(f);
           setMatchedCount(matched);
@@ -483,8 +484,6 @@ export default function EventDetail({
                   <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Company LinkedIn</th>
                   <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Industry</th>
                   <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Size</th>
-                  <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">HQ</th>
-                  <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Founded</th>
                   <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Email</th>
                 </tr>
               </thead>
@@ -510,8 +509,6 @@ export default function EventDetail({
                         <td className="px-3 py-3"><div className="h-4 w-5 rounded bg-zinc-200 blur-[6px] dark:bg-zinc-700" /></td>
                         <td className="px-3 py-3"><div className="h-4 w-20 rounded bg-zinc-200 blur-[6px] dark:bg-zinc-700" /></td>
                         <td className="px-3 py-3"><div className="h-4 w-16 rounded bg-zinc-200 blur-[6px] dark:bg-zinc-700" /></td>
-                        <td className="px-3 py-3"><div className="h-4 w-24 rounded bg-zinc-200 blur-[6px] dark:bg-zinc-700" /></td>
-                        <td className="px-3 py-3"><div className="h-4 w-12 rounded bg-zinc-200 blur-[6px] dark:bg-zinc-700" /></td>
                         <td className="px-3 py-3"><div className="h-4 w-28 rounded bg-zinc-200 blur-[6px] dark:bg-zinc-700" /></td>
                       </tr>
                     ))}
@@ -809,12 +806,6 @@ function ContactRow({ contact: c }: { contact: ContactPreview }) {
       </td>
       <td className="whitespace-nowrap px-3 py-3 text-zinc-400">
         {c.company_size ?? "\u2014"}
-      </td>
-      <td className="whitespace-nowrap px-3 py-3 text-zinc-400">
-        {c.company_headquarters ?? "\u2014"}
-      </td>
-      <td className="whitespace-nowrap px-3 py-3 text-zinc-400">
-        {c.company_founded_year ?? "\u2014"}
       </td>
       <td className="whitespace-nowrap px-3 py-3 text-zinc-500">
         {c.email ?? "\u2014"}

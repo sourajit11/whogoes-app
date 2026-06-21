@@ -51,8 +51,33 @@ const SORTABLE_COLUMNS: { key: SortKey; label: string }[] = [
   { key: "email", label: "Email" },
 ];
 
-// Total columns: checkbox(1) + #(1) + status(1) + Name + Title + PersonLI + Company + Source + PostDate + Location + CompanyDomain + CompanyLI + Industry + Size + HQ + Founded + Email = 17
-const TOTAL_COLS = 17;
+// Event role -> badge styling. Attendee (the default/majority) is kept muted so the
+// higher-intent roles (sponsor/exhibitor/organizer) stand out at a glance.
+const ROLE_STYLES: Record<string, string> = {
+  organizer:
+    "bg-purple-50 text-purple-700 ring-purple-600/20 dark:bg-purple-500/10 dark:text-purple-300 dark:ring-purple-500/20",
+  sponsor:
+    "bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/20",
+  exhibitor:
+    "bg-blue-50 text-blue-700 ring-blue-600/20 dark:bg-blue-500/10 dark:text-blue-300 dark:ring-blue-500/20",
+  attendee:
+    "bg-zinc-100 text-zinc-500 ring-zinc-500/10 dark:bg-zinc-800 dark:text-zinc-400 dark:ring-zinc-700",
+};
+
+function RoleBadge({ role }: { role: string | null | undefined }) {
+  const key = (role ?? "attendee").toLowerCase();
+  const style = ROLE_STYLES[key] ?? ROLE_STYLES.attendee;
+  const label = key.charAt(0).toUpperCase() + key.slice(1);
+  return (
+    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${style}`}>
+      {label}
+    </span>
+  );
+}
+
+// Total columns: checkbox(1) + #(1) + status(1) + Name + Title + PersonLI + Company + Role + Source + PostDate + Location + Industry + Size + Email = 14
+// (Company Domain / Company LinkedIn / Founded moved into the expand row to cut width.)
+const TOTAL_COLS = 14;
 
 export default function ContactTable({ contacts, startIndex = 0, sortKey, sortDir, onSort, selectedIds, onToggleSelect, onToggleAll, onRevealEmail, revealingIds }: ContactTableProps) {
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
@@ -121,6 +146,10 @@ export default function ContactTable({ contacts, startIndex = 0, sortKey, sortDi
               </th>
               {/* Company — sortable */}
               <SortableHeader col={SORTABLE_COLUMNS[2]} />
+              {/* Event Role */}
+              <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                Role
+              </th>
               {/* Source */}
               <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                 Source
@@ -131,14 +160,6 @@ export default function ContactTable({ contacts, startIndex = 0, sortKey, sortDi
               <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                 Location
               </th>
-              {/* Company Domain */}
-              <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                Company Domain
-              </th>
-              {/* Company LinkedIn */}
-              <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                Company LinkedIn
-              </th>
               {/* Industry */}
               <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                 Industry
@@ -146,14 +167,6 @@ export default function ContactTable({ contacts, startIndex = 0, sortKey, sortDi
               {/* Size */}
               <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                 Size
-              </th>
-              {/* HQ */}
-              <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                HQ
-              </th>
-              {/* Founded */}
-              <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                Founded
               </th>
               {/* Email — sortable */}
               <SortableHeader col={SORTABLE_COLUMNS[4]} />
@@ -208,7 +221,15 @@ function TableRow({
   isRevealing?: boolean;
   onToggle: () => void;
 }) {
-  const hasExtra = !!contact.post_content;
+  // The expand row now holds the post plus the secondary company details that were
+  // pulled out of the main table (domain / LinkedIn / website / founded / about).
+  const hasExtra = !!(
+    contact.post_content ||
+    contact.company_linkedin_url ||
+    contact.company_website ||
+    contact.company_description ||
+    contact.company_founded_year
+  );
 
   return (
     <>
@@ -252,10 +273,17 @@ function TableRow({
           )}
         </td>
 
-        {/* Name */}
+        {/* Name (+ speaker mic when this contact spoke at the event) */}
         <td className="whitespace-nowrap px-3 py-3.5">
-          <span className="font-medium text-zinc-900 dark:text-zinc-100">
-            {contact.full_name ?? "—"}
+          <span className="inline-flex items-center gap-1.5">
+            <span className="font-medium text-zinc-900 dark:text-zinc-100">
+              {contact.full_name ?? "—"}
+            </span>
+            {contact.is_speaker && (
+              <span title="Speaker" aria-label="Speaker" className="text-sm leading-none">
+                🎤
+              </span>
+            )}
           </span>
         </td>
 
@@ -288,6 +316,11 @@ function TableRow({
           {contact.company_name ?? "—"}
         </td>
 
+        {/* Event Role */}
+        <td className="whitespace-nowrap px-3 py-3.5">
+          <RoleBadge role={contact.event_role} />
+        </td>
+
         {/* Source (View Post link) */}
         <td className="whitespace-nowrap px-3 py-3.5">
           {contact.post_url ? (
@@ -315,59 +348,14 @@ function TableRow({
           {[contact.city, contact.country].filter(Boolean).join(", ") || "—"}
         </td>
 
-        {/* Company Domain */}
-        <td className="whitespace-nowrap px-3 py-3.5">
-          {contact.company_domain ? (
-            <a
-              href={`https://${contact.company_domain}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
-            >
-              {contact.company_domain}
-            </a>
-          ) : (
-            <span className="text-zinc-300 dark:text-zinc-600">—</span>
-          )}
-        </td>
-
-        {/* Company LinkedIn */}
-        <td className="whitespace-nowrap px-3 py-3.5">
-          {contact.company_linkedin_url ? (
-            <a
-              href={contact.company_linkedin_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="inline-flex text-[#0A66C2] transition-opacity hover:opacity-70"
-              title="Company LinkedIn"
-            >
-              <LinkedInIcon className="h-4 w-4" />
-            </a>
-          ) : (
-            <span className="text-zinc-300 dark:text-zinc-600">—</span>
-          )}
-        </td>
-
-        {/* Industry */}
+        {/* Industry — standardized bucket (falls back to legacy free-text) */}
         <td className="whitespace-nowrap px-3 py-3.5 text-zinc-500 dark:text-zinc-400">
-          {contact.company_industry ?? "—"}
+          {contact.company_industry_bucket ?? contact.company_industry ?? "—"}
         </td>
 
-        {/* Size */}
+        {/* Size — standardized employee-count bucket (falls back to legacy range) */}
         <td className="whitespace-nowrap px-3 py-3.5 text-zinc-400">
-          {contact.company_size ?? "—"}
-        </td>
-
-        {/* HQ */}
-        <td className="whitespace-nowrap px-3 py-3.5 text-zinc-400">
-          {contact.company_headquarters ?? "—"}
-        </td>
-
-        {/* Founded Year */}
-        <td className="whitespace-nowrap px-3 py-3.5 text-zinc-400">
-          {contact.company_founded_year ?? "—"}
+          {contact.company_size_bucket ?? contact.company_size ?? "—"}
         </td>
 
         {/* Email — revealed, locked (reveal for 1 credit), or none */}
@@ -410,6 +398,53 @@ function TableRow({
             className="border-l-2 border-l-zinc-300 bg-zinc-50/50 px-6 py-5 dark:border-l-zinc-600 dark:bg-zinc-900/30"
           >
             <div className="space-y-4 text-sm">
+              {/* Secondary company details, moved out of the main row to cut width.
+                  (Company Domain dropped — redundant with Company Website.) */}
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                <DetailField label="Company LinkedIn">
+                  {contact.company_linkedin_url ? (
+                    <a
+                      href={contact.company_linkedin_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="inline-flex items-center gap-1 text-[#0A66C2] hover:opacity-70"
+                    >
+                      <LinkedInIcon className="h-4 w-4" /> View
+                    </a>
+                  ) : (
+                    <span className="text-zinc-400">—</span>
+                  )}
+                </DetailField>
+                <DetailField label="Company Website">
+                  {contact.company_website ? (
+                    <a
+                      href={contact.company_website.startsWith("http") ? contact.company_website : `https://${contact.company_website}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+                    >
+                      {contact.company_website.replace(/^https?:\/\//, "")}
+                    </a>
+                  ) : (
+                    <span className="text-zinc-400">—</span>
+                  )}
+                </DetailField>
+                <DetailField label="Founded">
+                  {contact.company_founded_year ?? <span className="text-zinc-400">—</span>}
+                </DetailField>
+              </div>
+
+              {contact.company_description && (
+                <div>
+                  <SectionLabel>About Company</SectionLabel>
+                  <p className="mt-2 max-h-28 overflow-y-auto whitespace-pre-wrap leading-relaxed text-zinc-500">
+                    {contact.company_description}
+                  </p>
+                </div>
+              )}
+
               {contact.post_content && (
                 <div>
                   <SectionLabel>Post Content</SectionLabel>
