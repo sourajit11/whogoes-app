@@ -6,6 +6,12 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { productHref } from "@/lib/site";
 import BuyCreditsModal from "@/app/dashboard/components/buy-credits-modal";
+import EventFilters, {
+  FilteredPreview,
+  type EventFiltersValue,
+  cleanFilters,
+  isFilterActive,
+} from "./event-filters";
 import type {
   BrowsableEvent,
   ContactPreview,
@@ -71,6 +77,7 @@ export default function EventDetail({
   const [previewReloadKey, setPreviewReloadKey] = useState(0);
   const [unlocking, setUnlocking] = useState(false);
   const [unlockProgress, setUnlockProgress] = useState(0);
+  const [unlockTarget, setUnlockTarget] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [credits, setCredits] = useState(initialCredits);
@@ -78,11 +85,17 @@ export default function EventDetail({
   const [unlockStatus, setUnlockStatus] = useState<EventUnlockStatus | null>(
     initialUnlockStatus
   );
+  // ICP filters (pre-unlock). matchedCount is the live count from get_event_filter_facets.
+  const [activeFilters, setActiveFilters] = useState<EventFiltersValue>({});
+  const [matchedCount, setMatchedCount] = useState<number | null>(null);
+  const filterActive = isFilterActive(activeFilters);
+
+  // When filters are active, the slider caps at the matched count, not the whole event.
+  const baseAvailable = unlockStatus?.remaining_count ?? event.total_contacts;
+  const effectiveAvailable =
+    filterActive && matchedCount !== null ? Math.min(matchedCount, baseAvailable) : baseAvailable;
   // Slider value: intervals of 10, with remainder for the last step
-  const maxSlider = Math.min(
-    credits,
-    unlockStatus?.remaining_count ?? event.total_contacts
-  );
+  const maxSlider = Math.min(credits, effectiveAvailable);
 
   // Build step values: [10, 20, 30, ..., max]
   const sliderSteps = useMemo(() => {
@@ -174,7 +187,7 @@ export default function EventDetail({
     });
   }, [previews]);
 
-  async function handleUnlock() {
+  async function handleUnlock(opts?: { ignoreFilters?: boolean }) {
     if (!isAuthenticated) {
       const loginHref = productHref(`/login?redirect=/events/${event.event_slug ?? event.event_id}`);
       // On the content/apex domain loginHref is an absolute app-domain URL, so
@@ -187,8 +200,15 @@ export default function EventDetail({
       return;
     }
 
-    if (sliderValue <= 0) return;
+    // "Unlock all (ignore filters)" sends no filters and targets the whole remaining
+    // pool; otherwise we unlock the slider count among the currently matched contacts.
+    const useFilters = !opts?.ignoreFilters && filterActive;
+    const payloadFilters = useFilters ? cleanFilters(activeFilters) : {};
+    const target = opts?.ignoreFilters ? Math.min(credits, baseAvailable) : sliderValue;
+
+    if (target <= 0) return;
     setUnlocking(true);
+    setUnlockTarget(target);
     setUnlockProgress(0);
     setError(null);
     setSuccessMsg(null);
@@ -198,7 +218,7 @@ export default function EventDetail({
     // contacts) does a heavy sort + bulk insert that exceeds the 8s limit;
     // chunking it keeps every call fast and lets us show progress.
     const UNLOCK_BATCH_SIZE = 1000;
-    let remaining = sliderValue;
+    let remaining = target;
     let totalUnlocked = 0;
     let latestBalance = credits;
 
@@ -206,7 +226,7 @@ export default function EventDetail({
       const batchCount = Math.min(UNLOCK_BATCH_SIZE, remaining);
       const { data, error: rpcError } = await supabase.rpc(
         "unlock_event_contacts",
-        { p_event_id: event.event_id, p_count: batchCount }
+        { p_event_id: event.event_id, p_count: batchCount, p_filters: payloadFilters }
       );
 
       if (rpcError) {
@@ -399,6 +419,16 @@ export default function EventDetail({
         </div>
       )}
 
+      {/* ICP filter bar (filter before you spend credits) */}
+      <EventFilters
+        eventId={event.event_id}
+        totalContacts={totalContacts}
+        onChange={(f, matched) => {
+          setActiveFilters(f);
+          setMatchedCount(matched);
+        }}
+      />
+
       {/* Contact Preview Table */}
       <div className="mt-6">
         <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
@@ -422,7 +452,7 @@ export default function EventDetail({
           </div>
         )}
 
-        {loading ? (
+        {loading && !filterActive ? (
           <div className="mt-6 flex h-48 items-center justify-center">
             <div className="flex items-center gap-3 text-sm text-zinc-400">
               <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -433,7 +463,12 @@ export default function EventDetail({
             </div>
           </div>
         ) : (
+          <>
+            {filterActive && (
+              <FilteredPreview eventId={event.event_id} filters={cleanFilters(activeFilters)} active />
+            )}
           <div className="mt-4 overflow-x-auto rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+            {!filterActive && (
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-zinc-100 bg-zinc-50/80 dark:border-zinc-800 dark:bg-zinc-900/50">
@@ -484,6 +519,7 @@ export default function EventDetail({
                 )}
               </tbody>
             </table>
+            )}
 
             {/* Unlock Section */}
             {showBlurredRows && (
@@ -544,10 +580,21 @@ export default function EventDetail({
                 {isAuthenticated && credits > 0 && remainingCount > 0 && !successMsg && (
                   <div className="mx-auto max-w-lg">
                     <p className="text-center text-sm text-zinc-500">
-                      <strong className="text-zinc-900 dark:text-zinc-100">
-                        {remainingCount.toLocaleString()}
-                      </strong>{" "}
-                      more contacts available
+                      {filterActive && matchedCount !== null ? (
+                        <>
+                          <strong className="text-emerald-700 dark:text-emerald-400">
+                            {effectiveAvailable.toLocaleString()}
+                          </strong>{" "}
+                          contacts match your filters
+                        </>
+                      ) : (
+                        <>
+                          <strong className="text-zinc-900 dark:text-zinc-100">
+                            {remainingCount.toLocaleString()}
+                          </strong>{" "}
+                          more contacts available
+                        </>
+                      )}
                     </p>
 
                     {/* Slider */}
@@ -602,19 +649,33 @@ export default function EventDetail({
 
                     {/* Unlock button */}
                     <button
-                      onClick={handleUnlock}
+                      onClick={() => handleUnlock()}
                       disabled={unlocking || sliderValue <= 0}
                       className="mt-4 w-full cursor-pointer rounded-lg bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-emerald-500 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {unlocking
                         ? unlockProgress > 0
-                          ? `Unlocking... ${unlockProgress.toLocaleString()} / ${sliderValue.toLocaleString()}`
+                          ? `Unlocking... ${unlockProgress.toLocaleString()} / ${unlockTarget.toLocaleString()}`
                           : "Unlocking..."
-                        : `Unlock ${sliderValue} Contact${sliderValue !== 1 ? "s" : ""}`}
+                        : filterActive
+                          ? `Unlock ${sliderValue.toLocaleString()} Match${sliderValue !== 1 ? "es" : ""}`
+                          : `Unlock ${sliderValue} Contact${sliderValue !== 1 ? "s" : ""}`}
                     </button>
 
+                    {/* Escape hatch: unlock the whole event, ignoring active filters */}
+                    {filterActive && (
+                      <button
+                        onClick={() => handleUnlock({ ignoreFilters: true })}
+                        disabled={unlocking}
+                        className="mt-2 w-full cursor-pointer rounded-lg border border-zinc-200 px-6 py-2 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                      >
+                        Unlock all {Math.min(credits, baseAvailable).toLocaleString()} (ignore filters)
+                      </button>
+                    )}
+
                     <p className="mt-2 text-center text-xs text-zinc-400">
-                      Best contacts first: email-verified, then most recent
+                      1 credit unlocks each contact&apos;s name, title, company, LinkedIn and post.
+                      Reveal verified emails later for 1 credit each. Best contacts first.
                     </p>
 
                     {error && (
@@ -650,6 +711,7 @@ export default function EventDetail({
               </div>
             )}
           </div>
+          </>
         )}
       </div>
 

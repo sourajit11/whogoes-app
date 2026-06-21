@@ -12,6 +12,8 @@ interface ContactTableProps {
   selectedIds?: Set<string>;
   onToggleSelect?: (id: string) => void;
   onToggleAll?: (ids: string[]) => void;
+  onRevealEmail?: (contactId: string) => void;
+  revealingIds?: Set<string>;
 }
 
 function formatPostDate(dateStr: string | null): string {
@@ -52,7 +54,7 @@ const SORTABLE_COLUMNS: { key: SortKey; label: string }[] = [
 // Total columns: checkbox(1) + #(1) + status(1) + Name + Title + PersonLI + Company + Source + PostDate + Location + CompanyDomain + CompanyLI + Industry + Size + HQ + Founded + Email = 17
 const TOTAL_COLS = 17;
 
-export default function ContactTable({ contacts, startIndex = 0, sortKey, sortDir, onSort, selectedIds, onToggleSelect, onToggleAll }: ContactTableProps) {
+export default function ContactTable({ contacts, startIndex = 0, sortKey, sortDir, onSort, selectedIds, onToggleSelect, onToggleAll, onRevealEmail, revealingIds }: ContactTableProps) {
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const allIds = contacts.map((c) => c.contact_id);
   const allSelected = allIds.length > 0 && selectedIds ? allIds.every((id) => selectedIds.has(id)) : false;
@@ -167,6 +169,8 @@ export default function ContactTable({ contacts, startIndex = 0, sortKey, sortDi
                 totalCols={TOTAL_COLS}
                 isSelected={selectedIds?.has(contact.contact_id) ?? false}
                 onToggleSelect={() => onToggleSelect?.(contact.contact_id)}
+                onRevealEmail={onRevealEmail}
+                isRevealing={revealingIds?.has(contact.contact_id) ?? false}
                 onToggle={() =>
                   setExpandedRow(
                     expandedRow === contact.contact_id
@@ -190,6 +194,8 @@ function TableRow({
   totalCols,
   isSelected,
   onToggleSelect,
+  onRevealEmail,
+  isRevealing,
   onToggle,
 }: {
   contact: Contact;
@@ -198,6 +204,8 @@ function TableRow({
   totalCols: number;
   isSelected: boolean;
   onToggleSelect: () => void;
+  onRevealEmail?: (contactId: string) => void;
+  isRevealing?: boolean;
   onToggle: () => void;
 }) {
   const hasExtra = !!contact.post_content;
@@ -362,12 +370,33 @@ function TableRow({
           {contact.company_founded_year ?? "—"}
         </td>
 
-        {/* Email */}
+        {/* Email — revealed, locked (reveal for 1 credit), or none */}
         <td className="whitespace-nowrap px-3 py-3.5">
           {contact.email ? (
             <span className="font-mono text-xs text-zinc-800 dark:text-zinc-200">
               {contact.email}
             </span>
+          ) : contact.has_email && contact.email_unlocked === false ? (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onRevealEmail?.(contact.contact_id);
+              }}
+              disabled={isRevealing}
+              className="inline-flex items-center gap-1 rounded-md border border-emerald-300 bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-100 disabled:opacity-60 dark:border-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300"
+              title="Reveal this verified email for 1 credit"
+            >
+              {isRevealing ? (
+                "Revealing..."
+              ) : (
+                <>
+                  <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                  </svg>
+                  Reveal · 1 cr
+                </>
+              )}
+            </button>
           ) : (
             <span className="text-zinc-300 dark:text-zinc-600">—</span>
           )}

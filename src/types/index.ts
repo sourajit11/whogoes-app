@@ -70,6 +70,8 @@ export interface Contact {
   email: string | null;
   email_status: string | null;
   email_provider: string | null;
+  has_email?: boolean;
+  email_unlocked?: boolean;
   company_name: string | null;
   company_linkedin_url: string | null;
   company_domain: string | null;

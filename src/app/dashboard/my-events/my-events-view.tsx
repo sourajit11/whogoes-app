@@ -56,6 +56,8 @@ export default function MyEventsView({
   const [unlockError, setUnlockError] = useState<string | null>(null);
   const [unlockSuccess, setUnlockSuccess] = useState<string | null>(null);
   const [sliderIndex, setSliderIndex] = useState(0);
+  const [revealingIds, setRevealingIds] = useState<Set<string>>(new Set());
+  const [revealingAll, setRevealingAll] = useState(false);
 
   const supabase = createClient();
   const selectedEvent = subscribedEvents.find(
@@ -218,6 +220,67 @@ export default function MyEventsView({
   const selectedContacts = filteredContacts.filter((c) =>
     selectedIds.has(c.contact_id)
   );
+
+  // Contacts in the current view that have a verified email still locked behind the +1 credit reveal.
+  const lockedEmailContacts = useMemo(
+    () => filteredContacts.filter((c) => c.has_email && c.email_unlocked === false),
+    [filteredContacts]
+  );
+
+  // Patch revealed emails into local state (the RPC returns {contact_id, email}) so we never
+  // refetch the whole event after a reveal.
+  const applyRevealed = useCallback(
+    (revealed: { contact_id: string; email: string | null }[], newBalance: number | null) => {
+      const map = new Map(revealed.map((r) => [r.contact_id, r.email]));
+      setContacts((prev) =>
+        prev.map((c) =>
+          map.has(c.contact_id)
+            ? { ...c, email: map.get(c.contact_id) ?? c.email, email_unlocked: true }
+            : c
+        )
+      );
+      if (newBalance !== null) setCredits(newBalance);
+      window.dispatchEvent(new CustomEvent("credits-updated"));
+    },
+    []
+  );
+
+  async function handleRevealEmail(contactId: string) {
+    if (!selectedEventId) return;
+    setRevealingIds((prev) => new Set(prev).add(contactId));
+    setUnlockError(null);
+    const { data, error } = await supabase.rpc("reveal_event_emails", {
+      p_event_id: selectedEventId,
+      p_contact_ids: [contactId],
+    });
+    setRevealingIds((prev) => {
+      const next = new Set(prev);
+      next.delete(contactId);
+      return next;
+    });
+    if (error) return setUnlockError(error.message);
+    if (!data?.success) return setUnlockError(data?.message ?? "Could not reveal email");
+    applyRevealed(data.revealed ?? [], data.new_balance ?? null);
+  }
+
+  async function handleRevealAll(ids: string[]) {
+    if (!selectedEventId || ids.length === 0) return;
+    setRevealingAll(true);
+    setUnlockError(null);
+    setUnlockSuccess(null);
+    const { data, error } = await supabase.rpc("reveal_event_emails", {
+      p_event_id: selectedEventId,
+      p_contact_ids: ids,
+    });
+    setRevealingAll(false);
+    if (error) return setUnlockError(error.message);
+    if (!data?.success) return setUnlockError(data?.message ?? "Could not reveal emails");
+    applyRevealed(data.revealed ?? [], data.new_balance ?? null);
+    setUnlockSuccess(
+      `${data.emails_revealed} email${data.emails_revealed !== 1 ? "s" : ""} revealed! ${data.new_balance} credits remaining.`
+    );
+    setTimeout(() => setUnlockSuccess(null), 5000);
+  }
 
   function handleContactsDownloaded(downloadedIds: string[]) {
     setContacts((prev) =>
@@ -735,7 +798,7 @@ export default function MyEventsView({
                     {remainingForEvent.toLocaleString()} more contacts available
                   </p>
                   <p className="mt-0.5 text-xs text-emerald-600/70 dark:text-emerald-400/60">
-                    Unlock more contacts to expand your lead list
+                    1 credit each for name, title, company, LinkedIn and post. Reveal emails for 1 more credit.
                   </p>
                 </div>
                 {!showUnlockPanel && (
@@ -924,6 +987,22 @@ export default function MyEventsView({
               With email only
             </button>
 
+            {lockedEmailContacts.length > 0 && (
+              <button
+                onClick={() => handleRevealAll(lockedEmailContacts.map((c) => c.contact_id))}
+                disabled={revealingAll}
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700 transition-colors hover:bg-emerald-100 disabled:opacity-60 dark:border-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300"
+                title="Reveal the verified emails for every contact shown, 1 credit each"
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                </svg>
+                {revealingAll
+                  ? "Revealing emails..."
+                  : `Reveal ${lockedEmailContacts.length.toLocaleString()} email${lockedEmailContacts.length !== 1 ? "s" : ""} · ${lockedEmailContacts.length.toLocaleString()} cr`}
+              </button>
+            )}
+
             <DownloadControls
               contacts={filteredContacts}
               eventName={selectedEvent?.event_name ?? "contacts"}
@@ -954,6 +1033,8 @@ export default function MyEventsView({
               selectedIds={selectedIds}
               onToggleSelect={handleToggleSelect}
               onToggleAll={handleToggleAll}
+              onRevealEmail={handleRevealEmail}
+              revealingIds={revealingIds}
             />
           </div>
 
