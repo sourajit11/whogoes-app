@@ -82,7 +82,7 @@ function RoleBadge({ role }: { role: string | null | undefined }) {
   const label = ROLE_BADGE_LABELS[key] ?? key.charAt(0).toUpperCase() + key.slice(1);
   return (
     <span
-      title={key === "expected_attendee" ? "Expected attendee — reposted or mentioned, attendance not confirmed" : undefined}
+      title={key === "expected_attendee" ? "Expected attendee — reposted the event without confirming attendance" : undefined}
       className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${style}`}
     >
       {label}

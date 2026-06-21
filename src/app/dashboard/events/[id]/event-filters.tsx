@@ -44,7 +44,8 @@ const ROLE_LABELS: Record<string, string> = {
   sponsor: "Sponsor",
   exhibitor: "Exhibitor",
   attendee: "Attendee (confirmed)",
-  // Repost-without-commentary / mention only — attendance not confirmed from the post.
+  // Reposted the event (no first-person post) — attendance not confirmed. Mentions and
+  // first-person posts count as confirmed Attendee.
   expected_attendee: "Expected attendee",
 };
 const label = (map: Record<string, string>, k: string) => map[k] ?? k;
