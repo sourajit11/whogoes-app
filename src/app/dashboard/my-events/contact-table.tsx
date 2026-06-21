@@ -62,14 +62,29 @@ const ROLE_STYLES: Record<string, string> = {
     "bg-blue-50 text-blue-700 ring-blue-600/20 dark:bg-blue-500/10 dark:text-blue-300 dark:ring-blue-500/20",
   attendee:
     "bg-zinc-100 text-zinc-500 ring-zinc-500/10 dark:bg-zinc-800 dark:text-zinc-400 dark:ring-zinc-700",
+  // Tentative tier (repost/mention only): lighter/muted to read as "not confirmed".
+  expected_attendee:
+    "bg-zinc-50 text-zinc-400 ring-zinc-300/70 dark:bg-zinc-900 dark:text-zinc-500 dark:ring-zinc-700",
+};
+
+// Short labels for the compact table badge (the filter dropdown uses fuller labels).
+const ROLE_BADGE_LABELS: Record<string, string> = {
+  organizer: "Organizer",
+  sponsor: "Sponsor",
+  exhibitor: "Exhibitor",
+  attendee: "Attendee",
+  expected_attendee: "Expected",
 };
 
 function RoleBadge({ role }: { role: string | null | undefined }) {
   const key = (role ?? "attendee").toLowerCase();
   const style = ROLE_STYLES[key] ?? ROLE_STYLES.attendee;
-  const label = key.charAt(0).toUpperCase() + key.slice(1);
+  const label = ROLE_BADGE_LABELS[key] ?? key.charAt(0).toUpperCase() + key.slice(1);
   return (
-    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${style}`}>
+    <span
+      title={key === "expected_attendee" ? "Expected attendee — reposted or mentioned, attendance not confirmed" : undefined}
+      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${style}`}
+    >
       {label}
     </span>
   );

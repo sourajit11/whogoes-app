@@ -21,6 +21,8 @@ Lets customers filter an event's attendee list by ICP attributes BEFORE spending
 
 **Buckets.** Seniority: C-Suite, Owner/Founder, VP, Director, Manager, IC, Other (UI labels IC as "Individual Contributor (Staff)"). Function (14): Sales/BD, Marketing, Operations, Finance, Engineering/Technical, Product, IT/Data, HR/People, Legal/Compliance, Procurement/Supply Chain, Customer Success, Creative & Content, Executive/General Mgmt, Other. Company size: 1-10 … 5000+. Industry: 47 Apollo-style buckets. Event role: organizer > sponsor > exhibitor > attendee.
 
+**Effective per-contact role + "Expected attendee" (2026-06-21).** `company_event_roles.role` stays company-level (4 values). The UI/filter now surfaces a 5th **per-contact** value, `expected_attendee`, computed on the fly (no stored column, no backfill) from `contact_events.source_type`: company role wins for sponsor/exhibitor/organizer; otherwise a contact is **Attendee (confirmed)** if they have a first-person post (`source_type='post_author'`) or are a speaker, else **Expected attendee** (only `repost`/`mentioned` evidence). This implements the strategy's planned `attendee_confidence (Confirmed|Likely)` — see [[icp-attendee-confidence-descoped]]. The CASE lives in `event_filtered_contact_ids` (so facets/preview/role-filter/unlock all inherit it) and is duplicated in `get_subscribed_event_contacts` for My Events. Filter labels: "Attendee (confirmed)" vs "Expected attendee"; table badge: "Attendee" vs muted "Expected". Migrations `20260621162035`, `20260621162106`.
+
 ---
 
 ## 2. Classification (one-time backfill + reusable)

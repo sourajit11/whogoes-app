@@ -43,7 +43,9 @@ const ROLE_LABELS: Record<string, string> = {
   organizer: "Organizer",
   sponsor: "Sponsor",
   exhibitor: "Exhibitor",
-  attendee: "Attendee",
+  attendee: "Attendee (confirmed)",
+  // Repost-without-commentary / mention only — attendance not confirmed from the post.
+  expected_attendee: "Expected attendee",
 };
 const label = (map: Record<string, string>, k: string) => map[k] ?? k;
 

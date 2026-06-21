@@ -38,7 +38,9 @@ export function exportContactsCSV(contacts: Contact[], filename: string) {
     c.country ?? "",
     c.source ?? "",
     c.post_url ?? "",
-    (c.event_role ?? "attendee").replace(/^\w/, (m) => m.toUpperCase()),
+    c.event_role === "expected_attendee"
+      ? "Expected attendee"
+      : (c.event_role ?? "attendee").replace(/^\w/, (m) => m.toUpperCase()),
     c.is_speaker ? "Yes" : "No",
     c.company_linkedin_url ?? "",
     c.company_website ?? "",
