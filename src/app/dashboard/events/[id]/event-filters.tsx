@@ -50,6 +50,17 @@ const ROLE_LABELS: Record<string, string> = {
 };
 const label = (map: Record<string, string>, k: string) => map[k] ?? k;
 
+// Thin indeterminate progress bar shown while filtered results recompute (the live
+// filter queries take a couple seconds on large events). Gives immediate feedback so the
+// UI never looks frozen on the previous result.
+function LoadingBar() {
+  return (
+    <div className="relative h-1 w-full overflow-hidden rounded-full bg-emerald-100 dark:bg-emerald-900/30">
+      <span className="animate-indeterminate-bar bg-emerald-500 dark:bg-emerald-400" />
+    </div>
+  );
+}
+
 // Strip empties so the jsonb only carries real constraints.
 export function cleanFilters(f: EventFiltersValue): EventFiltersValue {
   const out: EventFiltersValue = {};
@@ -177,6 +188,9 @@ export default function EventFilters({
   const [base, setBase] = useState<Facets | null>(initialFacets); // unfiltered: option universe
   const [live, setLive] = useState<Facets | null>(initialFacets); // current matched counts
   const [loading, setLoading] = useState(!initialFacets);
+  // True from the instant a filter changes until the live counts come back, so the summary
+  // and breakdown show a loading state instead of stale numbers.
+  const [recounting, setRecounting] = useState(false);
   const [facetError, setFacetError] = useState(false);
   const [showBreakdown, setShowBreakdown] = useState(defaultBreakdownOpen);
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -216,19 +230,31 @@ export default function EventFilters({
     if (!base) return;
     const cleaned = cleanFilters(filters);
     if (Object.keys(cleaned).length === 0) {
+      setRecounting(false);
       setLive(base);
       onChange({}, base.matched, base.with_email);
       return;
     }
+    // Show the loading state immediately (before the debounce + the ~couple-second query)
+    // so the breakdown never appears stuck on the previous filter's numbers.
+    setRecounting(true);
+    // Tell the parent the filter is active right away (matched = null = "still counting")
+    // so the filtered preview mounts and shows its loading bar instantly, instead of the
+    // page sitting on the unfiltered table until the query returns.
+    onChange(cleaned, null, null);
     if (debounce.current) clearTimeout(debounce.current);
     debounce.current = setTimeout(async () => {
       const { data, error } = await supabase.rpc("get_event_filter_facets", {
         p_event_id: eventId,
         p_filters: cleaned,
       });
-      if (error || !data) return;
+      if (error || !data) {
+        setRecounting(false);
+        return;
+      }
       setLive(data as Facets);
       onChange(cleaned, (data as Facets).matched, (data as Facets).with_email);
+      setRecounting(false);
     }, 300);
     return () => {
       if (debounce.current) clearTimeout(debounce.current);
@@ -344,8 +370,14 @@ export default function EventFilters({
       {/* Live match summary */}
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-zinc-100 pt-3 dark:border-zinc-800">
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          {loading ? (
-            "Counting matches..."
+          {loading || recounting ? (
+            <span className="inline-flex items-center gap-2">
+              <svg className="h-3.5 w-3.5 animate-spin text-emerald-500" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              Counting matches...
+            </span>
           ) : active && matched !== null ? (
             <>
               <strong className="text-zinc-900 dark:text-zinc-100">{matched.toLocaleString()}</strong> of{" "}
@@ -376,11 +408,22 @@ export default function EventFilters({
 
       {/* Breakdown strip (proof surface) */}
       {showBreakdown && live && (
-        <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <BreakdownCol title="By role" items={live.by_role} labelMap={ROLE_LABELS} />
-          <BreakdownCol title="By seniority" items={live.by_seniority} labelMap={SENIORITY_LABELS} />
-          <BreakdownCol title="By industry" items={live.by_industry} />
-          <BreakdownCol title="Top companies" items={live.top_companies} />
+        <div className="mt-3">
+          {recounting && (
+            <div className="mb-3">
+              <LoadingBar />
+            </div>
+          )}
+          <div
+            className={`grid grid-cols-1 gap-4 transition-opacity sm:grid-cols-2 lg:grid-cols-4 ${
+              recounting ? "opacity-40" : "opacity-100"
+            }`}
+          >
+            <BreakdownCol title="By role" items={live.by_role} labelMap={ROLE_LABELS} />
+            <BreakdownCol title="By seniority" items={live.by_seniority} labelMap={SENIORITY_LABELS} />
+            <BreakdownCol title="By industry" items={live.by_industry} />
+            <BreakdownCol title="Top companies" items={live.top_companies} />
+          </div>
         </div>
       )}
     </div>
@@ -425,6 +468,21 @@ function Blur({ w }: { w: string }) {
   return <div className={`h-4 ${w} rounded bg-zinc-200 blur-[5px] dark:bg-zinc-700`} />;
 }
 
+// Shimmer placeholder row shown while a filtered query is in flight. Reads as "loading"
+// (pulse, not blur) so it isn't confused with the redacted/locked rows.
+const SKELETON_WIDTHS = ["w-28", "w-20", "w-16", "w-24", "w-20", "w-12", "w-16", "w-20", "w-10", "w-10"];
+function SkeletonRow() {
+  return (
+    <tr>
+      {SKELETON_WIDTHS.map((w, i) => (
+        <td key={i} className="px-3 py-3">
+          <div className={`h-4 ${w} animate-pulse rounded bg-zinc-200 dark:bg-zinc-700`} />
+        </td>
+      ))}
+    </tr>
+  );
+}
+
 export function FilteredPreview({
   eventId,
   filters,
@@ -463,11 +521,23 @@ export function FilteredPreview({
 
   if (!active) return null;
 
+  // While a query is in flight, show the loading state (bar + skeleton) instead of the
+  // previous filter's rows, so the table never looks frozen on stale results.
+  const noMatches = !loading && !!data && data.matched === 0;
+
   return (
-    <div className="mt-4 overflow-x-auto rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="mt-4 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
       <div className="border-b border-zinc-100 px-4 py-2.5 text-xs font-medium text-zinc-500 dark:border-zinc-800">
-        Preview of your filtered matches. Names, companies and emails unlock when you spend credits.
+        {loading
+          ? "Finding your matches..."
+          : "Preview of your filtered matches. Names, companies and emails unlock when you spend credits."}
       </div>
+      {loading && (
+        <div className="px-4 pt-3">
+          <LoadingBar />
+        </div>
+      )}
+      <div className="overflow-x-auto">
       <table className="w-full text-left text-sm">
         <thead>
           <tr className="border-b border-zinc-100 bg-zinc-50/80 dark:border-zinc-800 dark:bg-zinc-900/50">
@@ -477,10 +547,12 @@ export function FilteredPreview({
           </tr>
         </thead>
         <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/50">
-          {loading && !data && (
-            <tr><td colSpan={10} className="px-3 py-8 text-center text-sm text-zinc-400">Loading matches...</td></tr>
+          {loading &&
+            [0, 1, 2, 3, 4, 5].map((i) => <SkeletonRow key={`sk-${i}`} />)}
+          {noMatches && (
+            <tr><td colSpan={10} className="px-3 py-8 text-center text-sm text-zinc-400">No contacts match these filters. Try removing one.</td></tr>
           )}
-          {data?.sample && (
+          {!loading && data?.sample && (
             <tr className="bg-emerald-50/40 dark:bg-emerald-900/10">
               <td className="whitespace-nowrap px-3 py-3 font-medium text-zinc-900 dark:text-zinc-100">
                 {data.sample.full_name ?? "—"}
@@ -501,7 +573,7 @@ export function FilteredPreview({
               <td className="whitespace-nowrap px-3 py-3 text-zinc-400">{data.sample.has_email ? "Locked" : "—"}</td>
             </tr>
           )}
-          {data?.rows.map((r, i) => (
+          {!loading && data?.rows.map((r, i) => (
             <tr key={i} className="select-none">
               <td className="px-3 py-3"><Blur w="w-24" /></td>
               <td className="whitespace-nowrap px-3 py-3 text-zinc-600 dark:text-zinc-400">{label(SENIORITY_LABELS, r.seniority ?? "—")}</td>
@@ -520,6 +592,7 @@ export function FilteredPreview({
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }
