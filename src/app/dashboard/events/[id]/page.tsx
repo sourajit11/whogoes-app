@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
 import EventDetail from "./event-detail";
+import type { Facets } from "./event-filters";
 import type { ContactPreview } from "@/types";
 
 interface Props {
@@ -20,7 +21,7 @@ export default async function EventDetailPage({ params }: Props) {
     supabase.auth.getUser(),
     adminClient
       .from("events")
-      .select("id, name, year, region, location, start_date, slug, is_active, is_whogoes_active, industry")
+      .select("id, name, year, region, location, start_date, slug, is_active, is_whogoes_active, industry, facets_cache")
       .eq("id", id)
       .maybeSingle(),
     adminClient.rpc("get_event_unlock_status", { p_event_id: id }),
@@ -34,6 +35,7 @@ export default async function EventDetailPage({ params }: Props) {
   }
 
   const initialPreviews = (previewRes.data ?? []) as ContactPreview[];
+  const initialFacets = (eventRow.facets_cache ?? null) as Facets | null;
 
   const counts = countsRes.data as {
     total_contacts?: number;
@@ -112,6 +114,7 @@ export default async function EventDetailPage({ params }: Props) {
       hasApiKey={hasApiKey}
       initialSubscription={initialSubscription}
       initialPreviews={initialPreviews}
+      initialFacets={initialFacets}
     />
   );
 }

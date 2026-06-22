@@ -9,6 +9,7 @@ import BuyCreditsModal from "@/app/dashboard/components/buy-credits-modal";
 import EventFilters, {
   FilteredPreview,
   type EventFiltersValue,
+  type Facets,
   cleanFilters,
   isFilterActive,
 } from "./event-filters";
@@ -26,6 +27,8 @@ interface EventDetailProps {
   unlockStatus: EventUnlockStatus | null;
   userEmail?: string;
   initialPreviews?: ContactPreview[];
+  // Server-cached unfiltered facets (events.facets_cache) for an instant breakdown.
+  initialFacets?: Facets | null;
   apiEligible?: boolean;
   hasApiKey?: boolean;
   initialSubscription?: { auto_unlock_enabled: boolean; max_unlocks_per_event: number | null } | null;
@@ -67,6 +70,7 @@ export default function EventDetail({
   unlockStatus: initialUnlockStatus,
   userEmail,
   initialPreviews = [],
+  initialFacets = null,
 }: EventDetailProps) {
   const [previews, setPreviews] = useState<ContactPreview[]>(initialPreviews);
   // Start without the spinner when the server already sent preview rows.
@@ -424,6 +428,7 @@ export default function EventDetail({
         eventId={event.event_id}
         totalContacts={totalContacts}
         defaultBreakdownOpen
+        initialFacets={initialFacets}
         onChange={(f, matched) => {
           setActiveFilters(f);
           setMatchedCount(matched);

@@ -23,7 +23,7 @@ interface FacetItem {
   key: string;
   count: number;
 }
-interface Facets {
+export interface Facets {
   matched: number;
   with_email: number;
   by_seniority: FacetItem[];
@@ -159,6 +159,7 @@ export default function EventFilters({
   totalContacts,
   onChange,
   defaultBreakdownOpen = false,
+  initialFacets = null,
 }: {
   eventId: string;
   totalContacts: number;
@@ -166,18 +167,27 @@ export default function EventFilters({
   // Pre-unlock event page opens the composition breakdown by default (trust signal);
   // My Events leaves it collapsed since the table itself is the source of truth.
   defaultBreakdownOpen?: boolean;
+  // Server-cached unfiltered facets (events.facets_cache). When present the breakdown
+  // renders instantly with no RPC on mount; the live RPC only runs once a filter is
+  // applied. Absent (e.g. admin/My Events) falls back to fetching on mount.
+  initialFacets?: Facets | null;
 }) {
   const supabase = createClient();
   const [filters, setFilters] = useState<EventFiltersValue>({});
-  const [base, setBase] = useState<Facets | null>(null); // unfiltered: option universe
-  const [live, setLive] = useState<Facets | null>(null); // current matched counts
-  const [loading, setLoading] = useState(true);
+  const [base, setBase] = useState<Facets | null>(initialFacets); // unfiltered: option universe
+  const [live, setLive] = useState<Facets | null>(initialFacets); // current matched counts
+  const [loading, setLoading] = useState(!initialFacets);
   const [facetError, setFacetError] = useState(false);
   const [showBreakdown, setShowBreakdown] = useState(defaultBreakdownOpen);
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Option universe (counts across the whole event), fetched once.
+  // Option universe (counts across the whole event). Seeded from the server cache when
+  // available; otherwise fetched once (the slow live path, kept for non-cached callers).
   useEffect(() => {
+    if (initialFacets) {
+      onChange({}, initialFacets.matched, initialFacets.with_email);
+      return;
+    }
     let cancelled = false;
     (async () => {
       const { data, error } = await supabase.rpc("get_event_filter_facets", {

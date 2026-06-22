@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
 import EventDetail from "@/app/dashboard/events/[id]/event-detail";
+import type { Facets } from "@/app/dashboard/events/[id]/event-filters";
 import EventSeoContent, {
   EventSeoFaqJsonLd,
   getEventFaqs,
@@ -191,8 +192,16 @@ export default async function PublicEventDetailPage({ params }: Props) {
   // statement_timeout. Credits/unlock status stay on the user-scoped client
   // because they depend on auth.uid().
   const adminSupabase = createAdminClient();
-  const [previewRes, creditsRes, statusRes] = await Promise.all([
+  const [previewRes, facetsRes, creditsRes, statusRes] = await Promise.all([
     adminSupabase.rpc("get_event_preview", { p_event_id: event.event_id }),
+    // The unfiltered ICP breakdown is precomputed in events.facets_cache (refreshed by a
+    // background job). Reading the cached jsonb is instant; the heavy live recompute only
+    // runs client-side when a visitor applies a filter.
+    adminSupabase
+      .from("events")
+      .select("facets_cache")
+      .eq("id", event.event_id)
+      .maybeSingle(),
     user ? supabase.rpc("get_customer_credits") : Promise.resolve({ data: null }),
     user
       ? supabase.rpc("get_event_unlock_status", { p_event_id: event.event_id })
@@ -200,6 +209,7 @@ export default async function PublicEventDetailPage({ params }: Props) {
   ]);
 
   const initialPreviews = (previewRes.data ?? []) as ContactPreview[];
+  const initialFacets = (facetsRes.data?.facets_cache ?? null) as Facets | null;
   const credits = user ? (creditsRes.data ?? 0) : 0;
   const unlockStatus = user ? (statusRes.data ?? null) : null;
 
@@ -219,6 +229,7 @@ export default async function PublicEventDetailPage({ params }: Props) {
         unlockStatus={unlockStatus}
         userEmail={user?.email ?? undefined}
         initialPreviews={initialPreviews}
+        initialFacets={initialFacets}
       />
       <EventSeoContent
         event={event}
