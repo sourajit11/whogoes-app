@@ -13,6 +13,7 @@ import EventFilters, {
   cleanFilters,
   isFilterActive,
 } from "./event-filters";
+import { RoleBadge } from "./role-badge";
 import type {
   BrowsableEvent,
   ContactPreview,
@@ -480,6 +481,7 @@ export default function EventDetail({
                 <tr className="border-b border-zinc-100 bg-zinc-50/80 dark:border-zinc-800 dark:bg-zinc-900/50">
                   <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Name</th>
                   <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Title</th>
+                  <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Role</th>
                   <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">LinkedIn Profile</th>
                   <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Company</th>
                   <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Source</th>
@@ -505,6 +507,7 @@ export default function EventDetail({
                       <tr key={`blur-${i}`} className="select-none">
                         <td className="px-3 py-3"><div className="h-4 w-24 rounded bg-zinc-200 blur-[6px] dark:bg-zinc-700" /></td>
                         <td className="px-3 py-3"><div className="h-4 w-32 rounded bg-zinc-200 blur-[6px] dark:bg-zinc-700" /></td>
+                        <td className="px-3 py-3"><div className="h-4 w-16 rounded bg-zinc-200 blur-[6px] dark:bg-zinc-700" /></td>
                         <td className="px-3 py-3"><div className="h-4 w-5 rounded bg-zinc-200 blur-[6px] dark:bg-zinc-700" /></td>
                         <td className="px-3 py-3"><div className="h-4 w-20 rounded bg-zinc-200 blur-[6px] dark:bg-zinc-700" /></td>
                         <td className="px-3 py-3"><div className="h-4 w-5 rounded bg-zinc-200 blur-[6px] dark:bg-zinc-700" /></td>
@@ -737,6 +740,9 @@ function ContactRow({ contact: c }: { contact: ContactPreview }) {
       </td>
       <td className="max-w-48 truncate px-3 py-3 text-zinc-500">
         {c.current_title ?? "\u2014"}
+      </td>
+      <td className="whitespace-nowrap px-3 py-3">
+        <RoleBadge role={c.event_role} isSpeaker={!!c.is_speaker} />
       </td>
       <td className="whitespace-nowrap px-3 py-3">
         {c.contact_linkedin_url &&

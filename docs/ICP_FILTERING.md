@@ -91,7 +91,7 @@ Lets customers filter an event's attendee list by ICP attributes BEFORE spending
   - **Stats-line clarity** (2026-06-21, rec): when a filter is active, the My Events stats read "**N** of your unlocked contacts match · **M** more match — unlock" (owned-matches vs unlockable), instead of the old event-wide "N match filters" which conflated the two.
   - **Pre-unlock proof surface** (2026-06-21, rec): the Browse event page passes `defaultBreakdownOpen` to `EventFilters` so the composition breakdown (By role / By seniority / By industry / Top companies) is visible above the fold without clicking; My Events leaves it collapsed.
 
-**Tease design (decided).** Per-row: SHOW seniority/function/industry/size/country/role/speaker; BLUR name, company, email, post. Company caliber proven via the aggregate top_companies breakdown. One fully-named SAMPLE row (identity + View Post, no raw email) as a trust taste.
+**Tease design (decided; redesigned 2026-06-28).** The filtered preview now mirrors the main contact table — columns: Name · Title · Role · Company · Industry · Size · Location · Email. Per redacted row: SHOW title/role/location/industry/size (+ speaker chip); BLUR name + company; Email reads "Locked". Company caliber proven via the aggregate top_companies breakdown. One fully-named SAMPLE row (identity + company visible, email still locked) as a trust taste. See `docs/EVENT_COUNTS_AND_PREVIEW.md`.
 
 ---
 
@@ -100,6 +100,8 @@ Lets customers filter an event's attendee list by ICP attributes BEFORE spending
 `20260620182701_add_classification_buckets` · `20260620182723_add_event_role_tagging` · `20260620203613_role_resolution_functions` · `20260620204929_schedule_event_role_resolution` · `20260620210659_gate_sponsor_exhibitor_behind_llm` · `20260620211858_trust_llm_role_over_source_ceiling` · `20260620220014_organizer_brandmatch_only_and_timeout` · `20260621031958_resolve_syncs_speakers` · `20260621033836_company_bucket_trigger` · `20260621034218_icp_filter_rpcs` · `20260621034245_subscribed_contacts_filters` · `20260621034625_facets_add_industry_size` · `20260621042115_email_unlock_tier` · `20260621042220_event_filter_preview` · `20260621042813_email_unlock_default_true_until_golive` · `20260621043449_reveal_emails_returns_revealed` · **PENDING** `20260621050000_GOLIVE_email_unlock_default_false`.
 
 All applied via Supabase MCP `apply_migration` (assigns its own timestamp; local filename reconciled to match). See [[feedback-supabase-migrations-only]].
+
+**2026-06-28 count reconciliation + preview redesign** (see `docs/EVENT_COUNTS_AND_PREVIEW.md`): `20260627190332_browsable_events_settle_filter_1h` · `20260627190352_contacts_backfill_primary_email` · `20260627190450_contact_emails_autoprimary_first_email` · `20260627190538_event_preview_add_event_role` · `20260627190604_event_filter_preview_add_title_to_rows`. Standardized the "with email" count to "any non-empty email" across all surfaces, added a Role column to the event preview table, and rebuilt the filtered preview to mirror the main table (Title/Role/Location/Industry/Size shown, Name/Company blurred, Email locked; Attendee badge now green).
 
 ---
 

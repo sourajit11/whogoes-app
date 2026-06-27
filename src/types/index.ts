@@ -55,6 +55,11 @@ export interface ContactPreview {
   company_founded_year: number | null;
   email: string | null;
   contact_linkedin_url: string | null;
+  // Effective per-contact event role (attendee | expected_attendee | sponsor |
+  // exhibitor | organizer) + speaker flag, from get_event_preview. Optional so
+  // older callers/shapes without these fields still type-check.
+  event_role?: string | null;
+  is_speaker?: boolean | null;
 }
 
 export interface Contact {

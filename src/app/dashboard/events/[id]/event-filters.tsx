@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { RoleBadge } from "./role-badge";
 
 // Filter shape mirrors the jsonb contract of get_event_filter_facets /
 // unlock_event_contacts. Empty arrays / strings / false are dropped before
@@ -448,6 +449,7 @@ interface PreviewSample {
   post_url: string | null;
 }
 interface PreviewRow {
+  current_title: string | null;
   seniority: string | null;
   function: string | null;
   industry: string | null;
@@ -470,7 +472,8 @@ function Blur({ w }: { w: string }) {
 
 // Shimmer placeholder row shown while a filtered query is in flight. Reads as "loading"
 // (pulse, not blur) so it isn't confused with the redacted/locked rows.
-const SKELETON_WIDTHS = ["w-28", "w-20", "w-16", "w-24", "w-20", "w-12", "w-16", "w-20", "w-10", "w-10"];
+// One width per visible column (Name, Title, Role, Company, Industry, Size, Location, Email).
+const SKELETON_WIDTHS = ["w-28", "w-32", "w-16", "w-24", "w-20", "w-12", "w-20", "w-10"];
 function SkeletonRow() {
   return (
     <tr>
@@ -538,10 +541,13 @@ export function FilteredPreview({
         </div>
       )}
       <div className="overflow-x-auto">
+      {/* Columns mirror the main contact preview table: identity (Name/Company) is
+          blurred until unlock, the ICP attributes (Title, Role, Location, Industry,
+          Size) are shown, and Email reads "Locked". */}
       <table className="w-full text-left text-sm">
         <thead>
           <tr className="border-b border-zinc-100 bg-zinc-50/80 dark:border-zinc-800 dark:bg-zinc-900/50">
-            {["Name", "Seniority", "Function", "Company", "Industry", "Size", "Country", "Role", "Post", "Email"].map((h) => (
+            {["Name", "Title", "Role", "Company", "Industry", "Size", "Location", "Email"].map((h) => (
               <th key={h} className="whitespace-nowrap px-3 py-2.5 text-xs font-semibold uppercase tracking-wider text-zinc-500">{h}</th>
             ))}
           </tr>
@@ -550,7 +556,7 @@ export function FilteredPreview({
           {loading &&
             [0, 1, 2, 3, 4, 5].map((i) => <SkeletonRow key={`sk-${i}`} />)}
           {noMatches && (
-            <tr><td colSpan={10} className="px-3 py-8 text-center text-sm text-zinc-400">No contacts match these filters. Try removing one.</td></tr>
+            <tr><td colSpan={8} className="px-3 py-8 text-center text-sm text-zinc-400">No contacts match these filters. Try removing one.</td></tr>
           )}
           {!loading && data?.sample && (
             <tr className="bg-emerald-50/40 dark:bg-emerald-900/10">
@@ -558,35 +564,24 @@ export function FilteredPreview({
                 {data.sample.full_name ?? "—"}
                 <span className="ml-1.5 rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">SAMPLE</span>
               </td>
-              <td className="whitespace-nowrap px-3 py-3 text-zinc-600 dark:text-zinc-400">{label(SENIORITY_LABELS, data.sample.seniority ?? "—")}</td>
-              <td className="whitespace-nowrap px-3 py-3 text-zinc-600 dark:text-zinc-400">{data.sample.function ?? "—"}</td>
+              <td className="max-w-48 truncate px-3 py-3 text-zinc-500">{data.sample.current_title ?? "—"}</td>
+              <td className="whitespace-nowrap px-3 py-3"><RoleBadge role={data.sample.role} isSpeaker={data.sample.is_speaker} /></td>
               <td className="whitespace-nowrap px-3 py-3 text-zinc-600 dark:text-zinc-400">{data.sample.company_name ?? "—"}</td>
               <td className="whitespace-nowrap px-3 py-3 text-zinc-500">{data.sample.company_industry ?? "—"}</td>
               <td className="whitespace-nowrap px-3 py-3 text-zinc-500">{data.sample.company_size ?? "—"}</td>
               <td className="whitespace-nowrap px-3 py-3 text-zinc-500">{data.sample.country ?? "—"}</td>
-              <td className="whitespace-nowrap px-3 py-3 text-zinc-500">{label(ROLE_LABELS, data.sample.role)}</td>
-              <td className="whitespace-nowrap px-3 py-3">
-                {data.sample.post_url ? (
-                  <a href={data.sample.post_url} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-emerald-600 hover:text-emerald-500 dark:text-emerald-400">View Post</a>
-                ) : "—"}
-              </td>
               <td className="whitespace-nowrap px-3 py-3 text-zinc-400">{data.sample.has_email ? "Locked" : "—"}</td>
             </tr>
           )}
           {!loading && data?.rows.map((r, i) => (
             <tr key={i} className="select-none">
               <td className="px-3 py-3"><Blur w="w-24" /></td>
-              <td className="whitespace-nowrap px-3 py-3 text-zinc-600 dark:text-zinc-400">{label(SENIORITY_LABELS, r.seniority ?? "—")}</td>
-              <td className="whitespace-nowrap px-3 py-3 text-zinc-600 dark:text-zinc-400">{r.function ?? "—"}</td>
+              <td className="max-w-48 truncate px-3 py-3 text-zinc-500">{r.current_title ?? "—"}</td>
+              <td className="whitespace-nowrap px-3 py-3"><RoleBadge role={r.role} isSpeaker={r.is_speaker} /></td>
               <td className="px-3 py-3"><Blur w="w-20" /></td>
               <td className="whitespace-nowrap px-3 py-3 text-zinc-500">{r.industry ?? "—"}</td>
               <td className="whitespace-nowrap px-3 py-3 text-zinc-500">{r.size ?? "—"}</td>
               <td className="whitespace-nowrap px-3 py-3 text-zinc-500">{r.country ?? "—"}</td>
-              <td className="whitespace-nowrap px-3 py-3 text-zinc-500">
-                {label(ROLE_LABELS, r.role)}
-                {r.is_speaker && <span className="ml-1.5 rounded bg-violet-100 px-1.5 py-0.5 text-[10px] font-semibold text-violet-700 dark:bg-violet-900/40 dark:text-violet-300">Speaker</span>}
-              </td>
-              <td className="px-3 py-3"><Blur w="w-12" /></td>
               <td className="whitespace-nowrap px-3 py-3 text-zinc-400">{r.has_email ? "Locked" : "—"}</td>
             </tr>
           ))}

@@ -61,7 +61,7 @@ const ROLE_STYLES: Record<string, string> = {
   exhibitor:
     "bg-blue-50 text-blue-700 ring-blue-600/20 dark:bg-blue-500/10 dark:text-blue-300 dark:ring-blue-500/20",
   attendee:
-    "bg-zinc-100 text-zinc-500 ring-zinc-500/10 dark:bg-zinc-800 dark:text-zinc-400 dark:ring-zinc-700",
+    "bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20",
   // Tentative tier (repost/mention only): lighter/muted to read as "not confirmed".
   expected_attendee:
     "bg-zinc-50 text-zinc-400 ring-zinc-300/70 dark:bg-zinc-900 dark:text-zinc-500 dark:ring-zinc-700",
@@ -242,7 +242,6 @@ function TableRow({
     contact.post_content ||
     contact.company_linkedin_url ||
     contact.company_website ||
-    contact.company_description ||
     contact.company_founded_year
   );
 
@@ -450,15 +449,6 @@ function TableRow({
                   {contact.company_founded_year ?? <span className="text-zinc-400">—</span>}
                 </DetailField>
               </div>
-
-              {contact.company_description && (
-                <div>
-                  <SectionLabel>About Company</SectionLabel>
-                  <p className="mt-2 max-h-28 overflow-y-auto whitespace-pre-wrap leading-relaxed text-zinc-500">
-                    {contact.company_description}
-                  </p>
-                </div>
-              )}
 
               {contact.post_content && (
                 <div>
