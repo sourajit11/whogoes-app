@@ -76,16 +76,23 @@ const ROLE_BADGE_LABELS: Record<string, string> = {
   expected_attendee: "Expected",
 };
 
-function RoleBadge({ role }: { role: string | null | undefined }) {
+function RoleBadge({ role, isSpeaker = false }: { role: string | null | undefined; isSpeaker?: boolean }) {
   const key = (role ?? "attendee").toLowerCase();
   const style = ROLE_STYLES[key] ?? ROLE_STYLES.attendee;
   const label = ROLE_BADGE_LABELS[key] ?? key.charAt(0).toUpperCase() + key.slice(1);
   return (
-    <span
-      title={key === "expected_attendee" ? "Expected attendee — reposted the event without confirming attendance" : undefined}
-      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${style}`}
-    >
-      {label}
+    <span className="inline-flex items-center gap-1">
+      <span
+        title={key === "expected_attendee" ? "Expected attendee — reposted the event without confirming attendance" : undefined}
+        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${style}`}
+      >
+        {label}
+      </span>
+      {isSpeaker && (
+        <span className="inline-flex items-center rounded-full bg-violet-100 px-1.5 py-0.5 text-[10px] font-semibold text-violet-700 dark:bg-violet-900/40 dark:text-violet-300">
+          Speaker
+        </span>
+      )}
     </span>
   );
 }
@@ -287,17 +294,10 @@ function TableRow({
           )}
         </td>
 
-        {/* Name (+ speaker mic when this contact spoke at the event) */}
+        {/* Name */}
         <td className="whitespace-nowrap px-3 py-3.5">
-          <span className="inline-flex items-center gap-1.5">
-            <span className="font-medium text-zinc-900 dark:text-zinc-100">
-              {contact.full_name ?? "—"}
-            </span>
-            {contact.is_speaker && (
-              <span title="Speaker" aria-label="Speaker" className="text-sm leading-none">
-                🎤
-              </span>
-            )}
+          <span className="font-medium text-zinc-900 dark:text-zinc-100">
+            {contact.full_name ?? "—"}
           </span>
         </td>
 
@@ -306,9 +306,9 @@ function TableRow({
           {contact.current_title ?? "—"}
         </td>
 
-        {/* Event Role — placed next to Title */}
+        {/* Event Role (+ Speaker chip when this contact spoke), matching the public page */}
         <td className="whitespace-nowrap px-3 py-3.5">
-          <RoleBadge role={contact.event_role} />
+          <RoleBadge role={contact.event_role} isSpeaker={!!contact.is_speaker} />
         </td>
 
         {/* Person LinkedIn */}
