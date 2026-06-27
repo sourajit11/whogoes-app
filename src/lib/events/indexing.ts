@@ -23,7 +23,7 @@ import noindexedConfig from "@/config/noindexed-event-slugs.json";
  * owned by the weekly SEO/AEO check. See SEO_AEO_PROGRESS_TRACKER.md
  * (Workstream 1) and seo-agent/SEO_EXECUTION_CALENDAR.md (Workstream E).
  */
-export const EVENT_INDEX_MODE: "denylist" | "gate" = "gate";
+export const EVENT_INDEX_MODE: "denylist" | "gate" = "denylist";
 
 /** Quality-gate thresholds (used only in "gate" mode). Tune deliberately. */
 export const EVENT_GATE = {
