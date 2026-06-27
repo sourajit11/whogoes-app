@@ -29,9 +29,12 @@ export const EVENT_INDEX_MODE: "denylist" | "gate" = "gate";
 export const EVENT_GATE = {
   /** Minimum tracked contacts for the page to carry real substance. */
   minContacts: 40,
-  /** Post-event "[event] attendee list" search intent decays fast; index a
-   *  past event only if it ended within this window. */
-  postEventGraceDays: 90,
+  /** Concentrate crawl budget on live, rising pre-event intent. Index only
+   *  upcoming or still-running events (started within this many days), so
+   *  recently-ended pages whose "[event] attendee list" intent has collapsed
+   *  stay noindex. Set to 3 (2026-06-28) to shrink the indexable set from ~347
+   *  to ~53 during the low-authority test phase; widen once authority grows. */
+  postEventGraceDays: 3,
 } as const;
 
 const NOINDEXED_SLUGS = new Set<string>(noindexedConfig.slugs);
