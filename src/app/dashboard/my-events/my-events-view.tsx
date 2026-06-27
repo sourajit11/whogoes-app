@@ -162,6 +162,10 @@ export default function MyEventsView({
           p_limit: size,
           p_offset: from,
           p_filters: cleanIcp,
+          // Sort is pushed to the server so batches stream in display order — each
+          // batch only appends rows below what's shown, so the page never reshuffles.
+          p_sort_key: sortKey,
+          p_sort_dir: sortDir,
         }
       );
 
@@ -196,7 +200,7 @@ export default function MyEventsView({
 
     if (token !== loadTokenRef.current) return;
     setLoading(false);
-  }, [selectedEventId, supabase, cleanIcp]);
+  }, [selectedEventId, supabase, cleanIcp, sortKey, sortDir]);
 
   useEffect(() => {
     if (selectedEventId) {
@@ -268,22 +272,11 @@ export default function MyEventsView({
       );
     }
 
-    // Sort all filtered contacts before pagination
-    result = [...result].sort((a, b) => {
-      if (sortKey === "post_date") {
-        const aTime = a.post_date ? new Date(a.post_date).getTime() : 0;
-        const bTime = b.post_date ? new Date(b.post_date).getTime() : 0;
-        return sortDir === "asc" ? aTime - bTime : bTime - aTime;
-      }
-      const aVal = (a[sortKey] ?? "").toString().toLowerCase();
-      const bVal = (b[sortKey] ?? "").toString().toLowerCase();
-      if (aVal < bVal) return sortDir === "asc" ? -1 : 1;
-      if (aVal > bVal) return sortDir === "asc" ? 1 : -1;
-      return 0;
-    });
-
+    // No client-side sort: the server returns rows already in the chosen sort order
+    // (p_sort_key/p_sort_dir), so the streamed batches stay stable as they arrive.
+    // The tab/email/search filters above only narrow the set; they never reorder it.
     return result;
-  }, [contacts, activeTab, emailOnly, searchQuery, sortKey, sortDir]);
+  }, [contacts, activeTab, emailOnly, searchQuery]);
 
   const paginatedContacts = filteredContacts.slice(
     page * PAGE_SIZE,

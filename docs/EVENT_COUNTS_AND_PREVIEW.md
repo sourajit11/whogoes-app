@@ -140,20 +140,26 @@ Loading states:
 - `refetching` → overlay over old rows (filter reload, before first new batch).
 - `loading && initialLoadDone && !refetching` → background streaming footer.
 
-**Trade-off (known):** the contacts RPC returns rows ordered by `charged_at DESC`
-but the client re-sorts by the chosen column (default post date), so rows can
-**reshuffle while the rest streams in**. Brief for typical owned sets (hundreds–
-low thousands); a few seconds for Cannes-scale. Acceptable for current scale.
+### Server-side sort fixed the streaming reshuffle (migration `20260627213907`)
+The first cut of progressive loading reshuffled visibly: the RPC streamed rows in
+`charged_at` order but the client re-sorted by post date, so a row from a later
+batch could jump onto page 1. Fix: **push the sort into the RPC**
+(`p_sort_key` / `p_sort_dir`, computed in a `filtered` CTE + `row_number()` window,
+keeping the limit-before-heavy-join optimization). Now batches arrive in display
+order, so each one only appends rows *below* what's shown — **page 1 is stable from
+the first batch**. The client no longer sorts in memory (`filteredContacts` only
+narrows via tab/email/search); a column-sort click re-streams from the server in
+the new order (a brief "Updating results…" overlay, then stable fill). Sortable
+keys: `full_name`, `current_title`, `company_name`, `post_date`, `email`, each with
+a `charged_at` tiebreaker so offset paging is deterministic.
 
-### Future: server-side pagination (Option B) — when to do it
-If customers routinely own **>10–20k** contacts, move to true server-side
-pagination + sort + search: the RPC returns exactly the current page already
-sorted/filtered, the browser never holds more than one page, and the first page is
-instant **and stable** at any size. Requires: sort/search/count params on
-`get_subscribed_event_contacts`, reworked live counts (new/processed/with-email
-via cheap count queries), CSV export fetching the full filtered set on demand, and
-cross-page "select all" / bulk reveal driven by a server-side id list. Deferred as
-over-engineering for current owned-set sizes.
+### Future: full server-side pagination — when to do it
+If customers routinely own **>10–20k** contacts, stop accumulating the whole set in
+the browser and paginate server-side too: fetch only the current page, drive the
+live counts (new/processed/with-email) via cheap count queries, have CSV export
+fetch the full filtered set on demand, and back cross-page "select all" / bulk
+reveal with a server-side id list. The sort is already server-side (above), so this
+is the remaining step. Deferred as over-engineering for current owned-set sizes.
 
 ---
 
