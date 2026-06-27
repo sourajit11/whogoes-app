@@ -113,6 +113,50 @@ filenames reconciled to match). See migrations-only rule.
 
 ---
 
+## 4b. My Events follow-ups (2026-06-28)
+
+### Role column moved next to Title
+In the unlocked-events table (`contact-table.tsx`) the **Role** badge column now
+sits immediately after **Title** (was between Company and Source), matching the
+public event preview table. Pure column reorder; `TOTAL_COLS` unchanged.
+
+### Progressive (streaming) contact load — `my-events-view.tsx`
+Previously `fetchContacts` pulled the whole event in 1,000-row batches but only
+called `setContacts` once at the very end, so the table stayed blank behind a
+progress bar until every batch arrived (~7 round-trips for Cannes).
+
+Now it streams: a small **first batch (50)** paints the first page in one
+round-trip, then the rest loads in 1,000-row batches in the background behind a
+non-blocking "Loading more contacts… N loaded" footer. Same path improves filter
+changes — the old rows stay under an "Updating results…" overlay only until the
+first batch of the new (server-filtered) result swaps in.
+
+Also added **load cancellation**: a `loadTokenRef` is bumped on every event/filter
+change; an in-flight loop whose token is stale bails before touching state, fixing
+a latent race where overlapping loads could interleave.
+
+Loading states:
+- `loading && !initialLoadDone` → full-height loader (initial, before first batch).
+- `refetching` → overlay over old rows (filter reload, before first new batch).
+- `loading && initialLoadDone && !refetching` → background streaming footer.
+
+**Trade-off (known):** the contacts RPC returns rows ordered by `charged_at DESC`
+but the client re-sorts by the chosen column (default post date), so rows can
+**reshuffle while the rest streams in**. Brief for typical owned sets (hundreds–
+low thousands); a few seconds for Cannes-scale. Acceptable for current scale.
+
+### Future: server-side pagination (Option B) — when to do it
+If customers routinely own **>10–20k** contacts, move to true server-side
+pagination + sort + search: the RPC returns exactly the current page already
+sorted/filtered, the browser never holds more than one page, and the first page is
+instant **and stable** at any size. Requires: sort/search/count params on
+`get_subscribed_event_contacts`, reworked live counts (new/processed/with-email
+via cheap count queries), CSV export fetching the full filtered set on demand, and
+cross-page "select all" / bulk reveal driven by a server-side id list. Deferred as
+over-engineering for current owned-set sizes.
+
+---
+
 ## 5. Gotchas / future
 
 - `contact_emails.status` is effectively meaningless today (everything is

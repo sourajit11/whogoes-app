@@ -155,16 +155,16 @@ export default function ContactTable({ contacts, startIndex = 0, sortKey, sortDi
               <SortableHeader col={SORTABLE_COLUMNS[0]} />
               {/* Title — sortable */}
               <SortableHeader col={SORTABLE_COLUMNS[1]} />
+              {/* Event Role — placed next to Title */}
+              <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                Role
+              </th>
               {/* Person LinkedIn — non-sortable */}
               <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                 Person LinkedIn
               </th>
               {/* Company — sortable */}
               <SortableHeader col={SORTABLE_COLUMNS[2]} />
-              {/* Event Role */}
-              <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                Role
-              </th>
               {/* Source */}
               <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                 Source
@@ -306,6 +306,11 @@ function TableRow({
           {contact.current_title ?? "—"}
         </td>
 
+        {/* Event Role — placed next to Title */}
+        <td className="whitespace-nowrap px-3 py-3.5">
+          <RoleBadge role={contact.event_role} />
+        </td>
+
         {/* Person LinkedIn */}
         <td className="whitespace-nowrap px-3 py-3.5">
           {contact.contact_linkedin_url &&
@@ -328,11 +333,6 @@ function TableRow({
         {/* Company */}
         <td className="max-w-36 truncate px-3 py-3.5 text-zinc-500 dark:text-zinc-400">
           {contact.company_name ?? "—"}
-        </td>
-
-        {/* Event Role */}
-        <td className="whitespace-nowrap px-3 py-3.5">
-          <RoleBadge role={contact.event_role} />
         </td>
 
         {/* Source (View Post link) */}

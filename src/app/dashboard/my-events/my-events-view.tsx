@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { SubscribedEvent, Contact, SortKey, SortDir, UnlockResult } from "@/types";
@@ -47,8 +47,19 @@ export default function MyEventsView({
   // first full-height loader from later filter re-fetches (which keep the table
   // mounted under an overlay). Reset whenever the event changes.
   const [initialLoadDone, setInitialLoadDone] = useState(false);
+  // True only during a filter-driven reload, AFTER the table already had rows but
+  // BEFORE the first batch of the new result arrives — drives the "Updating results…"
+  // overlay so the old rows stay visible (no blank flash) until we can swap them.
+  const [refetching, setRefetching] = useState(false);
   const [loadedCount, setLoadedCount] = useState(0);
   const [contactsError, setContactsError] = useState(false);
+  // Monotonic token to cancel superseded loads. Rapid event/filter changes bump it;
+  // any in-flight loop whose token no longer matches bails out before touching state,
+  // so a stale stream can't pollute the current result.
+  const loadTokenRef = useRef(0);
+  // Mirror of initialLoadDone readable synchronously inside the async loop (state is
+  // stale there). Lets a load tell whether it's an initial load or a refetch.
+  const initialLoadDoneRef = useRef(false);
   const [activeTab, setActiveTab] = useState<TabFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [emailOnly, setEmailOnly] = useState(false);
@@ -113,49 +124,78 @@ export default function MyEventsView({
 
   const fetchContacts = useCallback(async () => {
     if (!selectedEventId) return;
-    setLoading(true);
-    setLoadedCount(0);
-    setContactsError(false);
 
-    const allContacts: Contact[] = [];
+    // Cancel any load still running and claim this one.
+    const token = ++loadTokenRef.current;
+    // Refetch = the table already has rows (event unchanged, filter changed). We keep
+    // those rows on screen under an overlay until the first new batch arrives, then swap.
+    const isRefetch = initialLoadDoneRef.current;
+
+    setLoading(true);
+    setContactsError(false);
+    if (isRefetch) {
+      setRefetching(true);
+    } else {
+      setContacts([]);
+      setLoadedCount(0);
+    }
+
+    // Progressive load: paint the first page immediately, then stream the rest in the
+    // background. The RPC limits the access rows before the heavy joins, so each page
+    // stays under the statement timeout even on large events (a bare .range() recomputes
+    // the full result every page and timed out at ~6,700 contacts). A small first batch
+    // gets rows on screen in one round-trip instead of waiting for the whole event.
+    const FIRST_BATCH = 50;
+    const BATCH_SIZE = 1000;
+    const accumulated: Contact[] = [];
     let from = 0;
-    const batchSize = 1000;
+    let firstBatch = true;
     let hasMore = true;
 
     while (hasMore) {
-      // Server-side pagination: the RPC limits the access rows before the
-      // heavy joins, so each page stays well under the statement timeout even
-      // on large events. (A bare .range() makes PostgREST recompute the full
-      // result every page, which timed out at ~6,700 contacts.)
+      const size = firstBatch ? FIRST_BATCH : BATCH_SIZE;
       const { data: batch, error } = await supabase.rpc(
         "get_subscribed_event_contacts",
         {
           p_event_id: selectedEventId,
           p_filter: "all",
-          p_limit: batchSize,
+          p_limit: size,
           p_offset: from,
           p_filters: cleanIcp,
         }
       );
 
+      // A newer load (event/filter change) superseded this one — bail before touching state.
+      if (token !== loadTokenRef.current) return;
+
       if (error) {
-        // Surface the failure instead of silently leaving an empty table.
         console.error("Error fetching contacts:", error);
         setContactsError(true);
+        setRefetching(false);
         setLoading(false);
         return;
       }
 
-      allContacts.push(...(batch ?? []));
-      setLoadedCount(allContacts.length);
-      hasMore = (batch?.length ?? 0) === batchSize;
-      from += batchSize;
+      const rows = (batch ?? []) as Contact[];
+      accumulated.push(...rows);
+      setContacts([...accumulated]);
+      setLoadedCount(accumulated.length);
+
+      if (firstBatch) {
+        // First page is on screen now: drop the full-height loader / refetch overlay.
+        setPage(0);
+        setRefetching(false);
+        setInitialLoadDone(true);
+        initialLoadDoneRef.current = true;
+        firstBatch = false;
+      }
+
+      hasMore = rows.length === size;
+      from += size;
     }
 
-    setContacts(allContacts);
-    setPage(0);
+    if (token !== loadTokenRef.current) return;
     setLoading(false);
-    setInitialLoadDone(true);
   }, [selectedEventId, supabase, cleanIcp]);
 
   useEffect(() => {
@@ -168,6 +208,7 @@ export default function MyEventsView({
   // shows its full-height loader rather than overlaying a stale table.
   useEffect(() => {
     setInitialLoadDone(false);
+    initialLoadDoneRef.current = false;
   }, [selectedEventId]);
 
   // Fetch credits for inline unlock
@@ -1126,7 +1167,9 @@ export default function MyEventsView({
               overlay signals "updating" so the screen never blanks or appears
               frozen between the old and new result sets. */}
           <div className="relative mt-4">
-            {loading && initialLoadDone && (
+            {/* Filter-driven reload: keep the old rows visible under an overlay until the
+                first batch of the new result swaps in (no blank flash). */}
+            {refetching && (
               <div className="absolute inset-0 z-10 flex items-start justify-center rounded-xl bg-white/55 pt-20 backdrop-blur-[1px] dark:bg-zinc-950/55">
                 <span className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-600 shadow-sm dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
                   <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -1158,6 +1201,24 @@ export default function MyEventsView({
               revealingIds={revealingIds}
             />
           </div>
+
+          {/* Background streaming indicator: the first page is already interactive while
+              the rest of the contacts load. Non-blocking, unlike the initial loader. */}
+          {loading && initialLoadDone && !refetching && (
+            <div className="mt-3 flex items-center gap-2 text-sm text-zinc-400">
+              <svg className="h-4 w-4 animate-spin text-emerald-500" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              <span className="tabular-nums">
+                Loading more contacts… {loadedCount.toLocaleString()}
+                {selectedEvent && !icpActive
+                  ? ` of ${(selectedEvent.new_contacts + selectedEvent.processed_contacts).toLocaleString()}`
+                  : ""}{" "}
+                loaded
+              </span>
+            </div>
+          )}
 
           {/* Pagination */}
           {totalPages > 1 && (
