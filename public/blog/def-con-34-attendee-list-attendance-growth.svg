@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 350" font-family="Inter, system-ui, sans-serif">
+  <rect width="600" height="350" fill="#fafafa" rx="8"/>
+  <text x="300" y="30" text-anchor="middle" font-size="16" font-weight="bold" fill="#1a1a2e">DEF CON Attendance Growth (Selected Years)</text>
+
+  <!-- Y axis labels -->
+  <text x="45" y="290" text-anchor="end" font-size="11" fill="#666">0</text>
+  <text x="45" y="240" text-anchor="end" font-size="11" fill="#666">10K</text>
+  <text x="45" y="190" text-anchor="end" font-size="11" fill="#666">20K</text>
+  <text x="45" y="140" text-anchor="end" font-size="11" fill="#666">30K</text>
+
+  <!-- Grid lines -->
+  <line x1="55" y1="285" x2="570" y2="285" stroke="#e0e0e0" stroke-width="1"/>
+  <line x1="55" y1="235" x2="570" y2="235" stroke="#e0e0e0" stroke-width="1" stroke-dasharray="4"/>
+  <line x1="55" y1="185" x2="570" y2="185" stroke="#e0e0e0" stroke-width="1" stroke-dasharray="4"/>
+  <line x1="55" y1="135" x2="570" y2="135" stroke="#e0e0e0" stroke-width="1" stroke-dasharray="4"/>
+
+  <!-- Bars: DC7(1999)~2K, DC13(2005)~6K, DC18(2010)~12K, DC22(2014)~16K, DC25(2017)~25K, DC27(2019)~30K, DC32(2024)~30K, DC34(2026)~30K+ -->
+  <!-- Scale: 30K = 150px height. 1K = 5px. Base y = 285. -->
+
+  <rect x="75" y="275" width="45" height="10" fill="#6366f1" rx="3"/>
+  <text x="97" y="270" text-anchor="middle" font-size="10" fill="#1a1a2e">~2K</text>
+  <text x="97" y="305" text-anchor="middle" font-size="10" fill="#666">DC 7</text>
+  <text x="97" y="318" text-anchor="middle" font-size="9" fill="#999">1999</text>
+
+  <rect x="140" y="255" width="45" height="30" fill="#6366f1" rx="3"/>
+  <text x="162" y="250" text-anchor="middle" font-size="10" fill="#1a1a2e">~6K</text>
+  <text x="162" y="305" text-anchor="middle" font-size="10" fill="#666">DC 13</text>
+  <text x="162" y="318" text-anchor="middle" font-size="9" fill="#999">2005</text>
+
+  <rect x="205" y="225" width="45" height="60" fill="#6366f1" rx="3"/>
+  <text x="227" y="220" text-anchor="middle" font-size="10" fill="#1a1a2e">~12K</text>
+  <text x="227" y="305" text-anchor="middle" font-size="10" fill="#666">DC 18</text>
+  <text x="227" y="318" text-anchor="middle" font-size="9" fill="#999">2010</text>
+
+  <rect x="270" y="205" width="45" height="80" fill="#6366f1" rx="3"/>
+  <text x="292" y="200" text-anchor="middle" font-size="10" fill="#1a1a2e">~16K</text>
+  <text x="292" y="305" text-anchor="middle" font-size="10" fill="#666">DC 22</text>
+  <text x="292" y="318" text-anchor="middle" font-size="9" fill="#999">2014</text>
+
+  <rect x="335" y="160" width="45" height="125" fill="#6366f1" rx="3"/>
+  <text x="357" y="155" text-anchor="middle" font-size="10" fill="#1a1a2e">~25K</text>
+  <text x="357" y="305" text-anchor="middle" font-size="10" fill="#666">DC 25</text>
+  <text x="357" y="318" text-anchor="middle" font-size="9" fill="#999">2017</text>
+
+  <rect x="400" y="135" width="45" height="150" fill="#6366f1" rx="3"/>
+  <text x="422" y="130" text-anchor="middle" font-size="10" fill="#1a1a2e">~30K</text>
+  <text x="422" y="305" text-anchor="middle" font-size="10" fill="#666">DC 27</text>
+  <text x="422" y="318" text-anchor="middle" font-size="9" fill="#999">2019</text>
+
+  <rect x="465" y="135" width="45" height="150" fill="#6366f1" rx="3"/>
+  <text x="487" y="130" text-anchor="middle" font-size="10" fill="#1a1a2e">~30K</text>
+  <text x="487" y="305" text-anchor="middle" font-size="10" fill="#666">DC 32</text>
+  <text x="487" y="318" text-anchor="middle" font-size="9" fill="#999">2024</text>
+
+  <rect x="530" y="130" width="45" height="155" fill="#818cf8" rx="3" stroke="#6366f1" stroke-width="2" stroke-dasharray="4"/>
+  <text x="552" y="125" text-anchor="middle" font-size="10" font-weight="bold" fill="#4f46e5">30K+</text>
+  <text x="552" y="305" text-anchor="middle" font-size="10" font-weight="bold" fill="#4f46e5">DC 34</text>
+  <text x="552" y="318" text-anchor="middle" font-size="9" fill="#4f46e5">2026</text>
+
+  <text x="300" y="345" text-anchor="middle" font-size="10" fill="#999">Sources: DEF CON organizer data, Wikipedia</text>
+</svg>
