@@ -25,19 +25,17 @@ create index if not exists idx_companies_moltsets_ind_pending
     and (industry_bucket is null or industry_bucket = 'Other / Unknown');
 
 -- ---------------------------------------------------------------------------
--- Job 1: link the contact to its company. reverse_linkedin_lookup returns a
--- company NAME (and sometimes industry) but rarely a URL, so we dedup by
--- normalized_name against our existing 131k companies first -- most of these
--- contacts' companies are already enriched, we just never linked this contact.
--- Only create a new company when there is no name match. An advisory lock on the
--- normalized name serialises concurrent creates so a batch cannot make dupes.
--- Fills a matched company's industry only when it is currently blank.
--- Propagates to event_contact_facts immediately.
+-- Job 1: link the contact to its company using the EXACT company LinkedIn URL
+-- as the sole identity -- no name guessing. The caller only invokes this when
+-- reverse_linkedin_lookup returned the company's own linkedin url, so the match
+-- is authoritative. Dedup on normalized_linkedin_url (advisory lock serialises
+-- concurrent inserts of the same company). Fills industry only when blank.
+-- Propagates to event_contact_facts immediately. No url => no write.
 -- ---------------------------------------------------------------------------
 create or replace function public.moltsets_link_contact_company(
   p_contact_id      uuid,
   p_company_name    text,
-  p_company_url     text,   -- canonical linkedin company url, usually null
+  p_company_url     text,   -- REQUIRED canonical linkedin company url (the identity)
   p_domain          text,
   p_industry        text,
   p_contact_title   text
@@ -51,39 +49,23 @@ declare
   v_company_id uuid;
   v_norm       text := lower(btrim(regexp_replace(coalesce(p_company_name,''), '\s+', ' ', 'g')));
 begin
-  if v_norm = '' then
+  -- Require the exact company linkedin url. Without it we never guess a company.
+  if p_company_url is null or btrim(p_company_url) = '' then
     update public.contacts set moltsets_company_lookup_at = now() where id = p_contact_id;
     return null;
   end if;
 
-  -- strongest match: exact company linkedin url when present
-  if p_company_url is not null and btrim(p_company_url) <> '' then
-    select id into v_company_id from public.companies
-      where normalized_linkedin_url = p_company_url limit 1;
-  end if;
-
-  -- otherwise match by normalized name (serialise same-name creates)
-  if v_company_id is null then
-    perform pg_advisory_xact_lock(hashtext(v_norm));
-    select id into v_company_id from public.companies
-      where normalized_name = v_norm
-      order by is_enriched desc nulls last, updated_at desc nulls last
-      limit 1;
-  end if;
+  -- Serialise same-company inserts, then dedup on the exact url.
+  perform pg_advisory_xact_lock(hashtext(p_company_url));
+  select id into v_company_id from public.companies
+    where normalized_linkedin_url = p_company_url limit 1;
 
   if v_company_id is null then
-    -- Only create a NEW company when we have a confident linkedin url for it
-    -- (companies.linkedin_url is NOT NULL, and a url means the caller cleared the
-    -- confidence gate). Otherwise record the attempt and leave the contact Unknown
-    -- rather than inventing a company. normalized_linkedin_url is generated.
-    if p_company_url is null or btrim(p_company_url) = '' then
-      update public.contacts set moltsets_company_lookup_at = now() where id = p_contact_id;
-      return null;
-    end if;
+    -- normalized_linkedin_url is a generated column; do not set it.
     insert into public.companies
       (name, normalized_name, linkedin_url, domain, industry, source)
     values
-      (p_company_name, v_norm, p_company_url,
+      (p_company_name, nullif(v_norm,''), p_company_url,
        nullif(p_domain,''), nullif(p_industry,''), 'moltsets')
     returning id into v_company_id;
   else
