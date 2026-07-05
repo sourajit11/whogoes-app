@@ -472,8 +472,8 @@ function Blur({ w }: { w: string }) {
 
 // Shimmer placeholder row shown while a filtered query is in flight. Reads as "loading"
 // (pulse, not blur) so it isn't confused with the redacted/locked rows.
-// One width per visible column (Name, Title, Role, Company, Industry, Size, Location, Email).
-const SKELETON_WIDTHS = ["w-28", "w-32", "w-16", "w-24", "w-20", "w-12", "w-20", "w-10"];
+// One width per visible column (Name, Title, Role, LinkedIn, Company, Industry, Size, Location, Email).
+const SKELETON_WIDTHS = ["w-28", "w-32", "w-16", "w-16", "w-24", "w-20", "w-12", "w-20", "w-10"];
 function SkeletonRow() {
   return (
     <tr>
@@ -547,7 +547,7 @@ export function FilteredPreview({
       <table className="w-full text-left text-sm">
         <thead>
           <tr className="border-b border-zinc-100 bg-zinc-50/80 dark:border-zinc-800 dark:bg-zinc-900/50">
-            {["Name", "Title", "Role", "Company", "Industry", "Size", "Location", "Email"].map((h) => (
+            {["Name", "Title", "Role", "LinkedIn", "Company", "Industry", "Size", "Location", "Email"].map((h) => (
               <th key={h} className="whitespace-nowrap px-3 py-2.5 text-xs font-semibold uppercase tracking-wider text-zinc-500">{h}</th>
             ))}
           </tr>
@@ -556,7 +556,7 @@ export function FilteredPreview({
           {loading &&
             [0, 1, 2, 3, 4, 5].map((i) => <SkeletonRow key={`sk-${i}`} />)}
           {noMatches && (
-            <tr><td colSpan={8} className="px-3 py-8 text-center text-sm text-zinc-400">No contacts match these filters. Try removing one.</td></tr>
+            <tr><td colSpan={9} className="px-3 py-8 text-center text-sm text-zinc-400">No contacts match these filters. Try removing one.</td></tr>
           )}
           {!loading && data?.sample && (
             <tr className="bg-emerald-50/40 dark:bg-emerald-900/10">
@@ -566,6 +566,20 @@ export function FilteredPreview({
               </td>
               <td className="max-w-48 truncate px-3 py-3 text-zinc-500">{data.sample.current_title ?? "—"}</td>
               <td className="whitespace-nowrap px-3 py-3"><RoleBadge role={data.sample.role} isSpeaker={data.sample.is_speaker} /></td>
+              <td className="whitespace-nowrap px-3 py-3">
+                {data.sample.contact_linkedin_url ? (
+                  <a
+                    href={data.sample.contact_linkedin_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-emerald-600 hover:underline dark:text-emerald-400"
+                  >
+                    View
+                  </a>
+                ) : (
+                  "—"
+                )}
+              </td>
               <td className="whitespace-nowrap px-3 py-3 text-zinc-600 dark:text-zinc-400">{data.sample.company_name ?? "—"}</td>
               <td className="whitespace-nowrap px-3 py-3 text-zinc-500">{data.sample.company_industry ?? "—"}</td>
               <td className="whitespace-nowrap px-3 py-3 text-zinc-500">{data.sample.company_size ?? "—"}</td>
@@ -578,6 +592,7 @@ export function FilteredPreview({
               <td className="px-3 py-3"><Blur w="w-24" /></td>
               <td className="max-w-48 truncate px-3 py-3 text-zinc-500">{r.current_title ?? "—"}</td>
               <td className="whitespace-nowrap px-3 py-3"><RoleBadge role={r.role} isSpeaker={r.is_speaker} /></td>
+              <td className="px-3 py-3"><Blur w="w-12" /></td>
               <td className="px-3 py-3"><Blur w="w-20" /></td>
               <td className="whitespace-nowrap px-3 py-3 text-zinc-500">{r.industry ?? "—"}</td>
               <td className="whitespace-nowrap px-3 py-3 text-zinc-500">{r.size ?? "—"}</td>
