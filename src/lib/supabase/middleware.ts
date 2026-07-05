@@ -65,6 +65,7 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/api/payments/") ||
     request.nextUrl.pathname.startsWith("/api/email") ||
     request.nextUrl.pathname.startsWith("/api/pipeline") ||
+    request.nextUrl.pathname.startsWith("/api/whogoes-cold") ||
     request.nextUrl.pathname.startsWith("/api/indexnow") ||
     request.nextUrl.pathname.startsWith("/api/sitemap-index") ||
     request.nextUrl.pathname.startsWith("/sitemap");
