@@ -470,10 +470,23 @@ function Blur({ w }: { w: string }) {
   return <div className={`h-4 ${w} rounded bg-zinc-200 blur-[5px] dark:bg-zinc-700`} />;
 }
 
+// The familiar blue "in" mark used in the LinkedIn Profile column.
+function LinkedInIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
+      <rect width="24" height="24" rx="4" fill="#0A66C2" />
+      <path
+        fill="#fff"
+        d="M7.2 9.6H4.8V19h2.4V9.6zM6 5.2a1.4 1.4 0 100 2.8 1.4 1.4 0 000-2.8zM19.2 19h-2.4v-4.6c0-1.1-.02-2.5-1.53-2.5-1.53 0-1.77 1.2-1.77 2.42V19H11.1V9.6h2.3v1.28h.03c.32-.6 1.1-1.24 2.27-1.24 2.43 0 2.88 1.6 2.88 3.68V19z"
+      />
+    </svg>
+  );
+}
+
 // Shimmer placeholder row shown while a filtered query is in flight. Reads as "loading"
 // (pulse, not blur) so it isn't confused with the redacted/locked rows.
-// One width per visible column (Name, Title, Role, LinkedIn, Company, Industry, Size, Location, Email).
-const SKELETON_WIDTHS = ["w-28", "w-32", "w-16", "w-16", "w-24", "w-20", "w-12", "w-20", "w-10"];
+// One width per visible column (Name, Title, Role, LinkedIn, Company, Source, Industry, Size, Location, Email).
+const SKELETON_WIDTHS = ["w-28", "w-32", "w-16", "w-16", "w-24", "w-16", "w-20", "w-12", "w-20", "w-10"];
 function SkeletonRow() {
   return (
     <tr>
@@ -547,7 +560,7 @@ export function FilteredPreview({
       <table className="w-full text-left text-sm">
         <thead>
           <tr className="border-b border-zinc-100 bg-zinc-50/80 dark:border-zinc-800 dark:bg-zinc-900/50">
-            {["Name", "Title", "Role", "LinkedIn", "Company", "Industry", "Size", "Location", "Email"].map((h) => (
+            {["Name", "Title", "Role", "LinkedIn Profile", "Company", "Source", "Industry", "Size", "Location", "Email"].map((h) => (
               <th key={h} className="whitespace-nowrap px-3 py-2.5 text-xs font-semibold uppercase tracking-wider text-zinc-500">{h}</th>
             ))}
           </tr>
@@ -556,7 +569,7 @@ export function FilteredPreview({
           {loading &&
             [0, 1, 2, 3, 4, 5].map((i) => <SkeletonRow key={`sk-${i}`} />)}
           {noMatches && (
-            <tr><td colSpan={9} className="px-3 py-8 text-center text-sm text-zinc-400">No contacts match these filters. Try removing one.</td></tr>
+            <tr><td colSpan={10} className="px-3 py-8 text-center text-sm text-zinc-400">No contacts match these filters. Try removing one.</td></tr>
           )}
           {!loading && data?.sample && (
             <tr className="bg-emerald-50/40 dark:bg-emerald-900/10">
@@ -572,15 +585,30 @@ export function FilteredPreview({
                     href={data.sample.contact_linkedin_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-emerald-600 hover:underline dark:text-emerald-400"
+                    className="inline-flex"
+                    aria-label="LinkedIn profile"
                   >
-                    View
+                    <LinkedInIcon />
                   </a>
                 ) : (
                   "—"
                 )}
               </td>
               <td className="whitespace-nowrap px-3 py-3 text-zinc-600 dark:text-zinc-400">{data.sample.company_name ?? "—"}</td>
+              <td className="whitespace-nowrap px-3 py-3">
+                {data.sample.post_url ? (
+                  <a
+                    href={data.sample.post_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-emerald-600 hover:underline dark:text-emerald-400"
+                  >
+                    View Post
+                  </a>
+                ) : (
+                  "—"
+                )}
+              </td>
               <td className="whitespace-nowrap px-3 py-3 text-zinc-500">{data.sample.company_industry ?? "—"}</td>
               <td className="whitespace-nowrap px-3 py-3 text-zinc-500">{data.sample.company_size ?? "—"}</td>
               <td className="whitespace-nowrap px-3 py-3 text-zinc-500">{data.sample.country ?? "—"}</td>
@@ -592,8 +620,9 @@ export function FilteredPreview({
               <td className="px-3 py-3"><Blur w="w-24" /></td>
               <td className="max-w-48 truncate px-3 py-3 text-zinc-500">{r.current_title ?? "—"}</td>
               <td className="whitespace-nowrap px-3 py-3"><RoleBadge role={r.role} isSpeaker={r.is_speaker} /></td>
-              <td className="px-3 py-3"><Blur w="w-12" /></td>
+              <td className="px-3 py-3"><span className="inline-flex opacity-40 grayscale"><LinkedInIcon /></span></td>
               <td className="px-3 py-3"><Blur w="w-20" /></td>
+              <td className="whitespace-nowrap px-3 py-3 text-zinc-400">View Post</td>
               <td className="whitespace-nowrap px-3 py-3 text-zinc-500">{r.industry ?? "—"}</td>
               <td className="whitespace-nowrap px-3 py-3 text-zinc-500">{r.size ?? "—"}</td>
               <td className="whitespace-nowrap px-3 py-3 text-zinc-500">{r.country ?? "—"}</td>
