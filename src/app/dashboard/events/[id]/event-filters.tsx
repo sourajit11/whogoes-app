@@ -470,15 +470,12 @@ function Blur({ w }: { w: string }) {
   return <div className={`h-4 ${w} rounded bg-zinc-200 blur-[5px] dark:bg-zinc-700`} />;
 }
 
-// The familiar blue "in" mark used in the LinkedIn Profile column.
-function LinkedInIcon() {
+// The LinkedIn "in" mark. Same glyph as the main contact table (event-detail.tsx)
+// so the two previews match; color is applied via `text-[#0A66C2]` on the wrapper.
+function LinkedInIcon({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
-      <rect width="24" height="24" rx="4" fill="#0A66C2" />
-      <path
-        fill="#fff"
-        d="M7.2 9.6H4.8V19h2.4V9.6zM6 5.2a1.4 1.4 0 100 2.8 1.4 1.4 0 000-2.8zM19.2 19h-2.4v-4.6c0-1.1-.02-2.5-1.53-2.5-1.53 0-1.77 1.2-1.77 2.42V19H11.1V9.6h2.3v1.28h.03c.32-.6 1.1-1.24 2.27-1.24 2.43 0 2.88 1.6 2.88 3.68V19z"
-      />
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
     </svg>
   );
 }
@@ -585,10 +582,10 @@ export function FilteredPreview({
                     href={data.sample.contact_linkedin_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex"
-                    aria-label="LinkedIn profile"
+                    className="inline-flex text-[#0A66C2] transition-opacity hover:opacity-70"
+                    title="LinkedIn Profile"
                   >
-                    <LinkedInIcon />
+                    <LinkedInIcon className="h-4.5 w-4.5" />
                   </a>
                 ) : (
                   "—"
@@ -620,7 +617,7 @@ export function FilteredPreview({
               <td className="px-3 py-3"><Blur w="w-24" /></td>
               <td className="max-w-48 truncate px-3 py-3 text-zinc-500">{r.current_title ?? "—"}</td>
               <td className="whitespace-nowrap px-3 py-3"><RoleBadge role={r.role} isSpeaker={r.is_speaker} /></td>
-              <td className="px-3 py-3"><span className="inline-flex opacity-40 grayscale"><LinkedInIcon /></span></td>
+              <td className="px-3 py-3"><span className="inline-flex text-[#0A66C2] opacity-40"><LinkedInIcon className="h-4.5 w-4.5" /></span></td>
               <td className="px-3 py-3"><Blur w="w-20" /></td>
               <td className="whitespace-nowrap px-3 py-3 text-zinc-400">View Post</td>
               <td className="whitespace-nowrap px-3 py-3 text-zinc-500">{r.industry ?? "—"}</td>
