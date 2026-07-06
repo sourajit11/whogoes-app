@@ -8,7 +8,9 @@
  * whogoes_cold_company_done so it is never re-selected.
  *
  * Vendors: Moltsets + Dropleads only (GetLeads dropped — 0 incremental coverage).
- * Accept rule: Reoon power `safe`/`valid`  OR  Dropleads email-finder `status = valid`.
+ * Accept rule (HARD): every candidate email is Reoon power-mode verified, and only
+ * Reoon `is_safe_to_send === true` is marked contactable / eligible for Plusvibe. No
+ * vendor's own "valid" is ever trusted (Dropleads calls catch-alls valid → they bounce).
  * See WHOGOES_COLD_OUTREACH_PIPELINE_PLAN.md.
  */
 
@@ -17,7 +19,6 @@ const DL_PRIME = "https://prime.dropleads.io/api/v1/prime-db";
 const DL_FINDER = "https://api.dropleads.io/email-finder";
 const REOON = "https://emailverifier.reoon.com/api/v1/verify";
 
-const REOON_VALID = new Set(["safe", "valid", "deliverable"]);
 const PER_COMPANY_CAP = 5;
 const DL_MIN_INTERVAL_MS = 1100; // stay under Dropleads' 60 req/min
 
@@ -119,13 +120,18 @@ function makeVendors(env) {
     dlSearch: async (filters, limit = 10) => { await dlGate(); return postJson(`${DL_PRIME}/leads/search`, dlH, { filters, pagination: { page: 1, limit } }); },
     dlUnlock: async (leadId) => { await dlGate(); return postJson(`${DL_PRIME}/leads/unlock`, dlH, { leadId }); },
     dlFinder: async (first, last, domain) => { await dlGate(); return postJson(DL_FINDER, dlH, { first_name: first, last_name: last, company_domain: domain ? `https://${domain}` : "", company_name: "" }); },
+    // Power-mode verify. Returns { status, safe } where `safe` is Reoon's own
+    // is_safe_to_send boolean — true only for genuinely deliverable inboxes
+    // (excludes catch-all, disabled, role, spamtrap...). RULE: only `safe` emails
+    // may ever be marked contactable / pushed to Plusvibe.
     reoon: async (email) => {
       const url = `${REOON}?email=${encodeURIComponent(email)}&key=${encodeURIComponent(env.REOON_API_KEY)}&mode=power`;
       try {
         const res = await fetch(url, { signal: AbortSignal.timeout(30000) });
         const j = await res.json();
-        return String(j?.status ?? j?.result ?? "unknown").trim().toLowerCase().replace(/\s+/g, "_");
-      } catch { return "error"; }
+        const status = String(j?.status ?? j?.result ?? "unknown").trim().toLowerCase().replace(/\s+/g, "_");
+        return { status, safe: j?.is_safe_to_send === true };
+      } catch { return { status: "error", safe: false }; }
     },
   };
 }
@@ -185,9 +191,9 @@ async function resolveEmail(V, p) {
     msEmail = deepEmail(r.json?.results) || deepEmail(r.json);
   }
   if (isEmail(msEmail)) {
-    const st = await V.reoon(msEmail);
-    if (REOON_VALID.has(st)) return { email: msEmail.toLowerCase(), provider: "moltsets", status: st, contactable: true };
-    var best = { email: msEmail.toLowerCase(), provider: "moltsets", status: st, contactable: false };
+    const v = await V.reoon(msEmail);
+    if (v.safe) return { email: msEmail.toLowerCase(), provider: "moltsets", status: v.status, contactable: true };
+    var best = { email: msEmail.toLowerCase(), provider: "moltsets", status: v.status, contactable: false };
   }
 
   // 2) Dropleads prime-DB: use lead id if we have one, else find by linkedin -> unlock -> Reoon
@@ -200,22 +206,21 @@ async function resolveEmail(V, p) {
     const u = await V.dlUnlock(leadId);
     const dbEmail = deepEmail(u.json?.data?.lead) || deepEmail(u.json);
     if (isEmail(dbEmail)) {
-      const st = await V.reoon(dbEmail);
-      if (REOON_VALID.has(st)) return { email: dbEmail.toLowerCase(), provider: "dropleads", status: st, contactable: true };
-      if (!best) best = { email: dbEmail.toLowerCase(), provider: "dropleads", status: st, contactable: false };
+      const v = await V.reoon(dbEmail);
+      if (v.safe) return { email: dbEmail.toLowerCase(), provider: "dropleads", status: v.status, contactable: true };
+      if (!best) best = { email: dbEmail.toLowerCase(), provider: "dropleads", status: v.status, contactable: false };
     }
   }
 
-  // 3) Dropleads email-finder: accept its own `valid` status (no Reoon), else Reoon
+  // 3) Dropleads email-finder: ALWAYS Reoon power-verify. Never trust Dropleads'
+  //    own `valid` status — it labels catch-all domains valid, and those bounce.
   if (p.first_name && p.last_name) {
     const f = await V.dlFinder(p.first_name, p.last_name, p.company_domain);
     const gEmail = f.json?.email;
-    const gStatus = String(f.json?.status || "").toLowerCase();
     if (isEmail(gEmail)) {
-      if (gStatus === "valid") return { email: gEmail.toLowerCase(), provider: "dropleads_finder", status: "dl_valid", contactable: true };
-      const st = await V.reoon(gEmail);
-      if (REOON_VALID.has(st)) return { email: gEmail.toLowerCase(), provider: "dropleads_finder", status: st, contactable: true };
-      if (!best) best = { email: gEmail.toLowerCase(), provider: "dropleads_finder", status: gStatus || st, contactable: false };
+      const v = await V.reoon(gEmail);
+      if (v.safe) return { email: gEmail.toLowerCase(), provider: "dropleads_finder", status: v.status, contactable: true };
+      if (!best) best = { email: gEmail.toLowerCase(), provider: "dropleads_finder", status: v.status, contactable: false };
     }
   }
 
