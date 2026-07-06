@@ -37,11 +37,25 @@ export async function pushColdToPlusvibe(supabase, { limit = 2000, env = process
     .eq("is_contactable", true).eq("campaign_status", "new")
     .not("email", "is", null).limit(limit);
   if (error) throw new Error(`select prospects: ${error.message}`);
-  if (!rows?.length) return { selected: 0, pushed: 0, marked: 0 };
+  if (!rows?.length) return { selected: 0, pushed: 0, skippedFormat: 0, pushErrors: 0 };
 
-  let pushed = 0, marked = 0;
-  for (let i = 0; i < rows.length; i += CHUNK) {
-    const chunk = rows.slice(i, i + CHUNK);
+  // Plusvibe's own accepted-email pattern. It rejects the WHOLE batch (400) if any lead
+  // fails this (e.g. plus-addressed emails like michael+toptal@… ), so we pre-filter and
+  // park the unsendable ones instead of letting one bad address block a chunk of 100.
+  const PV_EMAIL = /^[a-z0-9]([a-z0-9._-]*[a-z0-9])?@[a-z0-9]([a-z0-9.-]*[a-z0-9])?\.[a-z]{1,}$/i;
+  const sendable = rows.filter((r) => PV_EMAIL.test(r.email || ""));
+  const badFormat = rows.filter((r) => !PV_EMAIL.test(r.email || ""));
+
+  const nowIso = () => new Date().toISOString();
+  if (badFormat.length) {
+    await supabase.from("whogoes_prospects")
+      .update({ campaign_status: "skipped_format", updated_at: nowIso() })
+      .in("id", badFormat.map((r) => r.id));
+  }
+
+  let pushed = 0, pushErrors = 0;
+  for (let i = 0; i < sendable.length; i += CHUNK) {
+    const chunk = sendable.slice(i, i + CHUNK);
     const leads = chunk.map((r) => ({
       email: r.email,
       first_name: r.first_name || "",
@@ -50,21 +64,25 @@ export async function pushColdToPlusvibe(supabase, { limit = 2000, env = process
       company_website: r.company_domain || "",
       custom_variables: { title: r.title || "", industry: r.industry || "" },
     }));
-    const res = await pvPost("/lead/add", apiKey, { workspace_id, campaign_id, skip_if_in_workspace: true, leads });
-    if (!res.ok) throw new Error(`plusvibe /lead/add ${res.status}: ${JSON.stringify(res.json).slice(0, 300)}`);
-    pushed += leads.length;
-
     const ids = chunk.map((r) => r.id);
-    const { error: upErr } = await supabase.from("whogoes_prospects")
-      .update({ campaign_status: "sent", sent_at: new Date().toISOString(), instantly_campaign_id: campaign_id, updated_at: new Date().toISOString() })
-      .in("id", ids);
-    if (upErr) throw new Error(`mark sent: ${upErr.message}`);
-    marked += ids.length;
+    const res = await pvPost("/lead/add", apiKey, { workspace_id, campaign_id, skip_if_in_workspace: true, leads });
+    if (res.ok) {
+      await supabase.from("whogoes_prospects")
+        .update({ campaign_status: "sent", sent_at: nowIso(), instantly_campaign_id: campaign_id, updated_at: nowIso() })
+        .in("id", ids);
+      pushed += leads.length;
+    } else {
+      // one bad chunk must never block the rest — park it and keep going
+      console.error(`plusvibe /lead/add ${res.status}: ${JSON.stringify(res.json).slice(0, 300)}`);
+      await supabase.from("whogoes_prospects")
+        .update({ campaign_status: "push_error", updated_at: nowIso() })
+        .in("id", ids);
+      pushErrors += leads.length;
+    }
   }
 
-  if (launch) {
-    // reactivate so newly added leads start sending (best-effort)
+  if (launch && pushed > 0) {
     await pvPost("/campaign/launch", apiKey, { workspace_id, campaign_id }).catch(() => {});
   }
-  return { selected: rows.length, pushed, marked };
+  return { selected: rows.length, pushed, skippedFormat: badFormat.length, pushErrors };
 }
