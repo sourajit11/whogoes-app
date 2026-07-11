@@ -59,7 +59,7 @@ export const mdxComponents: MDXComponents = {
   ),
   pre: (props) => (
     <pre
-      className="rounded-lg bg-zinc-900 dark:bg-zinc-800 p-4 overflow-x-auto text-sm text-zinc-100 mb-4"
+      className="rounded-lg bg-zinc-900 dark:bg-zinc-800 p-4 overflow-x-auto text-sm text-zinc-100 mb-4 [&_code]:bg-transparent [&_code]:p-0 [&_code]:text-inherit"
       {...props}
     />
   ),
