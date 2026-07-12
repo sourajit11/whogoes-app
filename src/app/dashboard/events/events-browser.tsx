@@ -98,8 +98,15 @@ export default function EventsBrowser({
       );
     }
 
-    // Sort: 1) Most contacts (highest first), 2) Nearest date to today
+    // Sort: upcoming events first (they're what a prospecting buyer can still act
+    // on — the old contacts-only sort filled the first screen with "Completed"
+    // events and read as stale data), then past events by size.
     result = [...result].sort((a, b) => {
+      const aUpcoming = a.event_start_date && new Date(a.event_start_date).getTime() >= now ? 1 : 0;
+      const bUpcoming = b.event_start_date && new Date(b.event_start_date).getTime() >= now ? 1 : 0;
+      if (aUpcoming !== bUpcoming) return bUpcoming - aUpcoming;
+      // Within each group: biggest list first so near-empty just-added events
+      // don't lead; ties go to the event nearest to today.
       if (a.total_contacts !== b.total_contacts)
         return b.total_contacts - a.total_contacts;
       const dateA = a.event_start_date
@@ -357,21 +364,23 @@ function EventCard({
         </div>
       </div>
 
-      {/* Meta */}
+      {/* Meta — the year lives in the event name and the date line, so it isn't
+          repeated here; industry is the main scanning axis for buyers. */}
       <div className="mt-3 space-y-1 text-xs text-zinc-400">
-        <div className="flex items-center gap-2">
-          <span className="font-medium text-zinc-500 dark:text-zinc-400">
-            {event.event_year}
-          </span>
-          {event.event_region && (
-            <>
-              <span>·</span>
+        {(event.event_region || event.event_industry) && (
+          <div className="flex flex-wrap items-center gap-1.5">
+            {event.event_industry && (
+              <span className="rounded bg-emerald-50 px-1.5 py-0.5 font-medium text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400">
+                {event.event_industry}
+              </span>
+            )}
+            {event.event_region && (
               <span className="rounded bg-zinc-100 px-1.5 py-0.5 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
                 {event.event_region}
               </span>
-            </>
-          )}
-        </div>
+            )}
+          </div>
+        )}
         {event.event_start_date && (
           <p className="flex items-center gap-1.5">
             <svg className="h-3.5 w-3.5 shrink-0 text-zinc-300 dark:text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

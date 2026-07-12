@@ -5,9 +5,12 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { productHref } from "@/lib/site";
+import { cleanDisplayName } from "@/lib/display-name";
 import BuyCreditsModal from "@/app/dashboard/components/buy-credits-modal";
+import UnlockConfirmModal from "@/app/dashboard/components/unlock-confirm-modal";
 import EventFilters, {
   FilteredPreview,
+  EmailLockPill,
   type EventFiltersValue,
   type Facets,
   cleanFilters,
@@ -83,6 +86,10 @@ export default function EventDetail({
   const [unlocking, setUnlocking] = useState(false);
   const [unlockProgress, setUnlockProgress] = useState(0);
   const [unlockTarget, setUnlockTarget] = useState(0);
+  // Non-null while the confirmation modal is open; holds the unlock options the
+  // user is about to confirm (so both the slider CTA and the ignore-filters escape
+  // hatch go through the same confirmation).
+  const [confirmUnlock, setConfirmUnlock] = useState<{ ignoreFilters?: boolean } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [credits, setCredits] = useState(initialCredits);
@@ -90,15 +97,25 @@ export default function EventDetail({
   const [unlockStatus, setUnlockStatus] = useState<EventUnlockStatus | null>(
     initialUnlockStatus
   );
-  // ICP filters (pre-unlock). matchedCount is the live count from get_event_filter_facets.
+  // ICP filters (pre-unlock). matchedCount/ownedMatched are live counts from
+  // get_event_filter_facets: how many contacts match, and how many of those the
+  // user already unlocked. Both are null while a recount is in flight.
   const [activeFilters, setActiveFilters] = useState<EventFiltersValue>({});
   const [matchedCount, setMatchedCount] = useState<number | null>(null);
+  const [ownedMatched, setOwnedMatched] = useState<number | null>(null);
+  // Bumped after each unlock so the filter bar refetches matched/owned counts.
+  const [facetsRefreshKey, setFacetsRefreshKey] = useState(0);
   const filterActive = isFilterActive(activeFilters);
 
-  // When filters are active, the slider caps at the matched count, not the whole event.
+  // When filters are active, the slider caps at the matches the user does NOT own
+  // yet (matched minus already-unlocked), never the raw matched count — otherwise a
+  // second unlock with the same filter over-promises (e.g. "201 match" when only
+  // 181 are still unlockable).
   const baseAvailable = unlockStatus?.remaining_count ?? event.total_contacts;
   const effectiveAvailable =
-    filterActive && matchedCount !== null ? Math.min(matchedCount, baseAvailable) : baseAvailable;
+    filterActive && matchedCount !== null
+      ? Math.max(0, matchedCount - (ownedMatched ?? 0))
+      : baseAvailable;
   // Slider value: intervals of 10, with remainder for the last step
   const maxSlider = Math.min(credits, effectiveAvailable);
 
@@ -121,7 +138,14 @@ export default function EventDetail({
   }, [sliderSteps]);
 
   const [sliderIndex, setSliderIndex] = useState(getDefaultIndex);
-  const sliderValue = sliderSteps[sliderIndex] ?? maxSlider;
+  // Exact-count override typed into the number input; the slider only offers
+  // steps of 10, so "unlock exactly 87" needs a typed value. Cleared when the
+  // slider is moved.
+  const [customCount, setCustomCount] = useState<number | null>(null);
+  const sliderValue =
+    customCount !== null
+      ? Math.min(Math.max(1, customCount), maxSlider)
+      : (sliderSteps[sliderIndex] ?? maxSlider);
 
   const router = useRouter();
   const supabase = createClient();
@@ -226,12 +250,21 @@ export default function EventDetail({
     let remaining = target;
     let totalUnlocked = 0;
     let latestBalance = credits;
+    let emailsIncluded = 0;
+    // All chunks of this unlock share one unlock-history batch row: the first RPC
+    // call creates it and returns its id, later chunks pass it back.
+    let historyBatchId: string | null = null;
 
     while (remaining > 0) {
       const batchCount = Math.min(UNLOCK_BATCH_SIZE, remaining);
       const { data, error: rpcError } = await supabase.rpc(
         "unlock_event_contacts",
-        { p_event_id: event.event_id, p_count: batchCount, p_filters: payloadFilters }
+        {
+          p_event_id: event.event_id,
+          p_count: batchCount,
+          p_filters: payloadFilters,
+          p_batch_id: historyBatchId,
+        }
       );
 
       if (rpcError) {
@@ -257,6 +290,8 @@ export default function EventDetail({
       const justUnlocked = result.contacts_unlocked ?? 0;
       totalUnlocked += justUnlocked;
       latestBalance = result.new_balance ?? latestBalance;
+      emailsIncluded += result.emails_included ?? 0;
+      historyBatchId = result.batch_id ?? historyBatchId;
       remaining -= batchCount;
       setUnlockProgress(totalUnlocked);
 
@@ -271,16 +306,19 @@ export default function EventDetail({
     setCredits(latestBalance);
     window.dispatchEvent(new CustomEvent("credits-updated"));
     setSuccessMsg(
-      `${totalUnlocked} contacts unlocked! ${latestBalance} credits remaining.`
+      emailsIncluded > 0
+        ? `${totalUnlocked} contacts unlocked with verified emails included (full list). ${latestBalance} credits remaining.`
+        : `${totalUnlocked} contacts unlocked! ${latestBalance} credits remaining.`
     );
 
-    // Refresh unlock status
+    // Refresh unlock status + the filter bar's matched/owned counts
     const { data: newStatus } = await supabase.rpc("get_event_unlock_status", {
       p_event_id: event.event_id,
     });
     if (newStatus) {
       setUnlockStatus(newStatus as EventUnlockStatus);
     }
+    setFacetsRefreshKey((k) => k + 1);
 
     setUnlocking(false);
   }
@@ -430,9 +468,11 @@ export default function EventDetail({
         totalContacts={totalContacts}
         defaultBreakdownOpen
         initialFacets={initialFacets}
-        onChange={(f, matched) => {
+        refreshKey={facetsRefreshKey}
+        onChange={(f, matched, _withEmail, owned) => {
           setActiveFilters(f);
           setMatchedCount(matched);
+          setOwnedMatched(owned);
         }}
       />
 
@@ -478,20 +518,22 @@ export default function EventDetail({
             {!filterActive && (
             <table className="w-full text-left text-sm">
               <thead>
+                {/* Column order puts the payoff (Company, Email) before the fold —
+                    the old layout hid Email as the 13th column behind a scroll. */}
                 <tr className="border-b border-zinc-100 bg-zinc-50/80 dark:border-zinc-800 dark:bg-zinc-900/50">
                   <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Name</th>
                   <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Title</th>
-                  <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Role</th>
-                  <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">LinkedIn Profile</th>
                   <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Company</th>
+                  <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Role</th>
+                  <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Email</th>
+                  <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">LinkedIn Profile</th>
                   <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Source</th>
                   <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Post Date</th>
+                  <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Industry</th>
+                  <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Size</th>
                   <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Location</th>
                   <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Company Domain</th>
                   <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Company LinkedIn</th>
-                  <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Industry</th>
-                  <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Size</th>
-                  <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Email</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/50">
@@ -528,7 +570,7 @@ export default function EventDetail({
 
             {/* Unlock Section */}
             {showBlurredRows && (
-              <div className="border-t border-zinc-100 bg-zinc-50/80 px-6 py-8 dark:border-zinc-800 dark:bg-zinc-900/50">
+              <div id="unlock-panel" className="border-t border-zinc-100 bg-zinc-50/80 px-6 py-8 dark:border-zinc-800 dark:bg-zinc-900/50">
                 {/* Success message */}
                 {successMsg && (
                   <div className="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800 dark:bg-emerald-900/20">
@@ -540,7 +582,13 @@ export default function EventDetail({
                     </div>
                     <div className="mt-3 flex gap-3">
                       <Link
-                        href={productHref(`/dashboard/my-events?event=${event.event_id}`)}
+                        href={productHref(
+                          `/dashboard/my-events?event=${event.event_id}${
+                            filterActive
+                              ? `&f=${encodeURIComponent(JSON.stringify(cleanFilters(activeFilters)))}`
+                              : ""
+                          }`
+                        )}
                         className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
                       >
                         View Unlocked Contacts
@@ -564,7 +612,7 @@ export default function EventDetail({
                       <strong className="text-zinc-900 dark:text-zinc-100">
                         {remainingCount.toLocaleString()}
                       </strong>{" "}
-                      more contacts available
+                      contacts available to unlock
                     </p>
                     <p className="mt-1 text-sm text-zinc-400">
                       Sign up free to unlock contacts. You get 20 credits on us.
@@ -586,18 +634,32 @@ export default function EventDetail({
                   <div className="mx-auto max-w-lg">
                     <p className="text-center text-sm text-zinc-500">
                       {filterActive && matchedCount !== null ? (
-                        <>
-                          <strong className="text-emerald-700 dark:text-emerald-400">
-                            {effectiveAvailable.toLocaleString()}
-                          </strong>{" "}
-                          contacts match your filters
-                        </>
+                        (ownedMatched ?? 0) > 0 ? (
+                          <>
+                            <strong className="text-zinc-900 dark:text-zinc-100">
+                              {matchedCount.toLocaleString()}
+                            </strong>{" "}
+                            match your filters &middot; {(ownedMatched ?? 0).toLocaleString()} already
+                            yours &middot;{" "}
+                            <strong className="text-emerald-700 dark:text-emerald-400">
+                              {effectiveAvailable.toLocaleString()}
+                            </strong>{" "}
+                            new to unlock
+                          </>
+                        ) : (
+                          <>
+                            <strong className="text-emerald-700 dark:text-emerald-400">
+                              {effectiveAvailable.toLocaleString()}
+                            </strong>{" "}
+                            contacts match your filters
+                          </>
+                        )
                       ) : (
                         <>
                           <strong className="text-zinc-900 dark:text-zinc-100">
                             {remainingCount.toLocaleString()}
                           </strong>{" "}
-                          more contacts available
+                          {unlockedCount > 0 ? "more contacts available" : "contacts available to unlock"}
                         </>
                       )}
                     </p>
@@ -613,15 +675,30 @@ export default function EventDetail({
                           type="range"
                           min={0}
                           max={sliderSteps.length - 1}
-                          value={sliderIndex}
-                          onChange={(e) => setSliderIndex(Number(e.target.value))}
+                          value={customCount !== null ? sliderSteps.findLastIndex((s) => s <= sliderValue) : sliderIndex}
+                          onChange={(e) => {
+                            setCustomCount(null);
+                            setSliderIndex(Number(e.target.value));
+                          }}
                           className="h-2 flex-1 cursor-pointer appearance-none rounded-full bg-zinc-200 accent-emerald-600 dark:bg-zinc-700"
                         />
                         <span className="text-xs text-zinc-400">{maxSlider}</span>
                       </div>
-                      <p className="mt-1 text-center text-lg font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
-                        {sliderValue} contact{sliderValue !== 1 ? "s" : ""}
-                      </p>
+                      <div className="mt-1 flex items-center justify-center gap-2">
+                        <input
+                          type="number"
+                          min={1}
+                          max={maxSlider}
+                          value={sliderValue}
+                          onChange={(e) => {
+                            const v = parseInt(e.target.value, 10);
+                            setCustomCount(Number.isNaN(v) ? 1 : v);
+                          }}
+                          className="w-24 rounded-lg border border-zinc-200 bg-white px-2 py-1 text-center text-lg font-bold tabular-nums text-zinc-900 focus:border-emerald-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                          aria-label="Exact number of contacts to unlock"
+                        />
+                        <span className="text-sm text-zinc-500">contact{sliderValue !== 1 ? "s" : ""}</span>
+                      </div>
                     </div>
 
                     {/* Cost breakdown */}
@@ -650,11 +727,37 @@ export default function EventDetail({
                           {costAfterUnlock} remaining
                         </span>
                       </div>
+                      {/* Two-path pricing stated up front: taking the whole list
+                          (unfiltered, every remaining contact) includes verified
+                          emails; any partial or filtered unlock buys identity and
+                          emails cost +1 credit when revealed. */}
+                      {!filterActive && sliderValue >= remainingCount && remainingCount > 0 ? (
+                        <div className="mt-1 flex items-center justify-between border-t border-zinc-100 pt-1 text-xs dark:border-zinc-700">
+                          <span className="font-medium text-emerald-600 dark:text-emerald-400">Verified emails</span>
+                          <span className="font-semibold text-emerald-600 dark:text-emerald-400">Included (full list)</span>
+                        </div>
+                      ) : (
+                        <div className="mt-1 flex items-center justify-between border-t border-zinc-100 pt-1 text-xs dark:border-zinc-700">
+                          <span className="text-zinc-400">Email reveal (optional, later)</span>
+                          <span className="text-zinc-500">+1 credit per contact</span>
+                        </div>
+                      )}
                     </div>
 
-                    {/* Unlock button */}
+                    {/* Nudge toward the full-list deal when it is affordable */}
+                    {!filterActive && sliderValue < remainingCount && remainingCount <= credits && (
+                      <button
+                        onClick={() => setCustomCount(remainingCount)}
+                        className="mt-2 w-full cursor-pointer rounded-lg border border-emerald-200 bg-emerald-50/60 px-3 py-2 text-center text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300 dark:hover:bg-emerald-900/40"
+                      >
+                        Take the whole list ({remainingCount.toLocaleString()} contacts) and every verified email is included free
+                      </button>
+                    )}
+
+                    {/* Unlock button — opens a confirmation with the exact terms
+                        (event, filters, cost) before any credits are spent */}
                     <button
-                      onClick={() => handleUnlock()}
+                      onClick={() => setConfirmUnlock({})}
                       disabled={unlocking || sliderValue <= 0}
                       className="mt-4 w-full cursor-pointer rounded-lg bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-emerald-500 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                     >
@@ -667,20 +770,25 @@ export default function EventDetail({
                           : `Unlock ${sliderValue} Contact${sliderValue !== 1 ? "s" : ""}`}
                     </button>
 
-                    {/* Escape hatch: unlock the whole event, ignoring active filters */}
+                    {/* Escape hatch: unlock the whole event, ignoring active filters.
+                        Deliberately low-key (text link, same as My Events) — a full
+                        button next to the primary CTA invited mis-clicks that spend
+                        the entire balance. */}
                     {filterActive && (
                       <button
-                        onClick={() => handleUnlock({ ignoreFilters: true })}
+                        onClick={() => setConfirmUnlock({ ignoreFilters: true })}
                         disabled={unlocking}
-                        className="mt-2 w-full cursor-pointer rounded-lg border border-zinc-200 px-6 py-2 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                        className="mt-2 w-full cursor-pointer text-center text-xs font-medium text-zinc-500 underline-offset-2 transition-colors hover:text-zinc-700 hover:underline disabled:opacity-50 dark:text-zinc-400 dark:hover:text-zinc-200"
                       >
-                        Unlock all {Math.min(credits, baseAvailable).toLocaleString()} (ignore filters)
+                        Unlock all {Math.min(credits, baseAvailable).toLocaleString()} remaining (ignore filters)
+                        {credits >= baseAvailable ? ", verified emails included" : ""}
                       </button>
                     )}
 
                     <p className="mt-2 text-center text-xs text-zinc-400">
                       1 credit unlocks each contact&apos;s name, title, company, LinkedIn and post.
-                      Reveal verified emails later for 1 credit each. Best contacts first.
+                      Take the whole list and verified emails are included. Filter to your ICP and
+                      reveal emails later for 1 credit each. Best contacts first.
                     </p>
 
                     {error && (
@@ -698,7 +806,7 @@ export default function EventDetail({
                       <strong className="text-zinc-900 dark:text-zinc-100">
                         {remainingCount.toLocaleString()}
                       </strong>{" "}
-                      more contacts available
+                      {unlockedCount > 0 ? "more contacts available" : "contacts available to unlock"}
                     </p>
                     <p className="mt-1 text-sm text-zinc-400">
                       You&apos;ve used all your free credits. Get more to keep unlocking.
@@ -720,6 +828,34 @@ export default function EventDetail({
         )}
       </div>
 
+      {/* Unlock confirmation — shows event, filters, cost and email terms before
+          spending credits, so a stray click can never buy contacts by mistake. */}
+      {confirmUnlock !== null && (() => {
+        const usesFilters = !confirmUnlock.ignoreFilters && filterActive;
+        const confirmCount = confirmUnlock.ignoreFilters
+          ? Math.min(credits, baseAvailable)
+          : sliderValue;
+        return (
+          <UnlockConfirmModal
+            eventName={
+              event.event_name.includes(String(event.event_year))
+                ? event.event_name
+                : `${event.event_name} ${event.event_year}`
+            }
+            count={confirmCount}
+            filters={usesFilters ? cleanFilters(activeFilters) : {}}
+            credits={credits}
+            emailsIncluded={!usesFilters && remainingCount > 0 && confirmCount >= remainingCount}
+            onConfirm={() => {
+              const opts = confirmUnlock;
+              setConfirmUnlock(null);
+              handleUnlock(opts);
+            }}
+            onCancel={() => setConfirmUnlock(null)}
+          />
+        );
+      })()}
+
       {/* Buy Credits Modal — embedded so it works on both dashboard and public pages */}
       {showBuyCredits && userEmail && (
         <BuyCreditsModal
@@ -736,13 +872,25 @@ function ContactRow({ contact: c }: { contact: ContactPreview }) {
   return (
     <tr className="transition-colors hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30">
       <td className="whitespace-nowrap px-3 py-3 font-medium text-zinc-900 dark:text-zinc-100">
-        {c.full_name ?? "\u2014"}
+        {cleanDisplayName(c.full_name) ?? "\u2014"}
       </td>
       <td className="max-w-48 truncate px-3 py-3 text-zinc-500">
         {c.current_title ?? "\u2014"}
       </td>
+      <td className="whitespace-nowrap px-3 py-3 text-zinc-500">
+        {c.company_name ?? "\u2014"}
+      </td>
       <td className="whitespace-nowrap px-3 py-3">
         <RoleBadge role={c.event_role} isSpeaker={!!c.is_speaker} />
+      </td>
+      {/* Preview never prints the raw address: masked domain proves a verified
+          work email exists, the pill walks the user to the unlock panel. */}
+      <td className="whitespace-nowrap px-3 py-3">
+        {c.email ? (
+          <EmailLockPill email={c.email} />
+        ) : (
+          <span className="text-zinc-300 dark:text-zinc-600">{"\u2014"}</span>
+        )}
       </td>
       <td className="whitespace-nowrap px-3 py-3">
         {c.contact_linkedin_url &&
@@ -760,9 +908,6 @@ function ContactRow({ contact: c }: { contact: ContactPreview }) {
           <span className="text-zinc-300 dark:text-zinc-600">{"\u2014"}</span>
         )}
       </td>
-      <td className="whitespace-nowrap px-3 py-3 text-zinc-500">
-        {c.company_name ?? "\u2014"}
-      </td>
       <td className="whitespace-nowrap px-3 py-3">
         {c.post_url ? (
           <a
@@ -779,6 +924,12 @@ function ContactRow({ contact: c }: { contact: ContactPreview }) {
       </td>
       <td className="whitespace-nowrap px-3 py-3 text-zinc-400">
         {formatPostDate(c.post_date)}
+      </td>
+      <td className="whitespace-nowrap px-3 py-3 text-zinc-500">
+        {c.company_industry ?? "\u2014"}
+      </td>
+      <td className="whitespace-nowrap px-3 py-3 text-zinc-400">
+        {c.company_size ?? "\u2014"}
       </td>
       <td className="whitespace-nowrap px-3 py-3 text-zinc-400">
         {[c.city, c.country].filter(Boolean).join(", ") || "\u2014"}
@@ -811,15 +962,6 @@ function ContactRow({ contact: c }: { contact: ContactPreview }) {
         ) : (
           <span className="text-zinc-300 dark:text-zinc-600">{"\u2014"}</span>
         )}
-      </td>
-      <td className="whitespace-nowrap px-3 py-3 text-zinc-500">
-        {c.company_industry ?? "\u2014"}
-      </td>
-      <td className="whitespace-nowrap px-3 py-3 text-zinc-400">
-        {c.company_size ?? "\u2014"}
-      </td>
-      <td className="whitespace-nowrap px-3 py-3 text-zinc-500">
-        {c.email ?? "\u2014"}
       </td>
     </tr>
   );

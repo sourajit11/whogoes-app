@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import EventDetail from "./event-detail";
 import type { Facets } from "./event-filters";
 import type { ContactPreview } from "@/types";
@@ -78,6 +78,12 @@ export default async function EventDetailPage({ params }: Props) {
     credits = creditsRes.data ?? 0;
     unlockStatus = statusRes.data ?? null;
     apiEligible = !!eligibleRes.data;
+
+    // Subscribed users manage this event (and unlock more) from My Events — same
+    // behavior as the Browse Events grid, now also for direct links.
+    if ((unlockStatus as { is_subscribed?: boolean } | null)?.is_subscribed) {
+      redirect(`/dashboard/my-events?event=${id}`);
+    }
 
     if (apiEligible) {
       const [keyCountRes, subRowRes] = await Promise.all([

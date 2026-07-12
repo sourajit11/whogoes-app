@@ -26,6 +26,10 @@ export default function DownloadControls({
 }: DownloadControlsProps) {
   const [downloading, setDownloading] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  // Downloading no longer marks leads as processed by itself — many users export
+  // just to review, or export for a colleague. This opt-in checkbox is the only
+  // path from download to processed.
+  const [markProcessed, setMarkProcessed] = useState(false);
   const supabase = createClient();
 
   if (contacts.length === 0) return null;
@@ -56,21 +60,19 @@ export default function DownloadControls({
     const filename = `${eventName}_${suffix}`;
     exportContactsCSV(toDownload, filename);
 
-    // Mark downloaded contacts
-    const undownloaded = toDownload
-      .filter((c) => !c.is_downloaded)
-      .map((c) => c.contact_id);
-
-    if (undownloaded.length > 0) {
-      await supabase.rpc("mark_contacts_downloaded", {
-        p_event_id: eventId,
-        p_contact_ids: undownloaded,
-      });
+    if (markProcessed) {
+      const unprocessed = toDownload
+        .filter((c) => !c.is_downloaded)
+        .map((c) => c.contact_id);
+      if (unprocessed.length > 0) {
+        await supabase.rpc("set_contacts_processed", {
+          p_event_id: eventId,
+          p_contact_ids: unprocessed,
+          p_processed: true,
+        });
+        onDownloaded?.(unprocessed);
+      }
     }
-
-    // Update parent state instead of router.refresh()
-    const allDownloadedIds = toDownload.map((c) => c.contact_id);
-    onDownloaded?.(allDownloadedIds);
 
     if (mode === "selected") {
       onClearSelection?.();
@@ -173,6 +175,17 @@ export default function DownloadControls({
             >
               Download All ({contacts.length})
             </button>
+            <label className="mt-1 flex w-full cursor-pointer items-start gap-2 border-t border-zinc-100 px-4 py-2.5 text-left text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
+              <input
+                type="checkbox"
+                checked={markProcessed}
+                onChange={(e) => setMarkProcessed(e.target.checked)}
+                className="mt-0.5 h-3.5 w-3.5 cursor-pointer rounded border-zinc-300 text-emerald-600 focus:ring-emerald-500 dark:border-zinc-600"
+              />
+              <span>
+                Also mark the exported leads as processed
+              </span>
+            </label>
           </div>
         </>
       )}

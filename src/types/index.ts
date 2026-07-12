@@ -91,8 +91,12 @@ export interface Contact {
   post_date: string | null;
   source: string | null;
   first_line_personalization: string | null;
+  // "Processed" flag: set by the user (or the opt-in checkbox when downloading a
+  // CSV), never automatically. Column names are historical.
   is_downloaded: boolean;
   downloaded_at: string | null;
+  // Free-text note the user saved on this lead.
+  lead_note?: string | null;
   // Event-role + standardized buckets (added 2026-06-21). event_role is one of
   // attendee | sponsor | exhibitor | organizer. Buckets are the clean classified
   // values; the free-text company_industry/company_size above are the legacy fields.
@@ -119,6 +123,24 @@ export interface UnlockResult {
   new_balance?: number;
   contacts_unlocked?: number;
   current_balance?: number;
+  // Unlock-history batch this call wrote to; chunked unlocks pass it back so all
+  // chunks of one logical unlock share a single batch row.
+  batch_id?: string;
+  // Full-list bonus: true when this unfiltered unlock completed the whole event,
+  // which includes the batch's verified emails at no extra credit.
+  full_list?: boolean;
+  emails_included?: number;
+}
+
+// A persisted unlock: which filters were active, when, and how many contacts it
+// delivered. Rows older than the feature have no batch and show as "earlier unlocks".
+export interface UnlockBatch {
+  id: string;
+  event_id: string;
+  filters: Record<string, unknown>;
+  requested_count: number | null;
+  unlocked_count: number;
+  created_at: string;
 }
 
 export interface EventUnlockStatus {

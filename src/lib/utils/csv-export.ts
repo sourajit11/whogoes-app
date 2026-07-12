@@ -1,5 +1,19 @@
 import type { Contact } from "@/types";
 
+// Collapse newlines/whitespace so every spreadsheet row renders at a uniform
+// height. LinkedIn post content is multi-paragraph; raw newlines inside a quoted
+// CSV cell make Excel/Sheets stretch that row to fit.
+function singleLine(value: string): string {
+  return value.replace(/\s+/g, " ").trim();
+}
+
+// Excel silently parses bare numeric ranges like "1-10" or "11-50" as dates when a
+// CSV is opened directly (1-10 shows up as 01-Oct). Wrapping the value in ="..."
+// forces text; Excel, Google Sheets and Numbers all display it as the plain range.
+function excelSafeRange(value: string): string {
+  return /^\d+\s*-\s*\d+$/.test(value) ? `="${value}"` : value;
+}
+
 export function exportContactsCSV(contacts: Contact[], filename: string) {
   if (contacts.length === 0) return;
 
@@ -22,8 +36,8 @@ export function exportContactsCSV(contacts: Contact[], filename: string) {
     "Company Industry",
     "Company Size",
     "Post Content",
-    "Company Description",
     "Status",
+    "Notes",
   ];
 
   const rows = contacts.map((c) => [
@@ -44,17 +58,19 @@ export function exportContactsCSV(contacts: Contact[], filename: string) {
     c.is_speaker ? "Yes" : "No",
     c.company_linkedin_url ?? "",
     c.company_website ?? "",
+    // Same values the app table shows: the standardized bucket, falling back to
+    // the legacy free-text only when the company hasn't been bucketed yet.
     c.company_industry_bucket ?? c.company_industry ?? "",
-    c.company_size_bucket ?? c.company_size ?? "",
+    excelSafeRange(c.company_size_bucket ?? c.company_size ?? ""),
     c.post_content ?? "",
-    c.company_description ?? "",
     c.is_downloaded ? "Processed" : "New",
+    c.lead_note ?? "",
   ]);
 
   const csvContent = [
     headers.join(","),
     ...rows.map((row) =>
-      row.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(",")
+      row.map((cell) => `"${singleLine(cell).replace(/"/g, '""')}"`).join(",")
     ),
   ].join("\n");
 

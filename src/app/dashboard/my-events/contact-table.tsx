@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { cleanDisplayName } from "@/lib/display-name";
 import type { Contact, SortKey, SortDir } from "@/types";
 
 interface ContactTableProps {
@@ -14,6 +15,10 @@ interface ContactTableProps {
   onToggleAll?: (ids: string[]) => void;
   onRevealEmail?: (contactId: string) => void;
   revealingIds?: Set<string>;
+  // Mark/unmark a lead as processed (timestamped server-side).
+  onToggleProcessed?: (contactId: string, processed: boolean) => void;
+  // Persist a note on a lead; resolves true on success.
+  onSaveNote?: (contactId: string, note: string) => Promise<boolean>;
 }
 
 function formatPostDate(dateStr: string | null): string {
@@ -101,7 +106,7 @@ function RoleBadge({ role, isSpeaker = false }: { role: string | null | undefine
 // (Company Domain / Company LinkedIn / Founded moved into the expand row to cut width.)
 const TOTAL_COLS = 14;
 
-export default function ContactTable({ contacts, startIndex = 0, sortKey, sortDir, onSort, selectedIds, onToggleSelect, onToggleAll, onRevealEmail, revealingIds }: ContactTableProps) {
+export default function ContactTable({ contacts, startIndex = 0, sortKey, sortDir, onSort, selectedIds, onToggleSelect, onToggleAll, onRevealEmail, revealingIds, onToggleProcessed, onSaveNote }: ContactTableProps) {
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const allIds = contacts.map((c) => c.contact_id);
   const allSelected = allIds.length > 0 && selectedIds ? allIds.every((id) => selectedIds.has(id)) : false;
@@ -156,32 +161,37 @@ export default function ContactTable({ contacts, startIndex = 0, sortKey, sortDi
               <th className="w-10 whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                 #
               </th>
-              {/* Status indicator */}
-              <th className="w-8 px-2 py-3" />
+              {/* Processed toggle */}
+              <th
+                className="whitespace-nowrap px-2 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400"
+                title="Click a lead's circle to mark it processed"
+              >
+                Done
+              </th>
+              {/* Column order mirrors the pre-unlock preview tables exactly, so
+                  nothing jumps around after the customer pays. */}
               {/* Name — sortable */}
               <SortableHeader col={SORTABLE_COLUMNS[0]} />
               {/* Title — sortable */}
               <SortableHeader col={SORTABLE_COLUMNS[1]} />
-              {/* Event Role — placed next to Title */}
+              {/* Company — sortable */}
+              <SortableHeader col={SORTABLE_COLUMNS[2]} />
+              {/* Event Role */}
               <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                 Role
               </th>
+              {/* Email — sortable */}
+              <SortableHeader col={SORTABLE_COLUMNS[4]} />
               {/* Person LinkedIn — non-sortable */}
               <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                 Person LinkedIn
               </th>
-              {/* Company — sortable */}
-              <SortableHeader col={SORTABLE_COLUMNS[2]} />
               {/* Source */}
               <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                 Source
               </th>
               {/* Post Date — sortable */}
               <SortableHeader col={SORTABLE_COLUMNS[3]} />
-              {/* Location */}
-              <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                Location
-              </th>
               {/* Industry */}
               <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                 Industry
@@ -190,8 +200,10 @@ export default function ContactTable({ contacts, startIndex = 0, sortKey, sortDi
               <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                 Size
               </th>
-              {/* Email — sortable */}
-              <SortableHeader col={SORTABLE_COLUMNS[4]} />
+              {/* Location */}
+              <th className="whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                Location
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/50">
@@ -206,6 +218,8 @@ export default function ContactTable({ contacts, startIndex = 0, sortKey, sortDi
                 onToggleSelect={() => onToggleSelect?.(contact.contact_id)}
                 onRevealEmail={onRevealEmail}
                 isRevealing={revealingIds?.has(contact.contact_id) ?? false}
+                onToggleProcessed={onToggleProcessed}
+                onSaveNote={onSaveNote}
                 onToggle={() =>
                   setExpandedRow(
                     expandedRow === contact.contact_id
@@ -232,6 +246,8 @@ function TableRow({
   onRevealEmail,
   isRevealing,
   onToggle,
+  onToggleProcessed,
+  onSaveNote,
 }: {
   contact: Contact;
   rowNumber: number;
@@ -242,21 +258,29 @@ function TableRow({
   onRevealEmail?: (contactId: string) => void;
   isRevealing?: boolean;
   onToggle: () => void;
+  onToggleProcessed?: (contactId: string, processed: boolean) => void;
+  onSaveNote?: (contactId: string, note: string) => Promise<boolean>;
 }) {
-  // The expand row now holds the post plus the secondary company details that were
-  // pulled out of the main table (domain / LinkedIn / website / founded / about).
-  const hasExtra = !!(
-    contact.post_content ||
-    contact.company_linkedin_url ||
-    contact.company_website ||
-    contact.company_founded_year
-  );
+  // Every row expands: besides the post and secondary company details, the expand
+  // row is where the lead's note lives.
+  const hasExtra = true;
+  const processedDate = contact.downloaded_at
+    ? new Date(contact.downloaded_at).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    : null;
 
   return (
     <>
       <tr
         onClick={hasExtra ? onToggle : undefined}
-        className={`transition-colors hover:bg-zinc-50/70 dark:hover:bg-zinc-900/30 ${hasExtra ? "cursor-pointer" : ""}`}
+        className={`transition-[background-color,opacity] hover:bg-zinc-50/70 dark:hover:bg-zinc-900/30 ${hasExtra ? "cursor-pointer" : ""} ${
+          // Processed leads fade back so the remaining work stands out; hover
+          // restores full contrast for reading or undoing.
+          contact.is_downloaded ? "opacity-50 hover:opacity-100" : ""
+        }`}
       >
         {/* Checkbox */}
         <td className="px-3 py-3.5" onClick={(e) => e.stopPropagation()}>
@@ -285,20 +309,45 @@ function TableRow({
           </span>
         </td>
 
-        {/* Status dot */}
-        <td className="px-2 py-3.5">
-          {!contact.is_downloaded ? (
-            <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" title="New" />
-          ) : (
-            <span className="inline-block h-2 w-2 rounded-full bg-zinc-300 dark:bg-zinc-600" title="Processed" />
-          )}
+        {/* Processed toggle: click to mark a lead done (timestamped), click again to
+            undo. Hollow circle = new, filled check = processed. */}
+        <td className="px-2 py-3.5" onClick={(e) => e.stopPropagation()}>
+          <button
+            type="button"
+            onClick={() => onToggleProcessed?.(contact.contact_id, !contact.is_downloaded)}
+            title={
+              contact.is_downloaded
+                ? `Processed${processedDate ? ` on ${processedDate}` : ""} — click to mark as new`
+                : "Mark as processed"
+            }
+            className={`flex h-5 w-5 cursor-pointer items-center justify-center rounded-full border transition-colors ${
+              contact.is_downloaded
+                ? "border-emerald-500 bg-emerald-500 text-white hover:border-emerald-400 hover:bg-emerald-400"
+                : "border-zinc-300 bg-white text-transparent hover:border-emerald-400 hover:text-emerald-400 dark:border-zinc-600 dark:bg-zinc-900"
+            }`}
+          >
+            <svg className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          </button>
         </td>
 
-        {/* Name */}
+        {/* Name (+ note indicator when the lead has a saved note) */}
         <td className="whitespace-nowrap px-3 py-3.5">
           <span className="font-medium text-zinc-900 dark:text-zinc-100">
-            {contact.full_name ?? "—"}
+            {cleanDisplayName(contact.full_name) ?? "—"}
           </span>
+          {contact.lead_note && (
+            <svg
+              className="ml-1.5 inline-block h-3.5 w-3.5 align-[-2px] text-amber-500"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+              aria-label="Has a note"
+            >
+              <title>{contact.lead_note}</title>
+              <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h8l6-6V5a2 2 0 00-2-2H4zm8 12v-3a1 1 0 011-1h3l-4 4z" />
+            </svg>
+          )}
         </td>
 
         {/* Title */}
@@ -306,70 +355,14 @@ function TableRow({
           {contact.current_title ?? "—"}
         </td>
 
-        {/* Event Role (+ Speaker chip when this contact spoke), matching the public page */}
-        <td className="whitespace-nowrap px-3 py-3.5">
-          <RoleBadge role={contact.event_role} isSpeaker={!!contact.is_speaker} />
-        </td>
-
-        {/* Person LinkedIn */}
-        <td className="whitespace-nowrap px-3 py-3.5">
-          {contact.contact_linkedin_url &&
-          !contact.contact_linkedin_url.startsWith("placeholder") ? (
-            <a
-              href={contact.contact_linkedin_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="inline-flex text-[#0A66C2] transition-opacity hover:opacity-70"
-              title="Person LinkedIn"
-            >
-              <LinkedInIcon className="h-4 w-4" />
-            </a>
-          ) : (
-            <span className="text-zinc-300 dark:text-zinc-600">—</span>
-          )}
-        </td>
-
         {/* Company */}
         <td className="max-w-36 truncate px-3 py-3.5 text-zinc-500 dark:text-zinc-400">
           {contact.company_name ?? "—"}
         </td>
 
-        {/* Source (View Post link) */}
+        {/* Event Role (+ Speaker chip when this contact spoke), matching the public page */}
         <td className="whitespace-nowrap px-3 py-3.5">
-          {contact.post_url ? (
-            <a
-              href={contact.post_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="text-sm font-medium text-emerald-600 transition-colors hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
-            >
-              View Post
-            </a>
-          ) : (
-            <span className="text-zinc-300 dark:text-zinc-600">—</span>
-          )}
-        </td>
-
-        {/* Post Date */}
-        <td className="whitespace-nowrap px-3 py-3.5 text-zinc-400">
-          {formatPostDate(contact.post_date)}
-        </td>
-
-        {/* Location */}
-        <td className="whitespace-nowrap px-3 py-3.5 text-zinc-400">
-          {[contact.city, contact.country].filter(Boolean).join(", ") || "—"}
-        </td>
-
-        {/* Industry — standardized bucket (falls back to legacy free-text) */}
-        <td className="whitespace-nowrap px-3 py-3.5 text-zinc-500 dark:text-zinc-400">
-          {contact.company_industry_bucket ?? contact.company_industry ?? "—"}
-        </td>
-
-        {/* Size — standardized employee-count bucket (falls back to legacy range) */}
-        <td className="whitespace-nowrap px-3 py-3.5 text-zinc-400">
-          {contact.company_size_bucket ?? contact.company_size ?? "—"}
+          <RoleBadge role={contact.event_role} isSpeaker={!!contact.is_speaker} />
         </td>
 
         {/* Email — revealed, locked (reveal for 1 credit), or none */}
@@ -402,6 +395,62 @@ function TableRow({
           ) : (
             <span className="text-zinc-300 dark:text-zinc-600">—</span>
           )}
+        </td>
+
+        {/* Person LinkedIn */}
+        <td className="whitespace-nowrap px-3 py-3.5">
+          {contact.contact_linkedin_url &&
+          !contact.contact_linkedin_url.startsWith("placeholder") ? (
+            <a
+              href={contact.contact_linkedin_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="inline-flex text-[#0A66C2] transition-opacity hover:opacity-70"
+              title="Person LinkedIn"
+            >
+              <LinkedInIcon className="h-4 w-4" />
+            </a>
+          ) : (
+            <span className="text-zinc-300 dark:text-zinc-600">—</span>
+          )}
+        </td>
+
+        {/* Source (View Post link) */}
+        <td className="whitespace-nowrap px-3 py-3.5">
+          {contact.post_url ? (
+            <a
+              href={contact.post_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="text-sm font-medium text-emerald-600 transition-colors hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
+            >
+              View Post
+            </a>
+          ) : (
+            <span className="text-zinc-300 dark:text-zinc-600">—</span>
+          )}
+        </td>
+
+        {/* Post Date */}
+        <td className="whitespace-nowrap px-3 py-3.5 text-zinc-400">
+          {formatPostDate(contact.post_date)}
+        </td>
+
+        {/* Industry — standardized bucket (falls back to legacy free-text) */}
+        <td className="whitespace-nowrap px-3 py-3.5 text-zinc-500 dark:text-zinc-400">
+          {contact.company_industry_bucket ?? contact.company_industry ?? "—"}
+        </td>
+
+        {/* Size — standardized employee-count bucket (falls back to legacy range) */}
+        <td className="whitespace-nowrap px-3 py-3.5 text-zinc-400">
+          {contact.company_size_bucket ?? contact.company_size ?? "—"}
+        </td>
+
+        {/* Location */}
+        <td className="whitespace-nowrap px-3 py-3.5 text-zinc-400">
+          {[contact.city, contact.country].filter(Boolean).join(", ") || "—"}
         </td>
       </tr>
 
@@ -445,8 +494,14 @@ function TableRow({
                     <span className="text-zinc-400">—</span>
                   )}
                 </DetailField>
-                <DetailField label="Founded">
-                  {contact.company_founded_year ?? <span className="text-zinc-400">—</span>}
+                <DetailField label="Status">
+                  {contact.is_downloaded ? (
+                    <span className="text-emerald-600 dark:text-emerald-400">
+                      Processed{processedDate ? ` on ${processedDate}` : ""}
+                    </span>
+                  ) : (
+                    <span>New</span>
+                  )}
                 </DetailField>
               </div>
 
@@ -457,6 +512,14 @@ function TableRow({
                     {contact.post_content}
                   </p>
                 </div>
+              )}
+
+              {onSaveNote && (
+                <NotesEditor
+                  contactId={contact.contact_id}
+                  initialNote={contact.lead_note ?? ""}
+                  onSave={onSaveNote}
+                />
               )}
             </div>
           </td>
@@ -479,6 +542,64 @@ function DetailField({
         {label}
       </p>
       <div className="mt-0.5 text-zinc-700 dark:text-zinc-300">{children}</div>
+    </div>
+  );
+}
+
+// Per-lead note. Saves on the button (not on blur) so an accidental click outside
+// never overwrites a note; Saved/error feedback is inline.
+function NotesEditor({
+  contactId,
+  initialNote,
+  onSave,
+}: {
+  contactId: string;
+  initialNote: string;
+  onSave: (contactId: string, note: string) => Promise<boolean>;
+}) {
+  const [note, setNote] = useState(initialNote);
+  const [saving, setSaving] = useState(false);
+  const [feedback, setFeedback] = useState<"saved" | "error" | null>(null);
+  const dirty = note.trim() !== initialNote.trim();
+
+  async function handleSave() {
+    setSaving(true);
+    setFeedback(null);
+    const ok = await onSave(contactId, note);
+    setSaving(false);
+    setFeedback(ok ? "saved" : "error");
+    setTimeout(() => setFeedback(null), 3000);
+  }
+
+  return (
+    <div onClick={(e) => e.stopPropagation()}>
+      <SectionLabel>Notes</SectionLabel>
+      <textarea
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
+        maxLength={2000}
+        rows={2}
+        placeholder="Add a note about this lead... (e.g. messaged on LinkedIn, replied, meeting booked)"
+        className="mt-2 w-full max-w-2xl rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-800 placeholder-zinc-400 focus:border-emerald-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
+      />
+      <div className="mt-1.5 flex items-center gap-3">
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={saving || !dirty}
+          className="cursor-pointer rounded-md bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+        >
+          {saving ? "Saving..." : "Save note"}
+        </button>
+        {feedback === "saved" && (
+          <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">Saved</span>
+        )}
+        {feedback === "error" && (
+          <span className="text-xs font-medium text-red-600 dark:text-red-400">
+            Could not save, try again
+          </span>
+        )}
+      </div>
     </div>
   );
 }

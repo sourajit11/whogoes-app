@@ -220,8 +220,24 @@ export default function BuyCreditsModal({ userEmail, onClose }: BuyCreditsModalP
             <div className="mb-6 text-center">
               <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Buy Credits</h2>
               <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                1 credit = 1 contact unlock. Credits never expire.
+                1 credit = 1 contact. Credits never expire.
               </p>
+            </div>
+
+            {/* Two ways to spend credits, stated before the packages */}
+            <div className="mb-5 grid gap-2 sm:grid-cols-2">
+              <div className="rounded-lg border border-emerald-200 bg-emerald-50/50 px-3.5 py-2.5 text-left dark:border-emerald-800 dark:bg-emerald-900/15">
+                <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">Take the whole list</p>
+                <p className="mt-0.5 text-xs text-zinc-600 dark:text-zinc-400">
+                  1 credit per contact and every verified email is included free.
+                </p>
+              </div>
+              <div className="rounded-lg border border-zinc-200 bg-zinc-50/60 px-3.5 py-2.5 text-left dark:border-zinc-700 dark:bg-zinc-800/40">
+                <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Filter to your ICP</p>
+                <p className="mt-0.5 text-xs text-zinc-600 dark:text-zinc-400">
+                  1 credit unlocks each match, +1 credit per email you choose to reveal.
+                </p>
+              </div>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-3">

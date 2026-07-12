@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { cleanDisplayName } from "@/lib/display-name";
 import { RoleBadge } from "./role-badge";
 
 // Filter shape mirrors the jsonb contract of get_event_filter_facets /
@@ -27,6 +28,9 @@ interface FacetItem {
 export interface Facets {
   matched: number;
   with_email: number;
+  // Matched contacts the calling user already unlocked. Only meaningful on live
+  // authenticated calls; the server-built facets_cache always carries 0.
+  owned?: number;
   by_seniority: FacetItem[];
   by_function: FacetItem[];
   by_role: FacetItem[];
@@ -80,6 +84,24 @@ export function cleanFilters(f: EventFiltersValue): EventFiltersValue {
 
 export function isFilterActive(f: EventFiltersValue): boolean {
   return Object.keys(cleanFilters(f)).length > 0;
+}
+
+// Human-readable chips for a stored filter jsonb (unlock history). Returns []
+// for an unfiltered unlock.
+export function describeFilters(f: EventFiltersValue): string[] {
+  const cleaned = cleanFilters(f);
+  const chips: string[] = [];
+  cleaned.seniority?.forEach((k) => chips.push(label(SENIORITY_LABELS, k)));
+  cleaned.function?.forEach((k) => chips.push(k));
+  cleaned.industry?.forEach((k) => chips.push(k));
+  cleaned.size?.forEach((k) => chips.push(`${k} employees`));
+  cleaned.country?.forEach((k) => chips.push(k));
+  cleaned.role?.forEach((k) => chips.push(label(ROLE_LABELS, k)));
+  if (cleaned.speaker) chips.push("Speakers only");
+  if (cleaned.title_keyword) chips.push(`Title: "${cleaned.title_keyword}"`);
+  if (cleaned.company_include) chips.push(`Company: "${cleaned.company_include}"`);
+  if (cleaned.company_exclude) chips.push(`Not company: "${cleaned.company_exclude}"`);
+  return chips;
 }
 
 function MultiSelect({
@@ -172,10 +194,18 @@ export default function EventFilters({
   onChange,
   defaultBreakdownOpen = false,
   initialFacets = null,
+  externalFilters = null,
+  externalKey = 0,
+  refreshKey = 0,
 }: {
   eventId: string;
   totalContacts: number;
-  onChange: (filters: EventFiltersValue, matched: number | null, withEmail: number | null) => void;
+  onChange: (
+    filters: EventFiltersValue,
+    matched: number | null,
+    withEmail: number | null,
+    owned: number | null
+  ) => void;
   // Pre-unlock event page opens the composition breakdown by default (trust signal);
   // My Events leaves it collapsed since the table itself is the source of truth.
   defaultBreakdownOpen?: boolean;
@@ -183,6 +213,13 @@ export default function EventFilters({
   // renders instantly with no RPC on mount; the live RPC only runs once a filter is
   // applied. Absent (e.g. admin/My Events) falls back to fetching on mount.
   initialFacets?: Facets | null;
+  // Programmatic filter application (unlock-history "apply these filters"). Parent
+  // bumps externalKey with each apply; the filters replace the current selection.
+  externalFilters?: EventFiltersValue | null;
+  externalKey?: number;
+  // Bumped by the parent after an unlock so the live matched/owned counts refetch
+  // (an unlock changes `owned` without any filter change).
+  refreshKey?: number;
 }) {
   const supabase = createClient();
   const [filters, setFilters] = useState<EventFiltersValue>({});
@@ -200,7 +237,9 @@ export default function EventFilters({
   // available; otherwise fetched once (the slow live path, kept for non-cached callers).
   useEffect(() => {
     if (initialFacets) {
-      onChange({}, initialFacets.matched, initialFacets.with_email);
+      // Cache is built by the service role, so its `owned` is always 0 — pass null
+      // and let the parent fall back to its live unlock status for the owned count.
+      onChange({}, initialFacets.matched, initialFacets.with_email, null);
       return;
     }
     let cancelled = false;
@@ -218,13 +257,51 @@ export default function EventFilters({
       setBase(data as Facets);
       setLive(data as Facets);
       setLoading(false);
-      onChange({}, (data as Facets).matched, (data as Facets).with_email);
+      onChange({}, (data as Facets).matched, (data as Facets).with_email, (data as Facets).owned ?? null);
     })();
     return () => {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventId]);
+
+  // Programmatic filter application from the unlock-history panel.
+  useEffect(() => {
+    if (externalKey > 0) {
+      setFilters(externalFilters ?? {});
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [externalKey]);
+
+  // Filters live in the URL (?f=<json>) so a filtered view survives refresh and
+  // can be shared/bookmarked. replaceState avoids a server round-trip per change.
+  useEffect(() => {
+    try {
+      const raw = new URLSearchParams(window.location.search).get("f");
+      if (raw) {
+        const parsed = JSON.parse(raw) as EventFiltersValue;
+        if (isFilterActive(parsed)) setFilters(cleanFilters(parsed));
+      }
+    } catch {
+      // malformed ?f= param: ignore and start unfiltered
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const cleaned = cleanFilters(filters);
+    const url = new URL(window.location.href);
+    if (Object.keys(cleaned).length === 0) {
+      url.searchParams.delete("f");
+    } else {
+      url.searchParams.set("f", JSON.stringify(cleaned));
+    }
+    window.history.replaceState(null, "", url);
+  }, [filters]);
+
+  // Mobile: the full filter bar (9 controls) would fill the first screen before
+  // any contact is visible, so it collapses behind a "Filters (n)" toggle.
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   // Refetch live counts on filter change (debounced). Empty filters reuse base.
   useEffect(() => {
@@ -233,7 +310,9 @@ export default function EventFilters({
     if (Object.keys(cleaned).length === 0) {
       setRecounting(false);
       setLive(base);
-      onChange({}, base.matched, base.with_email);
+      // base may be the service-role cache whose owned is always 0 — pass null and
+      // let the parent use its live unlock status for the unfiltered owned count.
+      onChange({}, base.matched, base.with_email, null);
       return;
     }
     // Show the loading state immediately (before the debounce + the ~couple-second query)
@@ -242,7 +321,7 @@ export default function EventFilters({
     // Tell the parent the filter is active right away (matched = null = "still counting")
     // so the filtered preview mounts and shows its loading bar instantly, instead of the
     // page sitting on the unfiltered table until the query returns.
-    onChange(cleaned, null, null);
+    onChange(cleaned, null, null, null);
     if (debounce.current) clearTimeout(debounce.current);
     debounce.current = setTimeout(async () => {
       const { data, error } = await supabase.rpc("get_event_filter_facets", {
@@ -254,14 +333,14 @@ export default function EventFilters({
         return;
       }
       setLive(data as Facets);
-      onChange(cleaned, (data as Facets).matched, (data as Facets).with_email);
+      onChange(cleaned, (data as Facets).matched, (data as Facets).with_email, (data as Facets).owned ?? null);
       setRecounting(false);
     }, 300);
     return () => {
       if (debounce.current) clearTimeout(debounce.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters, base]);
+  }, [filters, base, refreshKey]);
 
   const toggle = useCallback((axis: keyof EventFiltersValue, key: string) => {
     setFilters((f) => {
@@ -296,9 +375,35 @@ export default function EventFilters({
 
   if (facetError) return null; // fail quietly: page still works without filters
 
+  const activeAxisCount = Object.keys(cleanFilters(filters)).length;
+
   return (
     <div className="mt-6 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-      <div className="flex flex-wrap items-center gap-2">
+      {/* Mobile-only toggle; on md+ the filter rows are always visible */}
+      <button
+        type="button"
+        onClick={() => setMobileOpen((o) => !o)}
+        className="flex w-full items-center justify-between rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 md:hidden dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+      >
+        <span className="inline-flex items-center gap-2">
+          Filters
+          {activeAxisCount > 0 && (
+            <span className="rounded-full bg-emerald-600 px-1.5 text-xs font-semibold text-white">
+              {activeAxisCount}
+            </span>
+          )}
+        </span>
+        <svg
+          className={`h-4 w-4 text-zinc-400 transition-transform ${mobileOpen ? "rotate-180" : ""}`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      <div className={`${mobileOpen ? "mt-3 flex" : "hidden"} flex-wrap items-center gap-2 md:mt-0 md:flex`}>
         <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Filter:</span>
         <MultiSelect title="Seniority" options={base?.by_seniority ?? []} selected={filters.seniority ?? []} onToggle={(k) => toggle("seniority", k)} labelMap={SENIORITY_LABELS} />
         <MultiSelect title="Function" options={base?.by_function ?? []} selected={filters.function ?? []} onToggle={(k) => toggle("function", k)} />
@@ -317,7 +422,7 @@ export default function EventFilters({
         </label>
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-2">
+      <div className={`${mobileOpen ? "flex" : "hidden"} mt-3 flex-wrap items-center gap-2 md:flex`}>
         <input
           type="text"
           placeholder="Job-title keyword"
@@ -496,6 +601,36 @@ function SkeletonRow() {
   );
 }
 
+// Locked-email treatment shared by every preview table. A pill reads better than
+// grey "Locked" text (looks like data, not a state) and clicking it walks the user
+// to the unlock panel. When we know the email, show only its masked domain: proof
+// that a verified work email exists without giving the address away.
+export function EmailLockPill({ email }: { email?: string | null }) {
+  const domain = email && email.includes("@") ? email.split("@")[1] : null;
+  return (
+    <button
+      type="button"
+      onClick={() =>
+        document
+          .getElementById("unlock-panel")
+          ?.scrollIntoView({ behavior: "smooth", block: "center" })
+      }
+      className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[11px] font-medium text-zinc-500 transition-colors hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:border-emerald-700 dark:hover:bg-emerald-900/20 dark:hover:text-emerald-300"
+      title="Unlock to reveal this verified work email"
+    >
+      <svg className="h-3 w-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+        />
+      </svg>
+      {domain ? <span className="font-mono">&bull;&bull;&bull;@{domain}</span> : "Locked"}
+    </button>
+  );
+}
+
 export function FilteredPreview({
   eventId,
   filters,
@@ -557,7 +692,7 @@ export function FilteredPreview({
       <table className="w-full text-left text-sm">
         <thead>
           <tr className="border-b border-zinc-100 bg-zinc-50/80 dark:border-zinc-800 dark:bg-zinc-900/50">
-            {["Name", "Title", "Role", "LinkedIn Profile", "Company", "Source", "Industry", "Size", "Location", "Email"].map((h) => (
+            {["Name", "Title", "Company", "Role", "Email", "LinkedIn Profile", "Source", "Industry", "Size", "Location"].map((h) => (
               <th key={h} className="whitespace-nowrap px-3 py-2.5 text-xs font-semibold uppercase tracking-wider text-zinc-500">{h}</th>
             ))}
           </tr>
@@ -571,11 +706,13 @@ export function FilteredPreview({
           {!loading && data?.sample && (
             <tr className="bg-emerald-50/40 dark:bg-emerald-900/10">
               <td className="whitespace-nowrap px-3 py-3 font-medium text-zinc-900 dark:text-zinc-100">
-                {data.sample.full_name ?? "—"}
+                {cleanDisplayName(data.sample.full_name) ?? "—"}
                 <span className="ml-1.5 rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">SAMPLE</span>
               </td>
               <td className="max-w-48 truncate px-3 py-3 text-zinc-500">{data.sample.current_title ?? "—"}</td>
+              <td className="whitespace-nowrap px-3 py-3 text-zinc-600 dark:text-zinc-400">{data.sample.company_name ?? "—"}</td>
               <td className="whitespace-nowrap px-3 py-3"><RoleBadge role={data.sample.role} isSpeaker={data.sample.is_speaker} /></td>
+              <td className="whitespace-nowrap px-3 py-3">{data.sample.has_email ? <EmailLockPill /> : <span className="text-zinc-400">—</span>}</td>
               <td className="whitespace-nowrap px-3 py-3">
                 {data.sample.contact_linkedin_url ? (
                   <a
@@ -591,7 +728,6 @@ export function FilteredPreview({
                   "—"
                 )}
               </td>
-              <td className="whitespace-nowrap px-3 py-3 text-zinc-600 dark:text-zinc-400">{data.sample.company_name ?? "—"}</td>
               <td className="whitespace-nowrap px-3 py-3">
                 {data.sample.post_url ? (
                   <a
@@ -609,21 +745,20 @@ export function FilteredPreview({
               <td className="whitespace-nowrap px-3 py-3 text-zinc-500">{data.sample.company_industry ?? "—"}</td>
               <td className="whitespace-nowrap px-3 py-3 text-zinc-500">{data.sample.company_size ?? "—"}</td>
               <td className="whitespace-nowrap px-3 py-3 text-zinc-500">{data.sample.country ?? "—"}</td>
-              <td className="whitespace-nowrap px-3 py-3 text-zinc-400">{data.sample.has_email ? "Locked" : "—"}</td>
             </tr>
           )}
           {!loading && data?.rows.map((r, i) => (
             <tr key={i} className="select-none">
               <td className="px-3 py-3"><Blur w="w-24" /></td>
               <td className="max-w-48 truncate px-3 py-3 text-zinc-500">{r.current_title ?? "—"}</td>
-              <td className="whitespace-nowrap px-3 py-3"><RoleBadge role={r.role} isSpeaker={r.is_speaker} /></td>
-              <td className="px-3 py-3"><span className="inline-flex text-[#0A66C2] opacity-40"><LinkedInIcon className="h-4.5 w-4.5" /></span></td>
               <td className="px-3 py-3"><Blur w="w-20" /></td>
+              <td className="whitespace-nowrap px-3 py-3"><RoleBadge role={r.role} isSpeaker={r.is_speaker} /></td>
+              <td className="whitespace-nowrap px-3 py-3">{r.has_email ? <EmailLockPill /> : <span className="text-zinc-400">—</span>}</td>
+              <td className="px-3 py-3"><span className="inline-flex text-[#0A66C2] opacity-40"><LinkedInIcon className="h-4.5 w-4.5" /></span></td>
               <td className="whitespace-nowrap px-3 py-3 text-zinc-400">View Post</td>
               <td className="whitespace-nowrap px-3 py-3 text-zinc-500">{r.industry ?? "—"}</td>
               <td className="whitespace-nowrap px-3 py-3 text-zinc-500">{r.size ?? "—"}</td>
               <td className="whitespace-nowrap px-3 py-3 text-zinc-500">{r.country ?? "—"}</td>
-              <td className="whitespace-nowrap px-3 py-3 text-zinc-400">{r.has_email ? "Locked" : "—"}</td>
             </tr>
           ))}
         </tbody>
