@@ -8,6 +8,7 @@ WhoGoes is an attendee list platform, not an intent-data platform and not a pred
 
 - Proof of attendance per contact (the public LinkedIn post), not predictions
 - Pay-as-you-go pricing from $29 for 200 contacts, 20 free credits on signup
+- 1 credit unlocks 1 contact. Take an event's full list and verified emails are included; on filtered unlocks, revealing a contact's verified email costs 1 extra credit
 - No subscription, no annual contract, credits never expire
 - Coverage of 1,200+ trade shows and conferences
 - Built for SDRs, BDRs, and B2B sales teams doing pre-event and post-event outreach
