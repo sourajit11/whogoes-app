@@ -239,6 +239,21 @@ export default function MyEventsView({
     initialLoadDoneRef.current = false;
   }, [selectedEventId]);
 
+  // The contact table is the densest view in the app: ask the sidebar to
+  // collapse while an event is open and restore it on the way out.
+  useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent("sidebar-collapse", {
+        detail: { collapsed: Boolean(selectedEventId) },
+      })
+    );
+    return () => {
+      window.dispatchEvent(
+        new CustomEvent("sidebar-collapse", { detail: { collapsed: false } })
+      );
+    };
+  }, [selectedEventId]);
+
   // Fetch credits for inline unlock
   useEffect(() => {
     async function fetchCredits() {

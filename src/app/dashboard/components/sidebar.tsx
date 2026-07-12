@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useTheme } from "@/lib/theme-provider";
 import BuyCreditsModal from "./buy-credits-modal";
@@ -126,6 +126,51 @@ export default function Sidebar({
   const [showBuyCredits, setShowBuyCredits] = useState(false);
   const [currentCredits, setCurrentCredits] = useState(initialCredits);
 
+  // Desktop-only auto-collapse. Dense workspace views (the My Events contact
+  // table) dispatch "sidebar-collapse" to reclaim the width; hovering the left
+  // edge peeks the sidebar back in as an overlay, and pinning keeps it open.
+  const [collapsed, setCollapsed] = useState(false);
+  const [pinnedOpen, setPinnedOpen] = useState(false);
+  const [peek, setPeek] = useState(false);
+
+  useEffect(() => {
+    setPinnedOpen(sessionStorage.getItem("wg-sidebar-pinned") === "1");
+  }, []);
+
+  useEffect(() => {
+    function handleSidebarCollapse(e: Event) {
+      const wantCollapsed = Boolean(
+        (e as CustomEvent<{ collapsed?: boolean }>).detail?.collapsed
+      );
+      setCollapsed(wantCollapsed);
+      if (!wantCollapsed) setPeek(false);
+    }
+    window.addEventListener("sidebar-collapse", handleSidebarCollapse);
+    return () =>
+      window.removeEventListener("sidebar-collapse", handleSidebarCollapse);
+  }, []);
+
+  // Safety net: navigating away from the workspace restores the sidebar even
+  // if the page unmounted without dispatching the expand event.
+  useEffect(() => {
+    if (!pathname.startsWith("/dashboard/my-events")) {
+      setCollapsed(false);
+      setPeek(false);
+    }
+  }, [pathname]);
+
+  const isCollapsed = collapsed && !pinnedOpen;
+
+  function setPinned(pinned: boolean) {
+    setPinnedOpen(pinned);
+    setPeek(false);
+    try {
+      sessionStorage.setItem("wg-sidebar-pinned", pinned ? "1" : "0");
+    } catch {
+      // Session-only preference; losing it is harmless.
+    }
+  }
+
   // Listen for external "open buy credits" events (e.g., from event detail page)
   useEffect(() => {
     function handleOpenBuyCredits() {
@@ -157,14 +202,15 @@ export default function Sidebar({
     router.push("/login");
   }
 
-  const sidebarContent = (
+  const renderSidebarContent = (headerAction?: ReactNode) => (
     <div className="flex h-full flex-col">
       {/* Logo */}
       <div className="flex h-16 items-center gap-2.5 px-6">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500">
           <span className="text-sm font-bold text-white">W</span>
         </div>
-        <span className="text-lg font-bold text-zinc-900 dark:text-white">WhoGoes</span>
+        <span className="flex-1 text-lg font-bold text-zinc-900 dark:text-white">WhoGoes</span>
+        {headerAction}
       </div>
 
       {/* Navigation */}
@@ -173,7 +219,10 @@ export default function Sidebar({
           <Link
             key={item.href}
             href={item.href}
-            onClick={() => setMobileOpen(false)}
+            onClick={() => {
+              setMobileOpen(false);
+              setPeek(false);
+            }}
             className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
               isActive(item.href, item.exact)
                 ? "bg-emerald-50 text-emerald-700 dark:bg-zinc-800 dark:text-white"
@@ -308,16 +357,35 @@ export default function Sidebar({
           </button>
         </div>
       </div>
-
-      {/* Buy Credits Modal */}
-      {showBuyCredits && (
-        <BuyCreditsModal
-          userEmail={userEmail}
-          onClose={() => setShowBuyCredits(false)}
-        />
-      )}
     </div>
   );
+
+  // Chevron actions in the sidebar header: pin it open from the hover peek,
+  // collapse it again once pinned. Only shown while a workspace wants collapse.
+  const pinOpenAction = (
+    <button
+      onClick={() => setPinned(true)}
+      title="Keep sidebar open"
+      className="cursor-pointer rounded p-1 text-zinc-400 transition-colors hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300"
+    >
+      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+      </svg>
+    </button>
+  );
+
+  const collapseAction =
+    collapsed && pinnedOpen ? (
+      <button
+        onClick={() => setPinned(false)}
+        title="Collapse sidebar"
+        className="cursor-pointer rounded p-1 text-zinc-400 transition-colors hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300"
+      >
+        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+        </svg>
+      </button>
+    ) : undefined;
 
   return (
     <>
@@ -355,13 +423,66 @@ export default function Sidebar({
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        {sidebarContent}
+        {renderSidebarContent()}
       </aside>
 
-      {/* Desktop sidebar */}
-      <aside className="hidden w-64 shrink-0 overflow-y-auto border-r border-zinc-200 bg-white md:block dark:border-zinc-800 dark:bg-zinc-900">
-        {sidebarContent}
+      {/* Desktop sidebar (in flow; width animates to zero while a workspace
+          view has requested collapse, giving the content the full viewport) */}
+      <aside
+        className={`hidden shrink-0 overflow-hidden border-zinc-200 bg-white transition-[width] duration-300 ease-in-out md:block dark:border-zinc-800 dark:bg-zinc-900 ${
+          isCollapsed ? "w-0 border-r-0" : "w-64 border-r"
+        }`}
+      >
+        <div className="h-full w-64 overflow-y-auto">
+          {renderSidebarContent(collapseAction)}
+        </div>
       </aside>
+
+      {/* Collapsed-state helpers (desktop only) */}
+      {isCollapsed && (
+        <>
+          {/* Invisible strip along the left edge: hovering it peeks the sidebar */}
+          <div
+            className="fixed inset-y-0 left-0 z-40 hidden w-2 md:block"
+            onMouseEnter={() => setPeek(true)}
+          />
+          {/* Visible handle so the peek is discoverable and keyboard reachable */}
+          <button
+            onClick={() => setPinned(true)}
+            onMouseEnter={() => setPeek(true)}
+            onFocus={() => setPeek(true)}
+            title="Show sidebar"
+            aria-label="Show sidebar"
+            className="fixed left-0 top-1/2 z-40 hidden -translate-y-1/2 cursor-pointer rounded-r-lg border border-l-0 border-zinc-200 bg-white py-3 pl-0.5 pr-1 text-zinc-400 shadow-sm transition-colors hover:text-emerald-600 md:block dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-500 dark:hover:text-emerald-400"
+          >
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </>
+      )}
+
+      {/* Hover peek: slides over the content while the pointer stays on it */}
+      <aside
+        onMouseLeave={() => setPeek(false)}
+        className={`fixed inset-y-0 left-0 z-50 hidden w-64 border-r border-zinc-200 bg-white shadow-2xl transition-transform duration-300 ease-in-out md:block dark:border-zinc-800 dark:bg-zinc-900 ${
+          isCollapsed && peek
+            ? "translate-x-0"
+            : "pointer-events-none -translate-x-full"
+        }`}
+      >
+        <div className="h-full w-64 overflow-y-auto">
+          {renderSidebarContent(pinOpenAction)}
+        </div>
+      </aside>
+
+      {/* Buy Credits Modal (rendered once, outside the sidebar copies) */}
+      {showBuyCredits && (
+        <BuyCreditsModal
+          userEmail={userEmail}
+          onClose={() => setShowBuyCredits(false)}
+        />
+      )}
     </>
   );
 }
