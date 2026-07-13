@@ -82,11 +82,15 @@ export default function AffiliateContactsPage() {
     <div className="mx-auto max-w-3xl px-6 py-8">
       <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">Add Contacts</h1>
       <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-        Paste the emails of people you think will sign up. If an email registers within 30 days before or after you add it, the customer is credited to you.
+        Paste the emails of people you think will sign up. If an email registers within 30 days before or after you add it, the customer is credited to you. You can add up to {limit} contacts per day.
       </p>
       <div className="mt-3 inline-flex items-center gap-2 rounded-lg bg-zinc-100 px-3 py-1.5 text-xs font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
-        <span>Today: {usedToday} / {limit} added</span>
-        {usedToday >= limit && <span className="text-amber-600 dark:text-amber-400">· daily limit reached</span>}
+        <span>Daily limit: {usedToday} of {limit} used</span>
+        {usedToday >= limit && (
+          <span className="text-amber-600 dark:text-amber-400">
+            · limit reached, slots free up 24 hours after each add
+          </span>
+        )}
       </div>
 
       <form onSubmit={handleSubmit} className="mt-6">
@@ -98,7 +102,7 @@ export default function AffiliateContactsPage() {
           className="w-full rounded-lg border border-zinc-300 px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
         />
         <p className="mt-1 text-xs text-zinc-400">
-          Separate emails with new lines, commas, or spaces. You can add up to {limit} per day. Unmatched contacts expire after 30 days.
+          Separate emails with new lines, commas, or spaces. The daily limit of {limit} works on a rolling 24 hour window. Unmatched contacts expire after 30 days.
         </p>
         {error && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>}
         {result && <p className="mt-2 text-sm text-emerald-600 dark:text-emerald-400">{result}</p>}
