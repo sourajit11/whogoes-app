@@ -12,6 +12,9 @@ const TRANSACTIONAL = new Set([
   "prospect_bonus",
   "credits_added",
   "paid_immediate",
+  "affiliate_application_received",
+  "affiliate_new_application",
+  "affiliate_approved",
 ]);
 
 const DEFAULT_CTX: UserEmailContext = {

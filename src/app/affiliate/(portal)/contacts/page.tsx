@@ -82,7 +82,7 @@ export default function AffiliateContactsPage() {
     <div className="mx-auto max-w-3xl px-6 py-8">
       <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">Add Contacts</h1>
       <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-        Paste the emails of people you think will sign up. If an email registers within 7 days before or after you add it, the customer is credited to you.
+        Paste the emails of people you think will sign up. If an email registers within 30 days before or after you add it, the customer is credited to you.
       </p>
       <div className="mt-3 inline-flex items-center gap-2 rounded-lg bg-zinc-100 px-3 py-1.5 text-xs font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
         <span>Today: {usedToday} / {limit} added</span>

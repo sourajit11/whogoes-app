@@ -27,12 +27,15 @@ export async function GET(request: Request) {
         if (isNewUser) {
           // Run the internal onboarding email sequence (welcome, prospect bonus,
           // inactive nurture). Must await before redirect so Vercel doesn't kill
-          // the function mid-write.
-          await onUserSignup({
-            id: user.id,
-            email: user.email!,
-            user_metadata: user.user_metadata,
-          }).catch((err) => console.error("onUserSignup failed:", err));
+          // the function mid-write. Affiliate signups skip it: they get the
+          // affiliate application emails when they complete the apply step.
+          if (!next.startsWith("/affiliate")) {
+            await onUserSignup({
+              id: user.id,
+              email: user.email!,
+              user_metadata: user.user_metadata,
+            }).catch((err) => console.error("onUserSignup failed:", err));
+          }
 
           // Attribute this signup to an affiliate (referral cookie or email match).
           try {

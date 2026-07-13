@@ -84,6 +84,8 @@ function AffiliateRegisterForm() {
       setLoading(false);
       return;
     }
+    // Confirmation to the applicant + notification to the admin inbox.
+    await fetch("/api/email/affiliate-apply", { method: "POST" }).catch(() => {});
     router.push("/affiliate");
   }
 
@@ -114,9 +116,8 @@ function AffiliateRegisterForm() {
       return;
     }
 
-    // Fire the onboarding email sequence + affiliate attribution for the new account.
-    await fetch("/api/email/signup", { method: "POST" }).catch(() => {});
-
+    // Affiliates skip the customer onboarding sequence; applyAndEnter sends the
+    // affiliate-specific application emails instead.
     await applyAndEnter(name);
   }
 

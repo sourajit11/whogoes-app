@@ -312,6 +312,59 @@ Reply if you want help picking the right pack for how many contacts you need.`
         ),
       };
 
+    case "affiliate_application_received":
+      return {
+        subject: "Got your affiliate application",
+        text: sign(
+          `${hi}
+
+Thanks for applying to the WhoGoes affiliate program. Your application is in and I review every one personally, usually within a day.
+
+Once you're approved, you'll get your personal referral link plus access to your affiliate dashboard, where you can add leads and track your signups and commissions. You earn 30% on every payment your referrals make.
+
+If you want to tell me anything about how you plan to promote WhoGoes, just reply to this email. It helps me approve faster.`
+        ),
+      };
+
+    case "affiliate_new_application": {
+      const applicantEmail = String(payload.applicantEmail ?? "");
+      const applicantName = String(payload.applicantName ?? "");
+      return {
+        subject: `New affiliate application: ${applicantEmail}`,
+        text: `New affiliate application on WhoGoes.
+
+Email: ${applicantEmail}
+Name: ${applicantName || "(not provided)"}
+
+Review and approve here: ${APP_URL}/admin/affiliates`,
+      };
+    }
+
+    case "affiliate_approved": {
+      const referralCode = String(payload.referralCode ?? "");
+      return {
+        subject: "You're approved. Here's your referral link",
+        text: sign(
+          `${hi}
+
+Good news, your WhoGoes affiliate application is approved.
+
+Here's your personal referral link:
+${APP_URL}/events?ref=${referralCode}
+
+Anyone who signs up through that link (or any lead email you add in your dashboard) is tagged to you, and you earn 30% of every payment they make.
+
+Your dashboard is here: ${APP_URL}/affiliate
+
+Two ways to get your first commission:
+1. Share your link with people who need event attendee lists.
+2. Add lead emails in your dashboard. If any of them sign up within 30 days, they count as yours.
+
+Reply if you have any questions. Happy to help you get the first one over the line.`
+        ),
+      };
+    }
+
     default:
       return null;
   }
