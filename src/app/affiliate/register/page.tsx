@@ -16,6 +16,31 @@ function GoogleIcon({ className }: { className?: string }) {
   );
 }
 
+// Defined at module level so its identity is stable across renders. Defining it
+// inside the form component made React remount the whole subtree on every
+// keystroke, dropping focus from the inputs.
+function Shell({ children, subtitle }: { children: React.ReactNode; subtitle: string }) {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-950">
+      <div className="w-full max-w-sm space-y-8 px-4">
+        <div className="flex flex-col items-center">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500">
+              <span className="text-sm font-bold text-white">W</span>
+            </div>
+            <span className="text-lg font-bold text-zinc-900 dark:text-white">WhoGoes</span>
+            <span className="rounded-md bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
+              Affiliate
+            </span>
+          </div>
+          <p className="mt-2 text-center text-sm text-zinc-500 dark:text-zinc-400">{subtitle}</p>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 function AffiliateRegisterForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -100,26 +125,6 @@ function AffiliateRegisterForm() {
     setLoading(true);
     await applyAndEnter("");
   }
-
-  const Shell = ({ children, subtitle }: { children: React.ReactNode; subtitle: string }) => (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-950">
-      <div className="w-full max-w-sm space-y-8 px-4">
-        <div className="flex flex-col items-center">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500">
-              <span className="text-sm font-bold text-white">W</span>
-            </div>
-            <span className="text-lg font-bold text-zinc-900 dark:text-white">WhoGoes</span>
-            <span className="rounded-md bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
-              Affiliate
-            </span>
-          </div>
-          <p className="mt-2 text-center text-sm text-zinc-500 dark:text-zinc-400">{subtitle}</p>
-        </div>
-        {children}
-      </div>
-    </div>
-  );
 
   const termsCheckbox = (
     <label className="flex items-start gap-2 text-sm text-zinc-600 dark:text-zinc-400">
