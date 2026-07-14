@@ -37,7 +37,7 @@ export const getBrowsableEventsCached = unstable_cache(
       event_slug: slugMap.get(e.event_id) ?? undefined,
     }));
   },
-  ["browsable-events-cached-v1"],
+  ["browsable-events-cached-v2"],
   { revalidate: 3600, tags: [BROWSABLE_EVENTS_TAG] }
 );
 
