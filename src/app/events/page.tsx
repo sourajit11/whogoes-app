@@ -71,6 +71,12 @@ export default async function PublicEventsPage() {
     ),
   ].sort() as string[];
 
+  const countries = [
+    ...new Set(
+      eventsWithSlugs.map((e) => e.event_country).filter(Boolean)
+    ),
+  ].sort() as string[];
+
   const industries = [
     ...new Set(
       eventsWithSlugs.map((e) => e.event_industry).filter(Boolean)
@@ -85,6 +91,7 @@ export default async function PublicEventsPage() {
         credits={0}
         years={years}
         regions={regions}
+        countries={countries}
         industries={industries}
         isAuthenticated={false}
         loadError={loadError}

@@ -12,6 +12,7 @@ interface EventsBrowserProps {
   credits: number;
   years: number[];
   regions: string[];
+  countries: string[];
   industries: string[];
   isAuthenticated?: boolean;
   loadError?: boolean;
@@ -22,6 +23,7 @@ export default function EventsBrowser({
   credits,
   years,
   regions,
+  countries,
   industries,
   isAuthenticated,
   loadError = false,
@@ -30,6 +32,7 @@ export default function EventsBrowser({
   const [isRefreshing, startRefreshing] = useTransition();
   const [selectedYear, setSelectedYear] = useState<string>("");
   const [selectedRegion, setSelectedRegion] = useState<string>("");
+  const [selectedCountry, setSelectedCountry] = useState<string>("");
   const [selectedIndustry, setSelectedIndustry] = useState<string>("");
   const [minContacts, setMinContacts] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -43,7 +46,7 @@ export default function EventsBrowser({
 
   // Reset pagination when filters change — using the "adjust state during render"
   // pattern (https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes).
-  const filterKey = `${selectedYear}|${selectedRegion}|${selectedIndustry}|${minContacts}|${statusFilter}|${deferredSearchQuery}`;
+  const filterKey = `${selectedYear}|${selectedRegion}|${selectedCountry}|${selectedIndustry}|${minContacts}|${statusFilter}|${deferredSearchQuery}`;
   const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
   if (prevFilterKey !== filterKey) {
     setPrevFilterKey(filterKey);
@@ -53,6 +56,7 @@ export default function EventsBrowser({
   const hasActiveFilters =
     !!selectedYear ||
     !!selectedRegion ||
+    !!selectedCountry ||
     !!selectedIndustry ||
     !!minContacts ||
     !!statusFilter ||
@@ -61,6 +65,7 @@ export default function EventsBrowser({
   function clearFilters() {
     setSelectedYear("");
     setSelectedRegion("");
+    setSelectedCountry("");
     setSelectedIndustry("");
     setMinContacts("");
     setStatusFilter("");
@@ -75,6 +80,9 @@ export default function EventsBrowser({
     }
     if (selectedRegion) {
       result = result.filter((e) => e.event_region === selectedRegion);
+    }
+    if (selectedCountry) {
+      result = result.filter((e) => e.event_country === selectedCountry);
     }
     if (selectedIndustry) {
       result = result.filter((e) => e.event_industry === selectedIndustry);
@@ -119,7 +127,7 @@ export default function EventsBrowser({
     });
 
     return result;
-  }, [initialEvents, selectedYear, selectedRegion, selectedIndustry, minContacts, deferredSearchQuery, statusFilter, now]);
+  }, [initialEvents, selectedYear, selectedRegion, selectedCountry, selectedIndustry, minContacts, deferredSearchQuery, statusFilter, now]);
 
   const visibleEvents = filteredEvents.slice(0, visibleCount);
   const hasMore = filteredEvents.length > visibleCount;
@@ -235,6 +243,19 @@ export default function EventsBrowser({
           {regions.map((r) => (
             <option key={r} value={r}>
               {r}
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={selectedCountry}
+          onChange={(e) => setSelectedCountry(e.target.value)}
+          className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 shadow-sm focus:border-zinc-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+        >
+          <option value="">All Countries</option>
+          {countries.map((c) => (
+            <option key={c} value={c}>
+              {c}
             </option>
           ))}
         </select>

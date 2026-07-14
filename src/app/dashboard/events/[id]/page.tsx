@@ -21,7 +21,7 @@ export default async function EventDetailPage({ params }: Props) {
     supabase.auth.getUser(),
     adminClient
       .from("events")
-      .select("id, name, year, region, location, start_date, slug, is_active, is_whogoes_active, industry, facets_cache")
+      .select("id, name, year, region, country, location, start_date, slug, is_active, is_whogoes_active, industry, facets_cache")
       .eq("id", id)
       .maybeSingle(),
     adminClient.rpc("get_event_unlock_status", { p_event_id: id }),
@@ -47,6 +47,7 @@ export default async function EventDetailPage({ params }: Props) {
     event_name: eventRow.name,
     event_year: eventRow.year,
     event_region: eventRow.region,
+    event_country: eventRow.country,
     event_location: eventRow.location,
     event_start_date: eventRow.start_date,
     event_industry: eventRow.industry ?? null,

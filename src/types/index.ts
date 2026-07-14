@@ -10,6 +10,7 @@ export interface BrowsableEvent {
   event_name: string;
   event_year: number;
   event_region: string | null;
+  event_country: string | null;
   event_location: string | null;
   event_start_date: string | null;
   event_industry: string | null;

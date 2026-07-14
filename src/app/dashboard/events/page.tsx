@@ -57,6 +57,12 @@ export default async function EventsPage() {
     ),
   ].sort() as string[];
 
+  const countries = [
+    ...new Set(
+      eventsWithSubscriptions.map((e) => e.event_country).filter(Boolean)
+    ),
+  ].sort() as string[];
+
   const industries = [
     ...new Set(
       eventsWithSubscriptions.map((e) => e.event_industry).filter(Boolean)
@@ -69,6 +75,7 @@ export default async function EventsPage() {
       credits={credits}
       years={years}
       regions={regions}
+      countries={countries}
       industries={industries}
       isAuthenticated={!!user}
       loadError={loadError}
