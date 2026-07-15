@@ -1,10 +1,10 @@
-import { MIN_CONTACTS_WITH_EMAIL } from "./constants.mjs";
+import { MIN_TOTAL_CONTACTS } from "./constants.mjs";
 import { classifyEventRegion } from "./regions.mjs";
 
 /**
  * Fetch qualifying events and determine init vs incremental mode for each.
  *
- * Qualifying = is_active AND contacts_with_email >= 100 AND start_date 7+ days out
+ * Qualifying = is_whogoes_active AND total_contacts >= 200 AND start_date 3+ days out
  * Init = no entry in pipeline_state (new event, pull ALL contacts)
  * Incremental = has watermark (pull only contacts added since last run)
  *
@@ -20,12 +20,12 @@ export async function getQualifyingEvents(supabase) {
 
   const { data: qualifying, error } = await supabase.rpc(
     "get_pipeline_qualifying_events",
-    { p_start_date: oneWeekOutStr, p_min_contacts: MIN_CONTACTS_WITH_EMAIL }
+    { p_start_date: oneWeekOutStr, p_min_contacts: MIN_TOTAL_CONTACTS }
   );
   if (error) throw new Error(`RPC get_pipeline_qualifying_events failed: ${error.message}`);
 
   console.log(
-    `  Qualifying (active, ${MIN_CONTACTS_WITH_EMAIL}+ contacts, starts on/after ${oneWeekOutStr} [3 days out]): ${qualifying.length}`
+    `  Qualifying (active, ${MIN_TOTAL_CONTACTS}+ total contacts, starts on/after ${oneWeekOutStr} [3 days out]): ${qualifying.length}`
   );
   if (qualifying.length === 0) return [];
 

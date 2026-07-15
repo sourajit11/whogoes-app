@@ -10,21 +10,24 @@ export function isPersonalEmail(email) {
   return PERSONAL_DOMAINS.has(domain);
 }
 
-// Events must have at least this many contacts with email to qualify
-export const MIN_CONTACTS_WITH_EMAIL = 100;
+// Events must have at least this many total contacts to qualify (attendees on
+// the event, whether or not they have an email yet).
+export const MIN_TOTAL_CONTACTS = 200;
 
 // Only include contacts that have "settled" (3+ hours old)
 export const SETTLED_HOURS = 3;
 
 // Plusvibe campaign routing: events further out than this are not worth
 // outreach yet, so they are dropped entirely.
-export const MAX_HORIZON_DAYS = 42;
+export const MAX_HORIZON_DAYS = 21;
 
 /**
  * Map an event start date to a Plusvibe campaign bucket.
- *   <= 14 days out  -> "urgent"
- *   15-42 days out  -> "early"
- *   past or > 42    -> null (drop)
+ *   <= 21 days out  -> "urgent"
+ *   past or > 21    -> null (drop)
+ *
+ * The 3-day lower bound is applied upstream in getQualifyingEvents(), which
+ * never returns an event starting sooner than that.
  */
 export function getCampaignBucket(startDate) {
   const today = new Date();
@@ -33,7 +36,6 @@ export function getCampaignBucket(startDate) {
   eventDate.setHours(0, 0, 0, 0);
   const daysOut = Math.round((eventDate - today) / (1000 * 60 * 60 * 24));
   if (daysOut < 0) return null;
-  if (daysOut <= 14) return "urgent";
-  if (daysOut <= MAX_HORIZON_DAYS) return "early";
+  if (daysOut <= MAX_HORIZON_DAYS) return "urgent";
   return null;
 }
