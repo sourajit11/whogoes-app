@@ -149,12 +149,6 @@ const QUICK_PRESETS: QuickPreset[] = [
         : { ...f, seniority: DECISION_MAKER_SENIORITY },
   },
   {
-    key: "speakers",
-    label: "🎤 Speakers",
-    isActive: (f) => !!f.speaker,
-    apply: (f) => ({ ...f, speaker: !f.speaker }),
-  },
-  {
     key: "attendees",
     label: "✅ Attendees only",
     isActive: (f) => sameSet(f.role, ["attendee"]),
