@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo, type ReactNode } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { cleanDisplayName } from "@/lib/display-name";
 import { RoleBadge } from "./role-badge";
@@ -122,12 +122,19 @@ function MultiSelect({
   selected,
   onToggle,
   labelMap,
+  extraCount = 0,
+  footer,
 }: {
   title: string;
   options: FacetItem[];
   selected: string[];
   onToggle: (key: string) => void;
   labelMap?: Record<string, string>;
+  // Additional active count folded into the badge (e.g. the Speaker toggle that
+  // lives inside the Event role dropdown but is a separate boolean filter).
+  extraCount?: number;
+  // Extra rows rendered below a divider at the bottom of the dropdown.
+  footer?: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -138,8 +145,8 @@ function MultiSelect({
     document.addEventListener("mousedown", onDoc);
     return () => document.removeEventListener("mousedown", onDoc);
   }, []);
-  if (options.length === 0) return null;
-  const count = selected.length;
+  if (options.length === 0 && !footer) return null;
+  const count = selected.length + extraCount;
   return (
     <div className="relative" ref={ref}>
       <button
@@ -194,8 +201,86 @@ function MultiSelect({
               </button>
             );
           })}
+          {footer && (
+            <div className="mt-1 border-t border-zinc-100 pt-1 dark:border-zinc-800">
+              {footer}
+            </div>
+          )}
         </div>
       )}
+    </div>
+  );
+}
+
+// A single toggle row styled like a MultiSelect option (checkbox + label), for
+// boolean filters that live inside a dropdown (e.g. Speaker within Event role).
+function ToggleRow({
+  label: rowLabel,
+  checked,
+  onToggle,
+}: {
+  label: ReactNode;
+  checked: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-zinc-50 dark:hover:bg-zinc-800"
+    >
+      <span
+        className={`flex h-4 w-4 items-center justify-center rounded border ${
+          checked ? "border-emerald-600 bg-emerald-600 text-white" : "border-zinc-300 dark:border-zinc-600"
+        }`}
+      >
+        {checked && (
+          <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+          </svg>
+        )}
+      </span>
+      <span className="text-zinc-700 dark:text-zinc-300">{rowLabel}</span>
+    </button>
+  );
+}
+
+// Text filter with a leading search icon and a value-aware border, so these
+// easy-to-miss free-text filters read as distinct, tappable inputs. The border
+// turns emerald once there's a value (matching the active dropdown treatment).
+function SearchInput({
+  placeholder,
+  value,
+  onChange,
+}: {
+  placeholder: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const active = value.trim().length > 0;
+  return (
+    <div className="relative">
+      <svg
+        className={`pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 ${
+          active ? "text-emerald-500" : "text-zinc-400"
+        }`}
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
+      </svg>
+      <input
+        type="text"
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={`rounded-lg border bg-white py-1.5 pl-8 pr-3 text-sm text-zinc-700 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/40 dark:bg-zinc-900 dark:text-zinc-300 ${
+          active
+            ? "border-emerald-300 dark:border-emerald-700"
+            : "border-zinc-300 focus:border-emerald-400 dark:border-zinc-600"
+        }`}
+      />
     </div>
   );
 }
@@ -420,19 +505,31 @@ export default function EventFilters({
         <MultiSelect title="Seniority" options={base?.by_seniority ?? []} selected={filters.seniority ?? []} onToggle={(k) => toggle("seniority", k)} labelMap={SENIORITY_LABELS} />
         <MultiSelect title="Function" options={base?.by_function ?? []} selected={filters.function ?? []} onToggle={(k) => toggle("function", k)} />
         <MultiSelect title="Industry" options={base?.by_industry ?? []} selected={filters.industry ?? []} onToggle={(k) => toggle("industry", k)} />
-        <MultiSelect title="Event role" options={base?.by_role ?? []} selected={filters.role ?? []} onToggle={(k) => toggle("role", k)} labelMap={ROLE_LABELS} />
+        <MultiSelect
+          title="Event role"
+          options={base?.by_role ?? []}
+          selected={filters.role ?? []}
+          onToggle={(k) => toggle("role", k)}
+          labelMap={ROLE_LABELS}
+          extraCount={filters.speaker ? 1 : 0}
+          footer={
+            <ToggleRow
+              label={<span>🎤 Speaker</span>}
+              checked={filters.speaker ?? false}
+              onToggle={() => setFilters((f) => ({ ...f, speaker: !f.speaker }))}
+            />
+          }
+        />
         <MultiSelect title="Company size" options={sizeOptions} selected={filters.size ?? []} onToggle={(k) => toggle("size", k)} />
         <MultiSelect title="Country" options={base?.by_country ?? []} selected={filters.country ?? []} onToggle={(k) => toggle("country", k)} />
-        <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800">
-          <input
-            type="checkbox"
-            checked={filters.speaker ?? false}
-            onChange={(e) => setFilters((f) => ({ ...f, speaker: e.target.checked }))}
-            className="h-3.5 w-3.5 accent-emerald-600"
-          />
-          Speakers only
-        </label>
-        <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800">
+        {/* Has-email highlighted green so it reads as the value filter people reach for. */}
+        <label
+          className={`inline-flex cursor-pointer items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
+            filters.has_email
+              ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300"
+              : "border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50 dark:border-emerald-800 dark:bg-zinc-900 dark:text-emerald-300 dark:hover:bg-emerald-900/20"
+          }`}
+        >
           <input
             type="checkbox"
             checked={filters.has_email ?? false}
@@ -444,27 +541,10 @@ export default function EventFilters({
       </div>
 
       <div className={`${mobileOpen ? "flex" : "hidden"} mt-3 flex-wrap items-center gap-2 md:flex`}>
-        <input
-          type="text"
-          placeholder="Job-title keyword"
-          value={filters.title_keyword ?? ""}
-          onChange={(e) => setText("title_keyword", e.target.value)}
-          className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700 placeholder:text-zinc-400 focus:border-emerald-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
-        />
-        <input
-          type="text"
-          placeholder="Company contains"
-          value={filters.company_include ?? ""}
-          onChange={(e) => setText("company_include", e.target.value)}
-          className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700 placeholder:text-zinc-400 focus:border-emerald-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
-        />
-        <input
-          type="text"
-          placeholder="Company excludes"
-          value={filters.company_exclude ?? ""}
-          onChange={(e) => setText("company_exclude", e.target.value)}
-          className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700 placeholder:text-zinc-400 focus:border-emerald-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
-        />
+        <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Search:</span>
+        <SearchInput placeholder="Job-title keyword" value={filters.title_keyword ?? ""} onChange={(v) => setText("title_keyword", v)} />
+        <SearchInput placeholder="Company contains" value={filters.company_include ?? ""} onChange={(v) => setText("company_include", v)} />
+        <SearchInput placeholder="Company excludes" value={filters.company_exclude ?? ""} onChange={(v) => setText("company_exclude", v)} />
       </div>
 
       {/* Active filter chips */}
