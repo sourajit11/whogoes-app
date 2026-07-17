@@ -238,6 +238,26 @@ export default function Sidebar({
             )}
           </Link>
         ))}
+
+        {/* Affiliate perk: set apart from the workflow items as a "make money"
+            invite, not a tool. Opens the in-app Refer & Earn section. */}
+        <Link
+          href="/dashboard/refer"
+          onClick={() => {
+            setMobileOpen(false);
+            setPeek(false);
+          }}
+          className={`mt-2 flex items-center gap-3 rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors ${
+            isActive("/dashboard/refer")
+              ? "border-emerald-300 bg-emerald-100 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300"
+              : "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-900/50 dark:bg-emerald-900/20 dark:text-emerald-400 dark:hover:bg-emerald-900/30"
+          }`}
+        >
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v13m0-13V6a2 2 0 112-2h.5A2.5 2.5 0 0112 6.5m0 1.5H8.5A2.5 2.5 0 018.5 4H9a2 2 0 012 2v2m-7 0h16a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1zm1 5v6a2 2 0 002 2h10a2 2 0 002-2v-6" />
+          </svg>
+          <span className="flex-1">Refer &amp; Earn 30%</span>
+        </Link>
       </nav>
 
       {/* Credits + Theme + User */}

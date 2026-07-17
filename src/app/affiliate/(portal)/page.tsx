@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import StatCard from "@/app/dashboard/components/stat-card";
+import ReferralQr from "../components/referral-qr";
 import type { AffiliateDashboard } from "./types";
 
 function usd(n: number) {
@@ -95,6 +96,7 @@ export default function AffiliateOverviewPage() {
           <Link href="/affiliate/contacts" className="text-emerald-600 hover:underline">Submit prospect emails</Link>{" "}
           and we&apos;ll match them when they sign up.
         </p>
+        <ReferralQr url={link} />
       </div>
 
       {/* Recent referrals */}
