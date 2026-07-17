@@ -1,3 +1,4 @@
+-- Backfilled from remote schema_migrations on 2026-07-15 (drift recovery).
 -- Two facets changes:
 --
 -- 1) `owned`: how many of the matched contacts the calling user has already

@@ -1,3 +1,4 @@
+-- Backfilled from remote schema_migrations on 2026-07-15 (drift recovery).
 -- One canonical "with email" definition everywhere: a contact counts as having an
 -- email iff it has a contact_emails row with status = 'valid' and a non-empty email.
 --

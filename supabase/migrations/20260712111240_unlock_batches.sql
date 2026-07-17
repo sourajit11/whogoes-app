@@ -1,15 +1,50 @@
--- Two-path pricing (Souraa, 2026-07-12):
---   Path A "take the whole list": 1 credit per contact and verified emails are
---     INCLUDED, but only when the unlock is unfiltered and ends with the user
---     owning every contact of the event (a genuine bulk commitment).
---   Path B "filter to your ICP": unchanged - 1 credit per identity, +1 credit
---     per revealed email.
--- The full-list check runs AFTER the insert, so chunked client unlocks (1000 per
--- call sharing one batch via p_batch_id) qualify on their final chunk; the email
--- flag is then applied to every row of that batch. email_charged_at stays NULL
--- for included emails (they were not individually charged).
+-- Backfilled from remote schema_migrations on 2026-07-15 (drift recovery).
+-- Unlock history: persist which ICP filter produced each unlock so My Events can
+-- show "Jul 2 · VP + SaaS -> 214 contacts" per batch and let the user re-apply a
+-- batch's filters. Before this, the filter jsonb passed to unlock_event_contacts
+-- was discarded and a customer had no way to reconstruct what they bought.
+--
+-- The client unlocks in chunks of 1,000 to stay under statement_timeout; all
+-- chunks of one logical unlock share one batch row via p_batch_id (first call
+-- creates the batch and returns its id, later calls pass it back).
 
-CREATE OR REPLACE FUNCTION public.unlock_event_contacts(p_event_id uuid, p_count integer, p_filters jsonb DEFAULT '{}'::jsonb, p_batch_id uuid DEFAULT NULL::uuid)
+CREATE TABLE public.unlock_batches (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  event_id uuid NOT NULL REFERENCES public.events(id) ON DELETE CASCADE,
+  filters jsonb NOT NULL DEFAULT '{}'::jsonb,
+  requested_count integer,
+  unlocked_count integer NOT NULL DEFAULT 0,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_unlock_batches_user_event
+  ON public.unlock_batches (user_id, event_id, created_at DESC);
+
+ALTER TABLE public.unlock_batches ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY unlock_batches_select_own ON public.unlock_batches
+  FOR SELECT TO authenticated
+  USING (user_id = auth.uid());
+
+-- Existing access rows stay batch-less ("earlier unlocks" in the UI).
+ALTER TABLE public.customer_contact_access
+  ADD COLUMN IF NOT EXISTS batch_id uuid REFERENCES public.unlock_batches(id) ON DELETE SET NULL;
+
+CREATE INDEX idx_cca_batch
+  ON public.customer_contact_access (batch_id)
+  WHERE batch_id IS NOT NULL;
+
+-- unlock_event_contacts gains p_batch_id. Drop the 3-arg version first so calls
+-- that pass 3 args resolve unambiguously to the new 4-arg default.
+DROP FUNCTION IF EXISTS public.unlock_event_contacts(uuid, integer, jsonb);
+
+CREATE OR REPLACE FUNCTION public.unlock_event_contacts(
+  p_event_id uuid,
+  p_count integer,
+  p_filters jsonb DEFAULT '{}'::jsonb,
+  p_batch_id uuid DEFAULT NULL
+)
  RETURNS json
  LANGUAGE plpgsql
  SECURITY DEFINER
@@ -28,9 +63,6 @@ DECLARE
   v_new_balance INTEGER;
   v_batch_id UUID;
   v_created_batch BOOLEAN := false;
-  v_no_filters BOOLEAN;
-  v_full_list BOOLEAN := false;
-  v_emails_included INTEGER := 0;
 BEGIN
   v_user_id := auth.uid();
   IF v_user_id IS NULL THEN
@@ -100,27 +132,6 @@ BEGIN
   SET unlocked_count = unlocked_count + v_actual_inserted
   WHERE id = v_batch_id;
 
-  -- Full-list bonus: an unfiltered unlock that leaves nothing locked in the event
-  -- includes every verified email of this purchase (batch) at no extra credit.
-  v_no_filters := (p_filters IS NULL OR p_filters = '{}'::jsonb);
-  IF v_no_filters THEN
-    SELECT NOT EXISTS (
-      SELECT 1 FROM public.event_filtered_contact_ids(p_event_id, '{}'::jsonb) f
-      WHERE NOT EXISTS (
-        SELECT 1 FROM customer_contact_access cca
-        WHERE cca.user_id = v_user_id AND cca.event_id = p_event_id AND cca.contact_id = f.contact_id
-      )
-    ) INTO v_full_list;
-
-    IF v_full_list THEN
-      UPDATE customer_contact_access cca
-      SET email_unlocked = true
-      WHERE cca.user_id = v_user_id AND cca.event_id = p_event_id
-        AND cca.batch_id = v_batch_id AND cca.email_unlocked = false;
-      GET DIAGNOSTICS v_emails_included = ROW_COUNT;
-    END IF;
-  END IF;
-
   v_deduct_free := LEAST(v_actual_inserted, v_free);
   v_deduct_paid := v_actual_inserted - v_deduct_free;
 
@@ -142,9 +153,9 @@ BEGIN
     'credits_spent', v_actual_inserted,
     'new_balance', v_new_balance,
     'contacts_unlocked', v_actual_inserted,
-    'batch_id', v_batch_id,
-    'full_list', v_full_list,
-    'emails_included', v_emails_included
+    'batch_id', v_batch_id
   );
 END;
 $function$;
+
+GRANT EXECUTE ON FUNCTION public.unlock_event_contacts(uuid, integer, jsonb, uuid) TO authenticated, service_role;

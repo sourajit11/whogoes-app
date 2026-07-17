@@ -1,3 +1,4 @@
+-- Backfilled from remote schema_migrations on 2026-07-15 (drift recovery).
 -- Lead processing: make "processed" an explicit customer action instead of a side
 -- effect of downloading a CSV.
 --
