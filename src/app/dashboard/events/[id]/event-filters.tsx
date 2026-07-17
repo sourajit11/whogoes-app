@@ -116,6 +116,52 @@ export function describeFilters(f: EventFiltersValue): string[] {
   return chips;
 }
 
+// One-tap quick filters: a low-friction starting point for people who don't yet
+// know which dropdown to open. Each toggles a small, safe filter set. Combining
+// several ICP seniority buckets under "Decision-makers" keeps it robust across
+// events (missing buckets just match nothing).
+const DECISION_MAKER_SENIORITY = ["C-Suite", "VP", "Director", "Owner/Founder"];
+function sameSet(a: string[] = [], b: string[] = []): boolean {
+  if (a.length !== b.length) return false;
+  const s = new Set(a);
+  return b.every((x) => s.has(x));
+}
+interface QuickPreset {
+  key: string;
+  label: string;
+  isActive: (f: EventFiltersValue) => boolean;
+  apply: (f: EventFiltersValue) => EventFiltersValue;
+}
+const QUICK_PRESETS: QuickPreset[] = [
+  {
+    key: "has_email",
+    label: "✉️ Has email",
+    isActive: (f) => !!f.has_email,
+    apply: (f) => ({ ...f, has_email: !f.has_email }),
+  },
+  {
+    key: "decision_makers",
+    label: "👔 Decision-makers",
+    isActive: (f) => sameSet(f.seniority, DECISION_MAKER_SENIORITY),
+    apply: (f) =>
+      sameSet(f.seniority, DECISION_MAKER_SENIORITY)
+        ? { ...f, seniority: [] }
+        : { ...f, seniority: DECISION_MAKER_SENIORITY },
+  },
+  {
+    key: "speakers",
+    label: "🎤 Speakers",
+    isActive: (f) => !!f.speaker,
+    apply: (f) => ({ ...f, speaker: !f.speaker }),
+  },
+  {
+    key: "attendees",
+    label: "✅ Attendees only",
+    isActive: (f) => sameSet(f.role, ["attendee"]),
+    apply: (f) => (sameSet(f.role, ["attendee"]) ? { ...f, role: [] } : { ...f, role: ["attendee"] }),
+  },
+];
+
 function MultiSelect({
   title,
   options,
@@ -476,6 +522,36 @@ export default function EventFilters({
 
   return (
     <div className="mt-6 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+      {/* Purpose hint + one-tap quick filters: give a new user an obvious start
+          before they open any dropdown. Always visible (also on mobile). */}
+      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+        Narrow to your ICP, preview the matches, then unlock only those.
+      </p>
+      <div className="mt-2 -mx-1 flex flex-nowrap items-center gap-1.5 overflow-x-auto px-1 pb-0.5 sm:flex-wrap sm:overflow-visible">
+        <span className="shrink-0 text-xs font-semibold uppercase tracking-wide text-zinc-400">
+          Quick filters
+        </span>
+        {QUICK_PRESETS.map((preset) => {
+          const on = preset.isActive(filters);
+          return (
+            <button
+              key={preset.key}
+              type="button"
+              onClick={() => setFilters((f) => preset.apply(f))}
+              aria-pressed={on}
+              className={`shrink-0 cursor-pointer whitespace-nowrap rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+                on
+                  ? "border-emerald-500 bg-emerald-600 text-white"
+                  : "border-zinc-200 bg-white text-zinc-600 hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-emerald-900/20 dark:hover:text-emerald-300"
+              }`}
+            >
+              {preset.label}
+            </button>
+          );
+        })}
+      </div>
+      <div className="my-3 border-t border-zinc-100 dark:border-zinc-800" />
+
       {/* Mobile-only toggle; on md+ the filter rows are always visible */}
       <button
         type="button"
@@ -593,7 +669,10 @@ export default function EventFilters({
               <strong className="text-zinc-900 dark:text-zinc-100">{matched.toLocaleString()}</strong> of{" "}
               {totalContacts.toLocaleString()} contacts match
               {live && (
-                <span className="text-zinc-400">
+                <span
+                  className="cursor-help text-zinc-400 underline decoration-dotted underline-offset-2"
+                  title="Unfiltered unlocks include the verified email free. Filtered unlocks reveal each email for 1 extra credit."
+                >
                   {" "}({live.with_email.toLocaleString()} with email)
                 </span>
               )}
@@ -601,7 +680,14 @@ export default function EventFilters({
           ) : (
             <>
               <strong className="text-zinc-900 dark:text-zinc-100">{totalContacts.toLocaleString()}</strong> contacts
-              {live && <span className="text-zinc-400"> ({live.with_email.toLocaleString()} with email)</span>}
+              {live && (
+                <span
+                  className="cursor-help text-zinc-400 underline decoration-dotted underline-offset-2"
+                  title="Unfiltered unlocks include the verified email free. Filtered unlocks reveal each email for 1 extra credit."
+                >
+                  {" "}({live.with_email.toLocaleString()} with email)
+                </span>
+              )}
             </>
           )}
         </p>
