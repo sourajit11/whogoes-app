@@ -16,6 +16,7 @@ export interface EventFiltersValue {
   country?: string[];
   role?: string[];
   speaker?: boolean;
+  has_email?: boolean;
   title_keyword?: string;
   company_include?: string;
   company_exclude?: string;
@@ -76,6 +77,7 @@ export function cleanFilters(f: EventFiltersValue): EventFiltersValue {
   if (f.country?.length) out.country = f.country;
   if (f.role?.length) out.role = f.role;
   if (f.speaker) out.speaker = true;
+  if (f.has_email) out.has_email = true;
   if (f.title_keyword?.trim()) out.title_keyword = f.title_keyword.trim();
   if (f.company_include?.trim()) out.company_include = f.company_include.trim();
   if (f.company_exclude?.trim()) out.company_exclude = f.company_exclude.trim();
@@ -84,6 +86,15 @@ export function cleanFilters(f: EventFiltersValue): EventFiltersValue {
 
 export function isFilterActive(f: EventFiltersValue): boolean {
   return Object.keys(cleanFilters(f)).length > 0;
+}
+
+// True when any ICP filter is active. has_email is deliberately excluded: it only
+// restricts the pool to contacts that have a verified email, so applied on its own it
+// prices like an unfiltered unlock (emails included free), matching unlock_event_contacts.
+export function hasIcpFilters(f: EventFiltersValue): boolean {
+  const cleaned = cleanFilters(f); // fresh object, safe to mutate
+  delete cleaned.has_email;
+  return Object.keys(cleaned).length > 0;
 }
 
 // Human-readable chips for a stored filter jsonb (unlock history). Returns []
@@ -98,6 +109,7 @@ export function describeFilters(f: EventFiltersValue): string[] {
   cleaned.country?.forEach((k) => chips.push(k));
   cleaned.role?.forEach((k) => chips.push(label(ROLE_LABELS, k)));
   if (cleaned.speaker) chips.push("Speakers only");
+  if (cleaned.has_email) chips.push("Has verified email");
   if (cleaned.title_keyword) chips.push(`Title: "${cleaned.title_keyword}"`);
   if (cleaned.company_include) chips.push(`Company: "${cleaned.company_include}"`);
   if (cleaned.company_exclude) chips.push(`Not company: "${cleaned.company_exclude}"`);
@@ -420,6 +432,15 @@ export default function EventFilters({
           />
           Speakers only
         </label>
+        <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800">
+          <input
+            type="checkbox"
+            checked={filters.has_email ?? false}
+            onChange={(e) => setFilters((f) => ({ ...f, has_email: e.target.checked }))}
+            className="h-3.5 w-3.5 accent-emerald-600"
+          />
+          Has verified email
+        </label>
       </div>
 
       <div className={`${mobileOpen ? "flex" : "hidden"} mt-3 flex-wrap items-center gap-2 md:flex`}>
@@ -447,7 +468,7 @@ export default function EventFilters({
       </div>
 
       {/* Active filter chips */}
-      {(chips.length > 0 || filters.speaker || filters.title_keyword || filters.company_include || filters.company_exclude) && (
+      {(chips.length > 0 || filters.speaker || filters.has_email || filters.title_keyword || filters.company_include || filters.company_exclude) && (
         <div className="mt-3 flex flex-wrap items-center gap-1.5">
           {chips.map((c) => (
             <button
@@ -462,6 +483,9 @@ export default function EventFilters({
           ))}
           {filters.speaker && (
             <button type="button" onClick={() => setFilters((f) => ({ ...f, speaker: false }))} className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-300">Speakers <span className="text-emerald-400">&times;</span></button>
+          )}
+          {filters.has_email && (
+            <button type="button" onClick={() => setFilters((f) => ({ ...f, has_email: false }))} className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-300">Has verified email <span className="text-emerald-400">&times;</span></button>
           )}
           <button
             type="button"

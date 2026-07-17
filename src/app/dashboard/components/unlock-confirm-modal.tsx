@@ -101,7 +101,7 @@ export default function UnlockConfirmModal({
             <dt className="shrink-0 text-zinc-500">Verified emails</dt>
             {emailsIncluded ? (
               <dd className="font-semibold text-emerald-600 dark:text-emerald-400">
-                Included (full list)
+                Included
               </dd>
             ) : (
               <dd className="text-zinc-500">+1 credit each, revealed later</dd>

@@ -12,6 +12,7 @@ import ConfirmDialog from "../components/confirm-dialog";
 import EventFilters, {
   cleanFilters,
   isFilterActive,
+  hasIcpFilters,
   describeFilters,
   type EventFiltersValue,
 } from "../events/[id]/event-filters";
@@ -297,8 +298,8 @@ export default function MyEventsView({
 
   const maxUnlock = Math.min(credits ?? 0, remainingForEvent);
 
-  // Whole-event remaining pool regardless of active filters: an unfiltered unlock
-  // that takes all of it qualifies for the full-list deal (emails included).
+  // Whole-event remaining pool regardless of active filters, used for the
+  // "ignore filters" escape hatch and the take-the-whole-list nudge.
   const remainingWholeEvent = selectedEvent
     ? Math.max(
         0,
@@ -323,10 +324,14 @@ export default function MyEventsView({
       ? Math.min(Math.max(1, customUnlockCount), maxUnlock)
       : (unlockSliderSteps[sliderIndex] ?? maxUnlock);
 
-  // An unfiltered unlock that takes every remaining contact of the event
-  // qualifies for the full-list deal: verified emails included free.
+  // An unfiltered unlock that takes every remaining contact of the event. Used only to
+  // gate the "take the whole list" nudge now that emails aren't tied to the full list.
   const fullListSelected =
     !icpActive && remainingWholeEvent > 0 && unlockSliderValue >= remainingWholeEvent;
+
+  // Any unlock with no ICP filter (whole list or a partial slice) includes verified
+  // emails free. has_email on its own is not an ICP filter, so it still counts here.
+  const emailsIncludedSelected = !hasIcpFilters(icpFilters) && unlockSliderValue > 0;
 
   const filteredContacts = useMemo(() => {
     let result = contacts;
@@ -602,7 +607,7 @@ export default function MyEventsView({
     setCredits(latestBalance);
     setUnlockSuccess(
       emailsIncluded > 0
-        ? `${totalUnlocked} contacts unlocked with verified emails included (full list). ${latestBalance} credits remaining.`
+        ? `${totalUnlocked} contacts unlocked with verified emails included. ${latestBalance} credits remaining.`
         : `${totalUnlocked} contacts unlocked! ${latestBalance} credits remaining.`
     );
     window.dispatchEvent(new CustomEvent("credits-updated"));
@@ -1256,10 +1261,10 @@ export default function MyEventsView({
                         {credits - unlockSliderValue} remaining
                       </span>
                     </div>
-                    {fullListSelected ? (
+                    {emailsIncludedSelected ? (
                       <div className="mt-1 flex items-center justify-between border-t border-zinc-100 pt-1 text-xs dark:border-zinc-700">
                         <span className="font-medium text-emerald-600 dark:text-emerald-400">Verified emails</span>
-                        <span className="font-semibold text-emerald-600 dark:text-emerald-400">Included (full list)</span>
+                        <span className="font-semibold text-emerald-600 dark:text-emerald-400">Included</span>
                       </div>
                     ) : (
                       <div className="mt-1 flex items-center justify-between border-t border-zinc-100 pt-1 text-xs dark:border-zinc-700">
@@ -1275,7 +1280,7 @@ export default function MyEventsView({
                       onClick={() => setCustomUnlockCount(remainingWholeEvent)}
                       className="mt-2 w-full cursor-pointer rounded-lg border border-emerald-200 bg-emerald-50/60 px-3 py-2 text-center text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300 dark:hover:bg-emerald-900/40"
                     >
-                      Take the whole list ({remainingWholeEvent.toLocaleString()} contacts) and every verified email is included free
+                      Take the whole list ({remainingWholeEvent.toLocaleString()} contacts)
                     </button>
                   )}
 
@@ -1310,10 +1315,7 @@ export default function MyEventsView({
                       disabled={unlocking}
                       className="mt-2 w-full cursor-pointer text-center text-xs font-medium text-zinc-500 underline-offset-2 transition-colors hover:text-zinc-700 hover:underline disabled:opacity-50 dark:text-zinc-400 dark:hover:text-zinc-200"
                     >
-                      Unlock all remaining (ignore filters)
-                      {(credits ?? 0) >= remainingWholeEvent && remainingWholeEvent > 0
-                        ? ", verified emails included"
-                        : ""}
+                      Unlock all remaining (ignore filters), verified emails included
                     </button>
                   )}
 
@@ -1580,9 +1582,7 @@ export default function MyEventsView({
             count={confirmCount}
             filters={usesFilters ? cleanIcp : {}}
             credits={credits}
-            emailsIncluded={
-              !usesFilters && remainingWholeEvent > 0 && confirmCount >= remainingWholeEvent
-            }
+            emailsIncluded={!hasIcpFilters(usesFilters ? cleanIcp : {}) && confirmCount > 0}
             onConfirm={() => {
               const opts = confirmUnlock;
               setConfirmUnlock(null);

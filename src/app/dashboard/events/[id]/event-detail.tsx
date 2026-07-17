@@ -15,6 +15,7 @@ import EventFilters, {
   type Facets,
   cleanFilters,
   isFilterActive,
+  hasIcpFilters,
 } from "./event-filters";
 import { RoleBadge } from "./role-badge";
 import type {
@@ -307,7 +308,7 @@ export default function EventDetail({
     window.dispatchEvent(new CustomEvent("credits-updated"));
     setSuccessMsg(
       emailsIncluded > 0
-        ? `${totalUnlocked} contacts unlocked with verified emails included (full list). ${latestBalance} credits remaining.`
+        ? `${totalUnlocked} contacts unlocked with verified emails included. ${latestBalance} credits remaining.`
         : `${totalUnlocked} contacts unlocked! ${latestBalance} credits remaining.`
     );
 
@@ -727,14 +728,15 @@ export default function EventDetail({
                           {costAfterUnlock} remaining
                         </span>
                       </div>
-                      {/* Two-path pricing stated up front: taking the whole list
-                          (unfiltered, every remaining contact) includes verified
-                          emails; any partial or filtered unlock buys identity and
-                          emails cost +1 credit when revealed. */}
-                      {!filterActive && sliderValue >= remainingCount && remainingCount > 0 ? (
+                      {/* Two-path pricing stated up front: any unfiltered unlock (whole
+                          list or a partial slice) includes verified emails; applying an
+                          ICP filter buys identity and emails cost +1 credit when revealed.
+                          has_email on its own is not an ICP filter, so it still counts as
+                          unfiltered here. */}
+                      {!hasIcpFilters(activeFilters) && sliderValue > 0 ? (
                         <div className="mt-1 flex items-center justify-between border-t border-zinc-100 pt-1 text-xs dark:border-zinc-700">
                           <span className="font-medium text-emerald-600 dark:text-emerald-400">Verified emails</span>
-                          <span className="font-semibold text-emerald-600 dark:text-emerald-400">Included (full list)</span>
+                          <span className="font-semibold text-emerald-600 dark:text-emerald-400">Included</span>
                         </div>
                       ) : (
                         <div className="mt-1 flex items-center justify-between border-t border-zinc-100 pt-1 text-xs dark:border-zinc-700">
@@ -744,13 +746,13 @@ export default function EventDetail({
                       )}
                     </div>
 
-                    {/* Nudge toward the full-list deal when it is affordable */}
+                    {/* Nudge toward taking the whole list when it is affordable */}
                     {!filterActive && sliderValue < remainingCount && remainingCount <= credits && (
                       <button
                         onClick={() => setCustomCount(remainingCount)}
                         className="mt-2 w-full cursor-pointer rounded-lg border border-emerald-200 bg-emerald-50/60 px-3 py-2 text-center text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300 dark:hover:bg-emerald-900/40"
                       >
-                        Take the whole list ({remainingCount.toLocaleString()} contacts) and every verified email is included free
+                        Take the whole list ({remainingCount.toLocaleString()} contacts)
                       </button>
                     )}
 
@@ -780,15 +782,14 @@ export default function EventDetail({
                         disabled={unlocking}
                         className="mt-2 w-full cursor-pointer text-center text-xs font-medium text-zinc-500 underline-offset-2 transition-colors hover:text-zinc-700 hover:underline disabled:opacity-50 dark:text-zinc-400 dark:hover:text-zinc-200"
                       >
-                        Unlock all {Math.min(credits, baseAvailable).toLocaleString()} remaining (ignore filters)
-                        {credits >= baseAvailable ? ", verified emails included" : ""}
+                        Unlock all {Math.min(credits, baseAvailable).toLocaleString()} remaining (ignore filters), verified emails included
                       </button>
                     )}
 
                     <p className="mt-2 text-center text-xs text-zinc-400">
                       1 credit unlocks each contact&apos;s name, title, company, LinkedIn and post.
-                      Take the whole list and verified emails are included. Filter to your ICP and
-                      reveal emails later for 1 credit each. Best contacts first.
+                      Unfiltered unlocks include the verified email free. Filter to your ICP and
+                      reveal emails for 1 credit each. Best contacts first.
                     </p>
 
                     {error && (
@@ -845,7 +846,7 @@ export default function EventDetail({
             count={confirmCount}
             filters={usesFilters ? cleanFilters(activeFilters) : {}}
             credits={credits}
-            emailsIncluded={!usesFilters && remainingCount > 0 && confirmCount >= remainingCount}
+            emailsIncluded={!hasIcpFilters(usesFilters ? cleanFilters(activeFilters) : {}) && confirmCount > 0}
             onConfirm={() => {
               const opts = confirmUnlock;
               setConfirmUnlock(null);
