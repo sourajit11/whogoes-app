@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import type { DashboardOverview, SubscribedEvent } from "@/types";
 import StatCard from "./components/stat-card";
 import EmptyState from "./components/empty-state";
+import AffiliatePromoCard from "./components/affiliate-promo-card";
 
 interface OverviewProps {
   overview: DashboardOverview;
@@ -61,6 +62,9 @@ export default function Overview({
           value={overview.total_accessible_contacts}
         />
       </div>
+
+      {/* Affiliate promo (dismissible) */}
+      <AffiliatePromoCard />
 
       {/* Subscribed Events */}
       <div className="mt-10">

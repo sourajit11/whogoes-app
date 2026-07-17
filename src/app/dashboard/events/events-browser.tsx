@@ -4,6 +4,7 @@ import { useState, useMemo, useDeferredValue, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { BrowsableEvent } from "@/types";
+import RequestEventModal from "../components/request-event-modal";
 
 const PAGE_SIZE = 60;
 
@@ -38,6 +39,7 @@ export default function EventsBrowser({
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [showRequestEvent, setShowRequestEvent] = useState(false);
   // Capture "now" once at mount so the sort inside useMemo stays pure.
   const [now] = useState(() => Date.now());
 
@@ -295,9 +297,17 @@ export default function EventsBrowser({
           <option value="completed">Completed</option>
         </select>
 
-        <span className="ml-auto text-sm text-zinc-400">
-          {filteredEvents.length} event{filteredEvents.length !== 1 ? "s" : ""}
-        </span>
+        <div className="ml-auto flex items-center gap-3">
+          <button
+            onClick={() => setShowRequestEvent(true)}
+            className="cursor-pointer text-sm font-medium text-zinc-500 transition-colors hover:text-emerald-600 dark:text-zinc-400 dark:hover:text-emerald-400"
+          >
+            Can&apos;t find an event? <span className="underline">Request it</span>
+          </button>
+          <span className="text-sm text-zinc-400">
+            {filteredEvents.length} event{filteredEvents.length !== 1 ? "s" : ""}
+          </span>
+        </div>
       </div>
 
       {/* Event Cards Grid */}
@@ -306,16 +316,24 @@ export default function EventsBrowser({
           <p className="text-sm text-zinc-400">
             {initialEvents.length === 0 && !loadError
               ? "No events available yet. Check back soon."
-              : "No events match your filters"}
+              : "We're not tracking that one yet."}
           </p>
-          {hasActiveFilters && (
+          <div className="flex items-center gap-2">
+            {hasActiveFilters && (
+              <button
+                onClick={clearFilters}
+                className="cursor-pointer rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 shadow-sm transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              >
+                Clear filters
+              </button>
+            )}
             <button
-              onClick={clearFilters}
-              className="cursor-pointer rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 shadow-sm transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              onClick={() => setShowRequestEvent(true)}
+              className="cursor-pointer rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-emerald-500"
             >
-              Clear filters
+              Request this event
             </button>
-          )}
+          </div>
         </div>
       ) : (
         <>
@@ -341,6 +359,14 @@ export default function EventsBrowser({
             </div>
           )}
         </>
+      )}
+
+      {showRequestEvent && (
+        <RequestEventModal
+          initialName={searchQuery.trim()}
+          isAuthenticated={isAuthenticated}
+          onClose={() => setShowRequestEvent(false)}
+        />
       )}
     </div>
   );
@@ -386,20 +412,13 @@ function EventCard({
       </div>
 
       {/* Meta — the year lives in the event name and the date line, so it isn't
-          repeated here; industry is the main scanning axis for buyers. */}
+          repeated here. */}
       <div className="mt-3 space-y-1 text-xs text-zinc-400">
-        {(event.event_region || event.event_industry) && (
+        {event.event_region && (
           <div className="flex flex-wrap items-center gap-1.5">
-            {event.event_industry && (
-              <span className="rounded bg-emerald-50 px-1.5 py-0.5 font-medium text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400">
-                {event.event_industry}
-              </span>
-            )}
-            {event.event_region && (
-              <span className="rounded bg-zinc-100 px-1.5 py-0.5 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
-                {event.event_region}
-              </span>
-            )}
+            <span className="rounded bg-zinc-100 px-1.5 py-0.5 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+              {event.event_region}
+            </span>
           </div>
         )}
         {event.event_start_date && (
