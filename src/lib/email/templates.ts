@@ -326,6 +326,22 @@ If you want to tell me anything about how you plan to promote WhoGoes, just repl
         ),
       };
 
+    case "event_request": {
+      const eventName = String(payload.eventName ?? "");
+      const requesterEmail = String(payload.requesterEmail ?? "");
+      const note = String(payload.note ?? "");
+      return {
+        subject: `Event request: ${eventName}`,
+        text: `Someone requested an event on WhoGoes.
+
+Event: ${eventName}
+Requested by: ${requesterEmail || "(not signed in)"}
+Note: ${note || "(none)"}
+
+Add it here: ${APP_URL}/admin/events`,
+      };
+    }
+
     case "affiliate_new_application": {
       const applicantEmail = String(payload.applicantEmail ?? "");
       const applicantName = String(payload.applicantName ?? "");

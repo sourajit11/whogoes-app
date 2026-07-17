@@ -20,13 +20,25 @@ interface Payment {
 }
 
 interface UsageEntry {
+  usage_date: string;
   event_id: string;
   event_name: string;
   credits_used: number;
-  unlocked_at: string;
 }
 
 type Tab = "payments" | "usage";
+
+// Render a YYYY-MM-DD date string as a local-calendar date (no TZ shift).
+// We store usage_date in UTC, but want the printed label to match the same
+// calendar day regardless of where the user is.
+function formatUsageDate(dateStr: string) {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
 
 function formatDateTime(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("en-US", {
@@ -75,6 +87,7 @@ export default function BillingContent({
   const totalSpent = paidPayments.reduce((sum, p) => sum + Number(p.amount_usd), 0);
   const totalCreditsPurchased = paidPayments.reduce((sum, p) => sum + p.credits, 0);
   const totalCreditsUsed = usage.reduce((sum, u) => sum + Number(u.credits_used), 0);
+  const distinctEventCount = new Set(usage.map((u) => u.event_id)).size;
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-8">
@@ -250,7 +263,7 @@ export default function BillingContent({
             />
             <StatCard
               label="Events Accessed"
-              value={usage.length}
+              value={distinctEventCount}
               accent="blue"
             />
           </div>
@@ -303,11 +316,11 @@ export default function BillingContent({
                   <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/50">
                     {usage.map((entry) => (
                       <tr
-                        key={entry.event_id}
+                        key={`${entry.usage_date}-${entry.event_id}`}
                         className="transition-colors hover:bg-zinc-50/70 dark:hover:bg-zinc-900/30"
                       >
                         <td className="whitespace-nowrap px-4 py-3.5 text-zinc-500">
-                          {formatDate(entry.unlocked_at)}
+                          {formatUsageDate(entry.usage_date)}
                         </td>
                         <td className="px-4 py-3.5">
                           <Link

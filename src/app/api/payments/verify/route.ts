@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { enqueueEmail } from "@/lib/email/enqueue";
 
 export async function POST(request: NextRequest) {
@@ -34,8 +35,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Payment verification failed" }, { status: 400 });
     }
 
-    // Signature valid — complete the payment and add credits via RPC
-    const { data, error: rpcError } = await supabase.rpc("complete_payment", {
+    // Signature valid — complete the payment and add credits via RPC.
+    // complete_payment is service-role-only in the DB; the session check and
+    // HMAC verification above are what authorize this call.
+    const admin = createAdminClient();
+    const { data, error: rpcError } = await admin.rpc("complete_payment", {
+      p_user_id: user.id,
       p_razorpay_order_id: razorpay_order_id,
       p_razorpay_payment_id: razorpay_payment_id,
       p_razorpay_signature: razorpay_signature,
