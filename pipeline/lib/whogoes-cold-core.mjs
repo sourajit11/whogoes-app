@@ -116,6 +116,12 @@ function makeVendors(env) {
     msSearch: (companyDomain, { department, query, limit = 5 }) =>
       postJson(`${MOLTSETS}/search_people`, msH,
         { company_domain: companyDomain, ...(department ? { department } : {}), ...(query ? { query } : {}), limit }),
+    // Same endpoint, filtered by company NAME instead of company_domain. Used as a fallback
+    // when the company_domain filter returns not_found (Moltsets domain-index regression,
+    // 2026-07); callers must re-verify the returned people's domain against the target.
+    msSearchByName: (companyName, { department, query, limit = 5 }) =>
+      postJson(`${MOLTSETS}/search_people`, msH,
+        { company: companyName, ...(department ? { department } : {}), ...(query ? { query } : {}), limit }),
     msLinkedinEmail: (linkedin_url) => postJson(`${MOLTSETS}/linkedin_to_best_email`, msH, { linkedin_url }),
     dlSearch: async (filters, limit = 10) => { await dlGate(); return postJson(`${DL_PRIME}/leads/search`, dlH, { filters, pagination: { page: 1, limit } }); },
     dlUnlock: async (leadId) => { await dlGate(); return postJson(`${DL_PRIME}/leads/unlock`, dlH, { leadId }); },
@@ -139,7 +145,7 @@ function makeVendors(env) {
 // --- discovery for one company: founders + true sales, cap 5 ---
 async function discoverPeople(V, company) {
   const domain = normDomain(company.website);
-  if (!domain) return { domain, people: [] };
+  if (!domain) return { domain, people: [], vendorError: false };
   const byKey = new Map();
   const add = (p, foundBy, dlLeadId) => {
     const li = normLinkedin(p.linkedin_url);
@@ -154,18 +160,56 @@ async function discoverPeople(V, company) {
     byKey.set(key, { ...p, company_domain: domain, found_by: [foundBy], dl_lead_id: dlLeadId || null });
   };
 
-  // Moltsets A: sales department; B: founders/CEO
-  const [a, b] = await Promise.all([
-    V.msSearch(domain, { department: "Sales", limit: PER_COMPANY_CAP }),
-    V.msSearch(domain, { query: "founder ceo owner", limit: PER_COMPANY_CAP }),
-  ]);
-  for (const src of [a, b]) {
-    const ppl = src.json?.results?.results || [];
-    for (const p of ppl) add({
-      first_name: p.first_name, last_name: p.last_name, full_name: p.full_name,
-      title: p.title, seniority: p.seniority, linkedin_url: p.linkedin_url,
-      company_name: company.name, ms_inline_email: isEmail(p.business_email) ? p.business_email.trim() : null,
-    }, "moltsets");
+  // Distinguish a genuine transport/server failure (retry-worthy) from Moltsets' NORMAL
+  // "no results" answer — which it returns as HTTP 404 with { status:"not_found" }. A 404
+  // is a valid empty result, NOT an error, so it must not gate marking the company done
+  // (otherwise every legitimately-empty company would be re-processed forever). Only a
+  // network failure (status 0), rate limit (429), or 5xx counts as a hard error here; a
+  // whole batch coming back empty is caught separately in runColdDiscovery.
+  const hardFail = (r) => r.status === 0 || r.status === 429 || r.status >= 500;
+  let moltsetsHardError = false;
+
+  // Ingest Moltsets people from one search response. When verifyDomain is set (the name
+  // fallback), keep only people whose company website resolves to our target domain — so a
+  // same-named but different company can never leak in. Returns how many were kept.
+  const ingestMs = (res, { verifyDomain = false } = {}) => {
+    if (hardFail(res)) moltsetsHardError = true;
+    let kept = 0;
+    for (const p of (res.json?.results?.results || [])) {
+      if (verifyDomain && normDomain(p.company?.website_url) !== domain) continue;
+      add({
+        first_name: p.first_name, last_name: p.last_name, full_name: p.full_name,
+        title: p.title, seniority: p.seniority, linkedin_url: p.linkedin_url,
+        company_name: company.name, ms_inline_email: isEmail(p.business_email) ? p.business_email.trim() : null,
+      }, "moltsets");
+      kept++;
+    }
+    return kept;
+  };
+
+  // PRIMARY: Moltsets by company NAME, keeping only people whose company website resolves to
+  // our target domain. Name search has proven broader coverage than company_domain and is not
+  // affected by the company_domain index outage (2026-07), so it is the primary source.
+  // IMPORTANT: do NOT add department/query to a NAME search — unlike company_domain (a hard
+  // exact filter), the company name filter LOOSENS when combined with department/query and
+  // returns people from other companies (domain-verify then drops them all -> 0 found). A
+  // plain name search returns the right company's people; rankTitle below picks founders/sales.
+  if (company.name) {
+    const r = await V.msSearchByName(company.name, { limit: 10 });
+    ingestMs(r, { verifyDomain: true });
+  }
+
+  // TOP-UP: if the name search did not fill the per-company cap, add Moltsets' exact
+  // company_domain search to recover anyone the name index truncated or missed. While
+  // company_domain is degraded it returns nothing and costs no extra results; once Moltsets
+  // fixes it this contributes automatically. Also the sole source when a company has no name.
+  if (byKey.size < PER_COMPANY_CAP && !moltsetsHardError) {
+    const [d1, d2] = await Promise.all([
+      V.msSearch(domain, { department: "Sales", limit: PER_COMPANY_CAP }),
+      V.msSearch(domain, { query: "founder ceo owner", limit: PER_COMPANY_CAP }),
+    ]);
+    ingestMs(d1);
+    ingestMs(d2);
   }
 
   // Dropleads secondary (also captures Moltsets-missed people; keep lead id for free unlock)
@@ -179,7 +223,7 @@ async function discoverPeople(V, company) {
     .filter((p) => !EXCLUDE_TITLE.test(p.title || ""))
     .sort((x, y) => rankTitle(x.title) - rankTitle(y.title))
     .slice(0, PER_COMPANY_CAP);
-  return { domain, people };
+  return { domain, people, moltsetsHardError };
 }
 
 // --- email waterfall + verify for one person ---
@@ -236,21 +280,25 @@ export async function runColdDiscovery(supabase, { limit = 25, env = process.env
   const V = makeVendors(env);
   const { data: companies, error } = await supabase.rpc("get_whogoes_cold_companies", { p_limit: limit });
   if (error) throw new Error(`get_whogoes_cold_companies: ${error.message}`);
-  if (!companies?.length) return { companies: 0, discovered: 0, contactable: 0, done: 0, detail: [] };
+  if (!companies?.length) return { companies: 0, discovered: 0, contactable: 0, done: 0, skippedVendorError: 0, vendorLikelyDown: false, detail: [] };
 
   const nowIso = new Date().toISOString();
-  let discovered = 0, contactable = 0, done = 0;
   const detail = [];
+  const outcomes = []; // { company, peopleFound, peopleContactable, hardError }
+  let discovered = 0, contactable = 0;
 
   // Process several companies concurrently; the Dropleads start-gate keeps all of
   // them under 60/min while Reoon/Moltsets latency overlaps. Company concurrency of
-  // 4 keeps the Dropleads pipe saturated without exhausting memory.
+  // 4 keeps the Dropleads pipe saturated without exhausting memory. We collect outcomes
+  // first and decide which companies to mark "done" afterward, so a batch-wide vendor
+  // outage can be detected before anything is burned.
   await mapLimit(companies, 4, async (company) => {
-    let peopleFound = 0, peopleContactable = 0;
+    let peopleFound = 0, peopleContactable = 0, hardError = false;
     try {
-      const { people } = await discoverPeople(V, company);
+      const { people, moltsetsHardError } = await discoverPeople(V, company);
+      hardError = moltsetsHardError;
       // people within a company run concurrently too
-      const outcomes = await mapLimit(people, people.length, async (p) => {
+      const found = await mapLimit(people, people.length, async (p) => {
         const li = p.linkedin_url;
         if (li) {
           const { data: existing } = await supabase.from("whogoes_prospects")
@@ -271,16 +319,54 @@ export async function runColdDiscovery(supabase, { limit = 25, env = process.env
         }, { onConflict: "linkedin_url", ignoreDuplicates: true });
         return res.contactable ? "contactable" : "found";
       });
-      for (const o of outcomes) { if (o) { peopleFound++; if (o === "contactable") peopleContactable++; } }
+      for (const o of found) { if (o) { peopleFound++; if (o === "contactable") peopleContactable++; } }
       discovered += peopleFound; contactable += peopleContactable;
     } catch (e) {
+      hardError = true; // an unexpected throw is also an unreliable result — don't burn the company
       detail.push({ company: company.name, error: String(e) });
     }
-    await supabase.from("whogoes_cold_company_done").upsert(
-      { company_id: company.id, people_found: peopleFound, people_sent: peopleContactable, processed_at: nowIso },
-      { onConflict: "company_id" });
-    done++;
-    detail.push({ company: company.name, found: peopleFound, contactable: peopleContactable });
+    outcomes.push({ company, peopleFound, peopleContactable, hardError });
   });
-  return { companies: companies.length, discovered, contactable, done, detail };
+
+  // Batch-level outage guard. Moltsets signals "no results" with an HTTP 404, which per
+  // request is indistinguishable from a genuinely empty company. But a whole batch coming
+  // back empty is not credible (some companies always have discoverable people), so treat a
+  // near-total zero-yield batch as a vendor outage and hold every affected company back for
+  // the next run. Normal zero-yield runs ~20-45% of a batch, so 85% cleanly flags an outage.
+  // Two independent degradation signals, because Moltsets' 404-for-empty means a partial
+  // outage looks like a batch of mostly-empty companies, not a hard error:
+  //   (a) zero-yield ratio >= 70% (normal runs sit at 20-45%), and
+  //   (b) average people/company < 0.8 (healthy days run 1.8-3.7; a degraded day like
+  //       2026-07-14 ran 0.14). The avg floor catches "bad but not total" days where
+  //       per-batch zero-ratios hover just under the ratio threshold and would otherwise burn.
+  const zeroYield = outcomes.filter((o) => o.peopleFound === 0).length;
+  const avgYield = outcomes.length
+    ? outcomes.reduce((sum, o) => sum + o.peopleFound, 0) / outcomes.length
+    : 0;
+  const vendorLikelyDown =
+    companies.length >= 8 && (zeroYield >= 0.7 * companies.length || avgYield < 0.8);
+
+  let done = 0, skippedVendorError = 0;
+  const doneRows = [];
+  for (const o of outcomes) {
+    // Skip marking done (leave in pool) only when we found nobody AND the miss is
+    // attributable to a vendor problem — a hard transport error or a batch-wide outage.
+    // An isolated empty result in an otherwise-healthy batch is a real "no people" company
+    // and IS marked done, so it is never re-processed forever.
+    if (o.peopleFound === 0 && (o.hardError || vendorLikelyDown)) {
+      skippedVendorError++;
+      detail.push({ company: o.company.name, skipped: vendorLikelyDown ? "vendor_outage" : "vendor_error" });
+      continue;
+    }
+    doneRows.push({
+      company_id: o.company.id, people_found: o.peopleFound,
+      people_sent: o.peopleContactable, processed_at: nowIso,
+    });
+    done++;
+    detail.push({ company: o.company.name, found: o.peopleFound, contactable: o.peopleContactable });
+  }
+  if (doneRows.length) {
+    await supabase.from("whogoes_cold_company_done").upsert(doneRows, { onConflict: "company_id" });
+  }
+  return { companies: companies.length, discovered, contactable, done, skippedVendorError, vendorLikelyDown, avgYield: Number(avgYield.toFixed(2)), detail };
 }

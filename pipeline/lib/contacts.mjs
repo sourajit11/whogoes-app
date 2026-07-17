@@ -48,6 +48,18 @@ export async function fetchContactsForEvent(supabase, event) {
 
   if (contacts.length === 0) return [];
 
+  // Affiliate recruits are courted as partners, never cold-emailed as customer leads.
+  const recruitRows = await fetchByIds(
+    supabase, "affiliate_recruit_targets", "contact_id",
+    contacts.map((c) => c.id), "contact_id"
+  );
+  if (recruitRows.length > 0) {
+    const recruitIds = new Set(recruitRows.map((r) => r.contact_id));
+    contacts = contacts.filter((c) => !recruitIds.has(c.id));
+    console.log(`    Suppressed ${recruitRows.length} affiliate recruit(s)`);
+    if (contacts.length === 0) return [];
+  }
+
   const contactMap = Object.fromEntries(contacts.map((c) => [c.id, c]));
   const filteredContactIds = contacts.map((c) => c.id);
 
