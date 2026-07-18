@@ -2,6 +2,17 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function updateSession(request: NextRequest) {
+  // The public API (Bearer wg_ keys) and internal cron/keys routes do their own
+  // auth inside the route handlers. Skip cookie-session work entirely: a
+  // Bearer-only request has no Supabase session and would otherwise be
+  // 307-redirected to /login before the handler ever runs.
+  if (
+    request.nextUrl.pathname.startsWith("/api/v1") ||
+    request.nextUrl.pathname.startsWith("/api/internal")
+  ) {
+    return NextResponse.next({ request });
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(

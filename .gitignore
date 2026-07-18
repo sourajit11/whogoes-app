@@ -55,20 +55,3 @@ next-env.d.ts
 # scratch / one-off diagnostics
 /scripts/diag_role*.mjs
 /scripts/e2e-*.mjs
-
-# UNRELEASED — Public API feature (built Jun 2026, not launched). Do NOT commit
-# until launch, or it auto-deploys live. To release: delete this block, then commit.
-/src/app/api/v1/
-/src/app/api/internal/
-/src/lib/api/
-/src/app/docs/api/
-/docs/API.md
-/docs/API_BUILD_LOG.md
-/docs/API_TEST_PLAN.md
-/docs/API_IMPLEMENTATION_PLAN.md
-/sql/10-api-keys.sql
-/sql/11-usage-history-by-date.sql
-/sql/12-api-list-events.sql
-/sql/13-api-subscriptions.sql
-/sql/14-api-all-contacts.sql
-/scripts/test-api.sh
