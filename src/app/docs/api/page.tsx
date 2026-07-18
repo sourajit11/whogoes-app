@@ -9,9 +9,6 @@ export const metadata: Metadata = {
   title: "WhoGoes Public API Documentation",
   description:
     "REST API for programmatic access to WhoGoes attendee contact data: ICP filters, unlocks with verified emails, auto-pull, idempotency, rate limits, and examples.",
-  // API not publicly launched yet: keep the docs reachable by direct link for
-  // pilot users, but out of search engines. Drop this when the API goes live.
-  robots: { index: false, follow: false },
 };
 
 export const revalidate = 3600;

@@ -4,10 +4,9 @@ import { createClient } from "@/lib/supabase/server";
 import ApiKeyManager from "./components/api-key-manager";
 import type { ApiKeyDisplay } from "@/types";
 
-// The public API has not launched yet: the page shows the pre-launch "Coming Soon"
-// state instead of the key manager. Flip this to true at launch to restore the
-// full API & Integrations page below.
-const API_FEATURE_LIVE = false;
+// Launched 2026-07-18. Flip to false to hide key creation in an emergency
+// (existing keys keep working; disable them per-key in the DB if needed).
+const API_FEATURE_LIVE = true;
 
 export default async function IntegrationsPage() {
   if (!API_FEATURE_LIVE) {
