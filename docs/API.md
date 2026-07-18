@@ -128,13 +128,28 @@ All read endpoints are free.
 
 Browse active events. Params: `year`, `region`, `country`, `industry`, `q` (name search), `starts_after`, `starts_before` (YYYY-MM-DD), `limit` (max 200), `offset`. Returns `event_id`, `event_slug`, `event_name`, location fields, `event_start_date`, `event_industry`, `total_contacts`, `contacts_with_email`, and `counts_cached_at`. List counts are refreshed on a schedule; the facets endpoint is the live truth for a specific event.
 
+```bash
+curl -H "Authorization: Bearer $WG_KEY" \
+  "https://app.whogoes.co/api/v1/events?year=2026&region=US&q=modex&limit=20"
+```
+
 ### `GET /v1/events/{idOrSlug}/status`
 
 Live totals for one event plus your position on it: `total_contacts`, `contacts_with_email`, `unlocked_count`, `emails_unlocked`, `remaining_count`, `user_balance`, `auto_pull_enabled`. Event routes accept either the event UUID or its slug.
 
+```bash
+curl -H "Authorization: Bearer $WG_KEY" \
+  https://app.whogoes.co/api/v1/events/modex-2026/status
+```
+
 ### `GET /v1/events/{idOrSlug}/facets`
 
 The pre-purchase workhorse. Takes any filter params and returns live counts: `matched`, `with_email`, `owned` (matches you already unlocked, so you can compute exactly how many new contacts an unlock would deliver), and breakdowns `by_seniority`, `by_function`, `by_role`, `by_industry`, `by_size`, `by_country`, `top_companies`.
+
+```bash
+curl -H "Authorization: Bearer $WG_KEY" \
+  "https://app.whogoes.co/api/v1/events/modex-2026/facets?seniority=C-Suite,VP&has_email=true"
+```
 
 Cost estimate for a filtered unlock with emails: `(matched - owned) + with_email_among_new` credits at most; the unlock response reports the exact spend.
 
@@ -142,21 +157,29 @@ Cost estimate for a filtered unlock with emails: `(matched - owned) + with_email
 
 A redacted sample of matching contacts (partial identities, no emails), same as the public event page. Params: filters plus `limit` (max 25).
 
+```bash
+curl -H "Authorization: Bearer $WG_KEY" \
+  "https://app.whogoes.co/api/v1/events/modex-2026/preview?seniority=C-Suite&limit=5"
+```
+
 ---
 
 ## Unlocking and revealing
 
 ### `POST /v1/events/{idOrSlug}/unlock`
 
-Body:
-
-```json
-{
-  "count": 100,
-  "filters": { "seniority": ["C-Suite", "VP"], "industry": ["Software & Technology"] },
-  "include_emails": true,
-  "auto_pull": false
-}
+```bash
+curl -X POST \
+  -H "Authorization: Bearer $WG_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -d '{
+    "count": 100,
+    "filters": { "seniority": ["C-Suite", "VP"], "industry": ["Software & Technology"] },
+    "include_emails": true,
+    "auto_pull": false
+  }' \
+  https://app.whogoes.co/api/v1/events/modex-2026/unlock
 ```
 
 - `count` (required): 1 to 10000. Large requests are processed in server-side chunks within one call.
@@ -170,13 +193,21 @@ Send an `Idempotency-Key` header (any unique string, a UUID is ideal) on every u
 
 ### `POST /v1/events/{idOrSlug}/reveal-emails`
 
-Reveal verified emails for contacts you own that do not have their email tier unlocked yet. 1 credit per email actually revealed. Scope it three ways:
+Reveal verified emails for contacts you own that do not have their email tier unlocked yet. 1 credit per email actually revealed. Scope it three ways: specific contacts, a filter object, or an empty body to reveal everything eligible on the event.
 
-```json
-{ "contact_ids": ["uuid1", "uuid2"] }
+```bash
+# Specific contacts
+curl -X POST -H "Authorization: Bearer $WG_KEY" -H "Content-Type: application/json" \
+  -d '{"contact_ids": ["2b0e5a04-0000-0000-0000-000000000000"]}' \
+  https://app.whogoes.co/api/v1/events/modex-2026/reveal-emails
+
+# Everyone matching a filter
+curl -X POST -H "Authorization: Bearer $WG_KEY" -H "Content-Type: application/json" \
+  -d '{"filters": {"seniority": ["C-Suite"]}}' \
+  https://app.whogoes.co/api/v1/events/modex-2026/reveal-emails
 ```
 
-or with a filter object (`{ "filters": { "seniority": ["C-Suite"] } }`), or with an empty body to reveal everything eligible on the event. Returns `emails_revealed`, `credits_spent`, `new_balance`, and `revealed`, the list of `{ contact_id, email }` pairs.
+Returns `emails_revealed`, `credits_spent`, `new_balance`, and `revealed`, the list of `{ contact_id, email }` pairs.
 
 ---
 
@@ -186,6 +217,11 @@ or with a filter object (`{ "filters": { "seniority": ["C-Suite"] } }`), or with
 
 Your unlocked contacts for one event. Params: any filter params, `sort` (`unlocked_at`, `full_name`, `current_title`, `company_name`, `post_date`, `email`), `dir` (`asc`/`desc`), `limit` (max 100), `offset`.
 
+```bash
+curl -H "Authorization: Bearer $WG_KEY" \
+  "https://app.whogoes.co/api/v1/events/modex-2026/contacts?sort=post_date&dir=desc&limit=100"
+```
+
 Each contact carries identity and LinkedIn URLs, company fields (name, domain, website, industry and size buckets, headquarters), `event_role`, `is_speaker`, the proof (`post_url`, `post_date`, `source`), `unlocked_at`, and `batch_id`. Email handling:
 
 - `email`, `email_status`, `email_provider` are present only when `email_unlocked` is `true`.
@@ -194,6 +230,11 @@ Each contact carries identity and LinkedIn URLs, company fields (name, domain, w
 ### `GET /v1/contacts`
 
 Same payload across all events (each row adds `event_id`, `event_slug`, `event_name`). Params: `since`, `event` (UUID or slug), `limit` (max 200), `offset`. This is the sync feed; see the recipe below.
+
+```bash
+curl -H "Authorization: Bearer $WG_KEY" \
+  "https://app.whogoes.co/api/v1/contacts?since=2026-07-18T00:00:00Z&limit=200"
+```
 
 ---
 
@@ -228,7 +269,20 @@ curl -X PUT -H "Authorization: Bearer $WG_KEY" -H "Content-Type: application/jso
 - Your balance: pulls simply stop at zero and resume when you top up.
 - Rules run oldest-first when balance is short, so priority is predictable.
 
-**Body options**: `max_credits` to cap this run, `dry_run: true` for a free estimate of what a real run would unlock and cost:
+**Body options**: `max_credits` to cap this run, `dry_run: true` for a free estimate of what a real run would unlock and cost.
+
+```bash
+# Free estimate
+curl -X POST -H "Authorization: Bearer $WG_KEY" -H "Content-Type: application/json" \
+  -d '{"dry_run": true}' https://app.whogoes.co/api/v1/pull
+
+# Real run, capped at 50 credits
+curl -X POST -H "Authorization: Bearer $WG_KEY" -H "Content-Type: application/json" \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -d '{"max_credits": 50}' https://app.whogoes.co/api/v1/pull
+```
+
+Dry run response:
 
 ```json
 {
@@ -265,6 +319,10 @@ With `since`, rows come oldest first and strictly newer than the timestamp; keep
 ## Credits
 
 `GET /v1/credits` returns your balance and this key's daily cap state:
+
+```bash
+curl -H "Authorization: Bearer $WG_KEY" https://app.whogoes.co/api/v1/credits
+```
 
 ```json
 { "data": { "balance": 950, "daily_cap": 200, "spent_today": 50, "remaining_today": 150 } }
