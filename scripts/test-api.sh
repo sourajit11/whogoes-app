@@ -14,8 +14,8 @@
 #   WG_BAD_KEY     - a bogus key for unauth tests
 #   WG_CRON_SECRET - AUTO_PULL_CRON_SECRET; when set, the internal drainer is exercised
 #
-# NOTE: a full run SPENDS roughly 5 credits on the key's account (2 unlock,
-# 1 reveal, up to 2 auto-pull) and leaves those contacts owned.
+# NOTE: a full run SPENDS roughly 4 credits on the key's account (unlocks +
+# 1 reveal) and leaves those contacts owned.
 
 set -u
 
@@ -156,7 +156,7 @@ status=$(call GET "/api/v1/events/$WG_EVENT/status" "$WG_KEY")
 body=$(read_body)
 assert_status "4.1 status 200" 200 "$status" "$body"
 assert_contains "4.2 status has total_contacts" "total_contacts" "$body"
-assert_contains "4.3 status has auto_pull_enabled" "auto_pull_enabled" "$body"
+assert_contains "4.3 status has emails_unlocked" "emails_unlocked" "$body"
 
 status=$(call GET "/api/v1/events/this-slug-does-not-exist/status" "$WG_KEY")
 assert_status "4.4 unknown event 404" 404 "$status" "$(read_body)"
@@ -279,41 +279,25 @@ assert_status "12.3 bad since 400" 400 "$status" "$(read_body)"
 status=$(call GET "/api/v1/contacts?event=$WG_EVENT&limit=5" "$WG_KEY")
 assert_status "12.4 event-scoped feed 200" 200 "$status" "$(read_body)"
 
-# --- 13. Auto-pull rules ---
-status=$(call PUT "/api/v1/auto-pull/$WG_EVENT2" "$WG_KEY" \
-  '{"filters": {"title_keyword": "a"}, "max_credits_per_day": 2, "paused": true}')
+# --- 13. Scheduled-sync semantics: re-running an unlock only buys newcomers ---
+status=$(call POST "/api/v1/events/$WG_EVENT/unlock" "$WG_KEY" \
+  '{"count": 1, "filters": {"title_keyword": "a"}, "include_emails": false}')
 body=$(read_body)
-assert_status "13.1 create rule 200" 200 "$status" "$body"
-assert_eq "13.2 rule paused" "true" "$(jsonget data rule paused)"
-
-status=$(call GET "/api/v1/auto-pull" "$WG_KEY")
-body=$(read_body)
-assert_status "13.3 list rules 200" 200 "$status" "$body"
-assert_contains "13.4 rule listed" "$WG_EVENT2" "$body"
-
-status=$(call POST "/api/v1/pull" "$WG_KEY" '{"dry_run": true}')
-body=$(read_body)
-assert_status "13.5 dry run 200" 200 "$status" "$body"
-assert_eq "13.6 paused rule spends nothing" "0" "$(jsonget data credits_spent)"
-
-status=$(call PATCH "/api/v1/auto-pull/$WG_EVENT2" "$WG_KEY" '{"paused": false}')
-assert_status "13.7 unpause 200" 200 "$status" "$(read_body)"
-
-status=$(call POST "/api/v1/pull" "$WG_KEY" '{"max_credits": 2}')
-body=$(read_body)
-assert_status "13.8 real pull 200" 200 "$status" "$body"
-PULL_SPENT=$(jsonget data credits_spent)
-if [[ "$PULL_SPENT" == "0" || "$PULL_SPENT" == "1" || "$PULL_SPENT" == "2" ]]; then
-  assert_eq "13.9 pull respects max_credits" "capped" "capped"
+if [[ "$status" == "200" ]]; then
+  assert_eq "13.1 rerun buys only new (1cr)" "1" "$(jsonget data credits_spent)"
 else
-  assert_eq "13.9 pull respects max_credits" "capped" "spent=$PULL_SPENT"
+  assert_contains "13.1 rerun with exhausted pool spends nothing" "No more contacts" "$body"
 fi
 
-status=$(call DELETE "/api/v1/auto-pull/$WG_EVENT2" "$WG_KEY")
-assert_status "13.10 delete rule 200" 200 "$status" "$(read_body)"
+# Pull-rule surface is withdrawn from the public API (engine kept dormant).
+status=$(call POST "/api/v1/pull" "$WG_KEY" '{"dry_run": true}')
+assert_status "13.2 /pull removed" 404 "$status" "$(read_body)"
 
-status=$(call DELETE "/api/v1/auto-pull/$WG_EVENT2" "$WG_KEY")
-assert_status "13.11 delete again 404" 404 "$status" "$(read_body)"
+status=$(call GET "/api/v1/auto-pull" "$WG_KEY")
+assert_status "13.3 /auto-pull list removed" 404 "$status" "$(read_body)"
+
+status=$(call PUT "/api/v1/auto-pull/$WG_EVENT2" "$WG_KEY" '{"filters": {}}')
+assert_status "13.4 /auto-pull PUT removed" 404 "$status" "$(read_body)"
 
 # --- 14. Removed endpoints are gone ---
 status=$(call GET "/api/v1/subscriptions" "$WG_KEY")

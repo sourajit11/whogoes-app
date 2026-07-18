@@ -90,7 +90,7 @@ Rules worth knowing:
 
 ## ICP filters reference
 
-The same filter object works everywhere: unlock bodies, facet and preview queries, contact reads, and auto-pull rules.
+The same filter object works everywhere: unlock bodies, facet and preview queries, and contact reads.
 
 | Key | Type | Values |
 |---|---|---|
@@ -135,7 +135,7 @@ curl -H "Authorization: Bearer $WG_KEY" \
 
 ### `GET /v1/events/{idOrSlug}/status`
 
-Live totals for one event plus your position on it: `total_contacts`, `contacts_with_email`, `unlocked_count`, `emails_unlocked`, `remaining_count`, `user_balance`, `auto_pull_enabled`. Event routes accept either the event UUID or its slug.
+Live totals for one event plus your position on it: `total_contacts`, `contacts_with_email`, `unlocked_count`, `emails_unlocked`, `remaining_count`, `user_balance`. Event routes accept either the event UUID or its slug.
 
 ```bash
 curl -H "Authorization: Bearer $WG_KEY" \
@@ -176,8 +176,7 @@ curl -X POST \
   -d '{
     "count": 100,
     "filters": { "seniority": ["C-Suite", "VP"], "industry": ["Software & Technology"] },
-    "include_emails": true,
-    "auto_pull": false
+    "include_emails": true
   }' \
   https://app.whogoes.co/api/v1/events/modex-2026/unlock
 ```
@@ -185,9 +184,7 @@ curl -X POST \
 - `count` (required): 1 to 10000. Large requests are processed in server-side chunks within one call.
 - `filters` (optional): the ICP filter object. Omit for a full-list unlock (emails included at 1 credit per contact).
 - `include_emails` (optional, default `true`): on filtered unlocks, bundle the email reveal (+1 credit per contact with a verified email) into this call. Set `false` to buy identities only and reveal selectively later.
-- `auto_pull` (optional, default `false`): also save these filters as the event's pull rule, so your scheduled `POST /v1/pull` calls keep buying new matches. Optional `auto_pull_max_credits_per_day` caps the rule's daily spend.
-
-Response fields: `contacts_unlocked`, `emails_included` (free, unfiltered path), `emails_revealed` (charged, bundled path), `credits_spent`, `new_balance`, `batch_id`, `has_more`, and `auto_pull` (the saved rule, when requested). The unlock is recorded as a batch; the same filters and batch history are visible in the dashboard.
+Response fields: `contacts_unlocked`, `emails_included` (free, unfiltered path), `emails_revealed` (charged, bundled path), `credits_spent`, `new_balance`, `batch_id`, and `has_more`. The unlock is recorded as a batch; the same filters and batch history are visible in the dashboard.
 
 Send an `Idempotency-Key` header (any unique string, a UUID is ideal) on every unlock. Retrying with the same key returns the original response with `Idempotency-Replayed: true` and never double-charges.
 
@@ -238,63 +235,15 @@ curl -H "Authorization: Bearer $WG_KEY" \
 
 ---
 
-## Pull rules: keep new matches coming, on your schedule
+## Keeping new matches coming
 
-Events on WhoGoes keep growing as more people post that they are attending. Save your ICP as a pull rule per event, then run `POST /v1/pull` from your own scheduler (cron, n8n, Zapier, anything) as often as you like. Each run buys only contacts you do not own yet, so calling it hourly simply means "buy whatever arrived since my last run". Nothing is ever charged in the background: credits move only when you call.
+Events on WhoGoes keep growing as more people post that they are attending. Because a contact can never be bought twice, staying in sync is simply re-running your unlock on your own schedule:
 
-**Save a rule** either way:
+1. Unlock everyone who matches your ICP today (set `count` high enough to cover the full match).
+2. Schedule the exact same call (cron, n8n, Zapier, anything). Every future run buys only people who arrived since your last run, and spends nothing when nobody new matches.
+3. Follow each run with `GET /v1/contacts?since=<watermark>` to collect what you now own.
 
-- Add `"auto_pull": true` to any unlock call. The unlock's filters and `include_emails` become the event's rule.
-- Or manage rules directly:
-
-```bash
-# Create or replace a rule
-curl -X PUT -H "Authorization: Bearer $WG_KEY" -H "Content-Type: application/json" \
-  -d '{"filters": {"seniority": ["C-Suite"]}, "max_credits_per_day": 50}' \
-  https://app.whogoes.co/api/v1/auto-pull/modex-2026
-
-# List rules            GET    /v1/auto-pull
-# Pause                 PATCH  /v1/auto-pull/modex-2026   {"paused": true}
-# Remove                DELETE /v1/auto-pull/modex-2026
-```
-
-**Run your rules**: `POST /v1/pull` walks every enabled rule and unlocks new matching contacts, charged exactly like a manual unlock with those filters (so a filtered rule with emails costs 1 or 2 credits per contact). One rule per event; saving again replaces it. Idempotency-Key is supported, so scheduler retries are safe.
-
-**Cost controls**, all optional, all enforced server-side:
-
-- `max_credits_per_day` per rule (UTC day), no matter how often you call.
-- `max_total_contacts` per rule, a lifetime cap on contacts owned for that event.
-- `max_credits` in the request body caps a single run.
-- Your key's daily spend cap applies as always.
-- Your balance: pulls simply stop at zero and resume when you top up.
-- Rules run oldest-first when balance is short, so priority is predictable.
-
-**Body options**: `max_credits` to cap this run, `dry_run: true` for a free estimate of what a real run would unlock and cost.
-
-```bash
-# Free estimate
-curl -X POST -H "Authorization: Bearer $WG_KEY" -H "Content-Type: application/json" \
-  -d '{"dry_run": true}' https://app.whogoes.co/api/v1/pull
-
-# Real run, capped at 50 credits
-curl -X POST -H "Authorization: Bearer $WG_KEY" -H "Content-Type: application/json" \
-  -H "Idempotency-Key: $(uuidgen)" \
-  -d '{"max_credits": 50}' https://app.whogoes.co/api/v1/pull
-```
-
-Dry run response:
-
-```json
-{
-  "data": {
-    "dry_run": true,
-    "estimated_credits": 42,
-    "breakdown": [
-      { "event_slug": "modex-2026", "available_contacts": 24, "available_with_email": 18, "estimated_credits": 42 }
-    ]
-  }
-}
-```
+Cost stays fully in your hands: the facets endpoint tells you before any run how many new matches exist (`matched` minus `owned`), and a per-key daily credit cap is a hard stop no matter what your scheduler does. Use a fresh `Idempotency-Key` per scheduled run (or omit the header); reusing one replays the earlier response instead of buying again, which is also your safety net for retries.
 
 ---
 
@@ -312,7 +261,7 @@ curl -H "Authorization: Bearer $WG_KEY" \
   "https://app.whogoes.co/api/v1/contacts?since=$LAST_WATERMARK&limit=200"
 ```
 
-With `since`, rows come oldest first and strictly newer than the timestamp; keep requesting with `offset` (or the new watermark) until `has_more` is false, then persist the last `watermark`. The complete hourly pipeline is two calls: `POST /v1/pull` (buy new matches per your saved rules) then `GET /v1/contacts?since=<watermark>` (drain them into your system).
+With `since`, rows come oldest first and strictly newer than the timestamp; keep requesting with `offset` (or the new watermark) until `has_more` is false, then persist the last `watermark`. The complete hourly pipeline is two calls: your filtered unlock (buys only newcomers) then `GET /v1/contacts?since=<watermark>` (drains them into your system).
 
 ---
 
@@ -354,11 +303,6 @@ Successful responses include `X-RateLimit-Remaining`. The 402 `Retry-After` head
 | POST | `/v1/events/{idOrSlug}/reveal-emails` | Yes |
 | GET | `/v1/events/{idOrSlug}/contacts` | No |
 | GET | `/v1/contacts` | No |
-| POST | `/v1/pull` | Yes (dry_run is free) |
-| GET | `/v1/auto-pull` | No |
-| PUT | `/v1/auto-pull/{idOrSlug}` | No |
-| PATCH | `/v1/auto-pull/{idOrSlug}` | No |
-| DELETE | `/v1/auto-pull/{idOrSlug}` | No |
 
 ---
 
@@ -371,7 +315,7 @@ Successful responses include `X-RateLimit-Remaining`. The 402 `Retry-After` head
 | 402 | `PAYMENT_REQUIRED` | Account has never purchased credits |
 | 402 | `SPEND_CAP_EXCEEDED` | Key's daily credit cap reached; see `Retry-After` |
 | 403 | `FORBIDDEN` | Key valid but action not allowed |
-| 404 | `NOT_FOUND` | Unknown event, or no auto-pull rule to delete |
+| 404 | `NOT_FOUND` | Unknown event |
 | 429 | `RATE_LIMITED` | Over 60 requests/minute |
 | 500 | `INTERNAL_ERROR` | Something broke on our side; safe to retry with the same Idempotency-Key |
 
@@ -385,4 +329,4 @@ Additive changes (new fields, new endpoints, new filter keys) ship in `/v1` with
 
 ## Changelog
 
-- **2026-07**: Initial public release. ICP filters on every surface, 2-tier pricing (identities + verified emails), single-call bundled email reveal, saved pull rules for scheduler-driven syncing, incremental sync watermark.
+- **2026-07**: Initial public release. ICP filters on every surface, 2-tier pricing (identities + verified emails), single-call bundled email reveal, scheduler-friendly syncing with the incremental watermark feed.

@@ -3,8 +3,8 @@
 A follow-along checklist for testing every endpoint and scenario by hand.
 Written for Postman; every case shows the request and what you should see.
 
-**Heads up on cost**: running the whole plan spends roughly 15 to 20 credits
-on the account whose key you use. All spends are small (2 to 5 credits each).
+**Heads up on cost**: running the whole plan spends roughly 10 to 15 credits
+on the account whose key you use. All spends are small (1 to 4 credits each).
 
 ---
 
@@ -56,7 +56,7 @@ on the account whose key you use. All spends are small (2 to 5 credits each).
 **6. Event status**
 - GET `{{base}}/events/{slug}/status`
 - Expect: `total_contacts`, `contacts_with_email`, `unlocked_count` (0 if you
-  have not bought from this event), `user_balance`, `auto_pull_enabled: false`.
+  have not bought from this event), `user_balance`.
 
 **7. Facets (the "who is here" breakdown)**
 - GET `{{base}}/events/{slug}/facets`
@@ -143,91 +143,65 @@ For all POSTs: Body tab, raw, JSON.
 
 ---
 
-## E. Pull rules (the "keep new matches coming" feature)
+## E. Scheduled syncing (keep new matches coming)
 
-How this works: you save a rule per event (your filters plus spending caps),
-then YOUR scheduler calls `POST /pull` as often as you like. Each call buys
-only contacts you do not own yet. Nothing runs on WhoGoes' side on a clock;
-credits only move when you call.
+How this works: a contact can never be bought twice, so "get me the new
+people" is simply re-running your unlock on a schedule. Each run buys only
+people who arrived since your last run, and spends nothing when nothing new
+matches. Nothing runs on WhoGoes' side on a clock; credits only move when
+you call.
 
-**19. Create a rule**
-- PUT `{{base}}/auto-pull/{slug}`
-```json
-{ "filters": { "seniority": ["C-Suite", "VP"] }, "max_credits_per_day": 5 }
-```
-- Expect: the saved rule echoed back, `enabled: true`.
+**19. Re-running an unlock buys only newcomers**
+- Send the exact unlock from Test 14 again (same filters, count 2).
+- Expect: either 2 people you did NOT already own, or, once the filter pool
+  is used up, a 400 with "No more contacts to unlock" and nothing charged.
+- Keep re-sending until you get that 400: this is the proof that a scheduled
+  call is always safe. It can never re-buy or overspend.
 
-**20. See your rules**
-- GET `{{base}}/auto-pull`
-- Expect: your rule with `credits_spent_today` and `last_pulled_at`.
+**20. Know the cost before any run**
+- GET `{{base}}/events/{slug}/facets?seniority=C-Suite,VP,Director`
+- Expect: `matched` and `owned`. New people the next run would buy =
+  matched minus owned. When they are equal, the next run costs nothing.
 
-**21. Free estimate**
-- POST `{{base}}/pull` with body `{ "dry_run": true }`
-- Expect: `estimated_credits` and a per-event breakdown. Nothing charged.
-
-**22. Pull now**
-- POST `{{base}}/pull` with body `{}`
-- Expect: unlocks matching contacts up to the rule's 5-credit daily cap.
-
-**23. Daily cap holds**
-- POST `{{base}}/pull` again immediately.
-- Expect: `credits_spent: 0` (the rule already hit its cap today).
-
-**24. Pause and resume**
-- PATCH `{{base}}/auto-pull/{slug}` with `{ "paused": true }`
-- POST `{{base}}/pull` : the paused rule is skipped.
-- PATCH again with `{ "paused": false }`.
-
-**25. Scheduled pulls, exactly like a customer would (your own n8n)**
+**21. A real schedule, exactly like a customer would (your own n8n)**
 - In your n8n, create a tiny workflow: a Schedule Trigger (every 1 hour)
   connected to an HTTP Request node:
-  - Method POST, URL `https://app.whogoes.co/api/v1/pull`
+  - Method POST, URL `https://app.whogoes.co/api/v1/events/{slug}/unlock`
   - Header `Authorization` = `Bearer wg_...` (your key)
-  - Body: JSON, `{}`
-- Press "Execute workflow" to run it once by hand.
-- Expect: a green run whose output shows `credits_spent` and a breakdown.
-  With your rule under its daily cap, newly arrived matching contacts get
-  bought; if nothing new arrived on the event, `credits_spent` is 0 and
-  nothing is charged (that is normal and safe).
-- Run it again immediately: expect 0 spent (nothing new, or the daily cap).
-- Leave the schedule on overnight and check Executions the next day: runs
-  every hour, all green, spending only when the event actually grew. This is
-  the exact setup a customer would build in n8n, Zapier, or a cron job.
-
-**26. Delete the rule**
-- DELETE `{{base}}/auto-pull/{slug}` : expect `deleted: true`.
-- DELETE again: expect 404 (already gone).
-- GET `{{base}}/auto-pull` : list no longer shows it.
-
----
+  - Body: JSON, `{ "count": 100, "filters": { "seniority": ["C-Suite", "VP", "Director"] } }`
+- Press "Execute workflow" once by hand.
+- Expect: a green run; the output shows `contacts_unlocked` and
+  `credits_spent` (0 spend and a "No more contacts" result is normal once
+  the pool is exhausted).
+- Leave the schedule on overnight and check Executions the next day: hourly
+  green runs, spending only when the event actually grew. This is the exact
+  setup a customer would build in n8n, Zapier, or a cron job. As a guard,
+  set a daily credit cap on the key (Test 18) so no scheduler bug can ever
+  overspend.
 
 ## F. Getting everything into your own system (the sync feed)
 
-**27. The watermark loop**
+**22. The watermark loop**
 - GET `{{base}}/contacts?since=1970-01-01T00:00:00Z&limit=200`
 - Expect: every contact you own, oldest first, plus a `watermark` timestamp.
 - Save the watermark, then call again with `since=<that watermark>`.
 - Expect: empty list (nothing new yet).
 - Unlock 1 more contact anywhere (Test 15), repeat the call.
-- Expect: exactly that new contact appears. This is the loop a customer's
-  CRM/n8n/Zapier would run on a schedule.
+- Expect: exactly that new contact appears. Paired with the scheduled unlock
+  from Test 21, this is the complete customer pipeline.
 
-**28. Scope the feed to one event**
+**23. Scope the feed to one event**
 - GET `{{base}}/contacts?event={slug}&limit=50`
 - Expect: only that event's contacts.
 
----
-
 ## G. Wrap-up
 
-**29. Docs match reality**
+**24. Docs match reality**
 - Open https://app.whogoes.co/docs/api and spot-check it against what you saw.
 
-**30. Revoked key goes dead**
+**25. Revoked key goes dead**
 - Revoke your test key in Dashboard > Integrations.
 - Any request: expect 401 immediately.
-
----
 
 ## If something looks wrong
 

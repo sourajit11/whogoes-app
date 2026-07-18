@@ -9,11 +9,12 @@ const SOFT_DEADLINE_MS = 50_000;
 /**
  * Auto-pull drainer, protected by ?secret=AUTO_PULL_CRON_SECRET.
  *
- * DORMANT since 2026-07-18: the launched model is customer-driven (customers
- * schedule POST /api/v1/pull themselves so every charge maps to their own
- * call). The n8n schedule (workflow siNGEfwdKUFF9IdX) is DEACTIVATED. This
- * route stays as the ready-made engine for a future opt-in "fully managed"
- * mode; activating that workflow turns server-side sweeps back on.
+ * FULLY DORMANT since 2026-07-19: pull rules were withdrawn from the public
+ * API surface entirely (customers keep in sync by re-running their filtered
+ * unlock on their own schedule; dedupe makes that "new contacts only"). The
+ * n8n schedule (workflow siNGEfwdKUFF9IdX) is DEACTIVATED and there is no
+ * public way to create rules. This route and the api_run_pull_rules engine
+ * stay as the ready-made basis for a future opt-in bulk-pull or managed mode.
  *
  * Walks users with enabled, unpaused pull rules (least recently drained
  * first) and runs api_run_pull_rules for each: new contacts matching each

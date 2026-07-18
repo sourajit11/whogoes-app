@@ -6,7 +6,6 @@ import {
   serverError,
   spendCapExceeded,
 } from "@/lib/api/errors";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { findIdempotentResponse, logApiUsage } from "@/lib/api/usage-logger";
 import { resolveEventId } from "@/lib/api/event-resolver";
 import { getSpendCapState } from "@/lib/api/spend-cap";
@@ -23,8 +22,6 @@ interface UnlockBody {
   count?: unknown;
   filters?: unknown;
   include_emails?: unknown;
-  auto_pull?: unknown;
-  auto_pull_max_credits_per_day?: unknown;
 }
 
 /**
@@ -36,8 +33,8 @@ interface UnlockBody {
  * identity plus, when include_emails (default true), 1 credit per contact
  * that has a verified email, all charged in this one call.
  *
- * auto_pull: true additionally saves these filters as the event's pull rule,
- * so the caller's scheduled POST /api/v1/pull runs keep buying new matches.
+ * A contact can never be bought twice, so re-running the same request on a
+ * schedule is the supported way to keep picking up newly arrived matches.
  */
 export async function POST(request: NextRequest, { params }: RouteParams) {
   const gate = await gateRequest(request);
@@ -94,20 +91,6 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   }
   const includeEmails = body.include_emails !== false;
 
-  if (body.auto_pull !== undefined && typeof body.auto_pull !== "boolean") {
-    return badRequest("auto_pull must be a boolean");
-  }
-  const autoPull = body.auto_pull === true;
-
-  let autoPullDayCap: number | null = null;
-  if (body.auto_pull_max_credits_per_day !== undefined) {
-    const cap = body.auto_pull_max_credits_per_day;
-    if (typeof cap !== "number" || !Number.isInteger(cap) || cap < 0) {
-      return badRequest("auto_pull_max_credits_per_day must be an integer >= 0");
-    }
-    autoPullDayCap = cap;
-  }
-
   const spend = await getSpendCapState(auth.apiKeyId, auth.dailyCreditCap);
   if (spend.exceeded) {
     return spendCapExceeded(spend.retryAfterSeconds);
@@ -134,35 +117,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     return serverError();
   }
 
-  // The auto-pull rule is saved regardless of whether this unlock delivered
-  // rows: "everything is owned today" is exactly when a rule matters most.
-  let autoPullRule: unknown = null;
-  if (autoPull) {
-    const admin = createAdminClient();
-    const { data: ruleData, error: ruleError } = await admin.rpc(
-      "api_upsert_pull_rule",
-      {
-        p_user_id: auth.userId,
-        p_event_id: eventId,
-        p_filters: filters,
-        p_include_emails: includeEmails,
-        p_max_credits_per_day: autoPullDayCap,
-        p_max_total: null,
-        p_paused: null,
-        p_enabled: true,
-      },
-    );
-    if (ruleError) {
-      console.error("auto_pull rule upsert failed", ruleError);
-    } else {
-      autoPullRule = (ruleData as { rule?: unknown })?.rule ?? null;
-    }
-  }
-
-  const responseBody = {
-    ...result,
-    ...(autoPull ? { auto_pull: autoPullRule } : {}),
-  };
+  const responseBody = result;
   const statusCode = result.success ? 200 : 400;
 
   void logApiUsage(auth, {
