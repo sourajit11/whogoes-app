@@ -7,18 +7,20 @@ const USER_BATCH = 25;
 const SOFT_DEADLINE_MS = 50_000;
 
 /**
- * Auto-pull drainer. Called by the n8n schedule (about every 30 minutes),
- * protected by ?secret=AUTO_PULL_CRON_SECRET.
+ * Auto-pull drainer, protected by ?secret=AUTO_PULL_CRON_SECRET.
  *
- * Walks users with enabled, unpaused auto-pull rules (least recently drained
+ * DORMANT since 2026-07-18: the launched model is customer-driven (customers
+ * schedule POST /api/v1/pull themselves so every charge maps to their own
+ * call). The n8n schedule (workflow siNGEfwdKUFF9IdX) is DEACTIVATED. This
+ * route stays as the ready-made engine for a future opt-in "fully managed"
+ * mode; activating that workflow turns server-side sweeps back on.
+ *
+ * Walks users with enabled, unpaused pull rules (least recently drained
  * first) and runs api_run_pull_rules for each: new contacts matching each
  * rule's filters get unlocked and charged exactly like a manual unlock,
  * within per-rule daily caps and the user's balance. Spend is logged to
  * api_usage_log with api_key_id NULL (cron runs are not tied to a key, so
  * per-key daily caps do not apply; the per-rule cap is the control).
- *
- * TODO (post-launch): low-balance alert email when a drained user drops under
- * 20 credits with rules still enabled.
  */
 async function drain(request: NextRequest) {
   const secret = request.nextUrl.searchParams.get("secret");

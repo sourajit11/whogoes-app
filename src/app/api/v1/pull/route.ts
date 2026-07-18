@@ -15,10 +15,11 @@ interface PullBody {
 /**
  * POST /api/v1/pull
  *
- * Run all your auto-pull rules right now: each enabled rule unlocks newly
+ * Run all your saved pull rules right now: each enabled rule unlocks newly
  * arrived contacts matching its filters, priced exactly like a manual unlock,
  * within its per-rule caps. dry_run: true estimates without charging.
- * The server also runs these rules automatically about every 30 minutes.
+ * Customers call this from their own scheduler (cron, n8n, Zapier); nothing
+ * runs server-side on a clock, so every charge maps to an explicit call.
  */
 export async function POST(request: NextRequest) {
   const gate = await gateRequest(request);

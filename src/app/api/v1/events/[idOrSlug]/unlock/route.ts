@@ -36,8 +36,8 @@ interface UnlockBody {
  * identity plus, when include_emails (default true), 1 credit per contact
  * that has a verified email, all charged in this one call.
  *
- * auto_pull: true additionally saves these filters as the event's auto-pull
- * rule, so newly arriving matching contacts are unlocked automatically.
+ * auto_pull: true additionally saves these filters as the event's pull rule,
+ * so the caller's scheduled POST /api/v1/pull runs keep buying new matches.
  */
 export async function POST(request: NextRequest, { params }: RouteParams) {
   const gate = await gateRequest(request);

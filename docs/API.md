@@ -1,6 +1,6 @@
 # WhoGoes Public API
 
-Trade show and event attendee lists, with proof, over REST. Browse events, check exactly who matches your ICP filters, unlock contacts with verified emails, and keep new matching contacts flowing in automatically. Credits are deducted from your WhoGoes account as you unlock, and you never pay twice for the same contact.
+Trade show and event attendee lists, with proof, over REST. Browse events, check exactly who matches your ICP filters, unlock contacts with verified emails, and keep pulling new matches on whatever schedule you run. Credits are deducted from your WhoGoes account as you unlock, and you never pay twice for the same contact.
 
 **Base URL**: `https://app.whogoes.co/api/v1`
 
@@ -162,7 +162,7 @@ Body:
 - `count` (required): 1 to 10000. Large requests are processed in server-side chunks within one call.
 - `filters` (optional): the ICP filter object. Omit for a full-list unlock (emails included at 1 credit per contact).
 - `include_emails` (optional, default `true`): on filtered unlocks, bundle the email reveal (+1 credit per contact with a verified email) into this call. Set `false` to buy identities only and reveal selectively later.
-- `auto_pull` (optional, default `false`): also save these filters as the event's auto-pull rule. Optional `auto_pull_max_credits_per_day` caps the rule's daily spend.
+- `auto_pull` (optional, default `false`): also save these filters as the event's pull rule, so your scheduled `POST /v1/pull` calls keep buying new matches. Optional `auto_pull_max_credits_per_day` caps the rule's daily spend.
 
 Response fields: `contacts_unlocked`, `emails_included` (free, unfiltered path), `emails_revealed` (charged, bundled path), `credits_spent`, `new_balance`, `batch_id`, `has_more`, and `auto_pull` (the saved rule, when requested). The unlock is recorded as a batch; the same filters and batch history are visible in the dashboard.
 
@@ -197,11 +197,11 @@ Same payload across all events (each row adds `event_id`, `event_slug`, `event_n
 
 ---
 
-## Auto-pull: scheduled fetching without a schedule
+## Pull rules: keep new matches coming, on your schedule
 
-Events on WhoGoes keep growing as more people post that they are attending. Auto-pull keeps unlocking the new ones that match your ICP so your CRM stays current without you re-running unlocks.
+Events on WhoGoes keep growing as more people post that they are attending. Save your ICP as a pull rule per event, then run `POST /v1/pull` from your own scheduler (cron, n8n, Zapier, anything) as often as you like. Each run buys only contacts you do not own yet, so calling it hourly simply means "buy whatever arrived since my last run". Nothing is ever charged in the background: credits move only when you call.
 
-**Turn it on** either way:
+**Save a rule** either way:
 
 - Add `"auto_pull": true` to any unlock call. The unlock's filters and `include_emails` become the event's rule.
 - Or manage rules directly:
@@ -217,18 +217,18 @@ curl -X PUT -H "Authorization: Bearer $WG_KEY" -H "Content-Type: application/jso
 # Remove                DELETE /v1/auto-pull/modex-2026
 ```
 
-**How it runs**: the server sweeps all enabled rules about every 30 minutes. New matching contacts are unlocked and charged exactly like a manual unlock with those filters (so a filtered rule with emails costs 1 or 2 credits per contact). One rule per event; saving again replaces it.
+**Run your rules**: `POST /v1/pull` walks every enabled rule and unlocks new matching contacts, charged exactly like a manual unlock with those filters (so a filtered rule with emails costs 1 or 2 credits per contact). One rule per event; saving again replaces it. Idempotency-Key is supported, so scheduler retries are safe.
 
 **Cost controls**, all optional, all enforced server-side:
 
-- `max_credits_per_day` per rule (UTC day).
+- `max_credits_per_day` per rule (UTC day), no matter how often you call.
 - `max_total_contacts` per rule, a lifetime cap on contacts owned for that event.
-- Your balance: auto-pull simply stops at zero and resumes when you top up.
+- `max_credits` in the request body caps a single run.
+- Your key's daily spend cap applies as always.
+- Your balance: pulls simply stop at zero and resume when you top up.
 - Rules run oldest-first when balance is short, so priority is predictable.
 
-Note: per-key daily caps do not apply to the automatic sweeps (they are not tied to a key). Per-rule caps are the control for auto-pull spend.
-
-**Pull now**: `POST /v1/pull` runs all your rules immediately. Body options: `max_credits` to cap this run, `dry_run: true` for a free estimate of what a real run would unlock and cost:
+**Body options**: `max_credits` to cap this run, `dry_run: true` for a free estimate of what a real run would unlock and cost:
 
 ```json
 {
@@ -258,7 +258,7 @@ curl -H "Authorization: Bearer $WG_KEY" \
   "https://app.whogoes.co/api/v1/contacts?since=$LAST_WATERMARK&limit=200"
 ```
 
-With `since`, rows come oldest first and strictly newer than the timestamp; keep requesting with `offset` (or the new watermark) until `has_more` is false, then persist the last `watermark`. Combined with auto-pull rules this is a complete pipeline: rules keep unlocking new matches, your poller keeps draining them into your system.
+With `since`, rows come oldest first and strictly newer than the timestamp; keep requesting with `offset` (or the new watermark) until `has_more` is false, then persist the last `watermark`. The complete hourly pipeline is two calls: `POST /v1/pull` (buy new matches per your saved rules) then `GET /v1/contacts?since=<watermark>` (drain them into your system).
 
 ---
 
@@ -327,4 +327,4 @@ Additive changes (new fields, new endpoints, new filter keys) ship in `/v1` with
 
 ## Changelog
 
-- **2026-07**: Initial public release. ICP filters on every surface, 2-tier pricing (identities + verified emails), single-call bundled email reveal, auto-pull rules with server-side sweeps, incremental sync watermark.
+- **2026-07**: Initial public release. ICP filters on every surface, 2-tier pricing (identities + verified emails), single-call bundled email reveal, saved pull rules for scheduler-driven syncing, incremental sync watermark.

@@ -143,7 +143,12 @@ For all POSTs: Body tab, raw, JSON.
 
 ---
 
-## E. Auto-pull (the "keep new matches coming" feature)
+## E. Pull rules (the "keep new matches coming" feature)
+
+How this works: you save a rule per event (your filters plus spending caps),
+then YOUR scheduler calls `POST /pull` as often as you like. Each call buys
+only contacts you do not own yet. Nothing runs on WhoGoes' side on a clock;
+credits only move when you call.
 
 **19. Create a rule**
 - PUT `{{base}}/auto-pull/{slug}`
@@ -173,16 +178,21 @@ For all POSTs: Body tab, raw, JSON.
 - POST `{{base}}/pull` : the paused rule is skipped.
 - PATCH again with `{ "paused": false }`.
 
-**25. The scheduled sweep (n8n)**
-- Open n8n and find the workflow **"WhoGoes API Auto-Pull Drainer"**.
-- It runs every 30 minutes. Instead of waiting you can press
-  "Execute workflow" to run it once by hand.
-- Expect: a green execution. With your rule active and under its daily cap,
-  any newly arrived matching contacts get unlocked; you will see them in
-  Test 27's feed. If nothing new arrived on the event, the run simply does
-  nothing (that is normal).
-- Leave it and check Executions again the next day: you should see runs every
-  30 minutes, all green.
+**25. Scheduled pulls, exactly like a customer would (your own n8n)**
+- In your n8n, create a tiny workflow: a Schedule Trigger (every 1 hour)
+  connected to an HTTP Request node:
+  - Method POST, URL `https://app.whogoes.co/api/v1/pull`
+  - Header `Authorization` = `Bearer wg_...` (your key)
+  - Body: JSON, `{}`
+- Press "Execute workflow" to run it once by hand.
+- Expect: a green run whose output shows `credits_spent` and a breakdown.
+  With your rule under its daily cap, newly arrived matching contacts get
+  bought; if nothing new arrived on the event, `credits_spent` is 0 and
+  nothing is charged (that is normal and safe).
+- Run it again immediately: expect 0 spent (nothing new, or the daily cap).
+- Leave the schedule on overnight and check Executions the next day: runs
+  every hour, all green, spending only when the event actually grew. This is
+  the exact setup a customer would build in n8n, Zapier, or a cron job.
 
 **26. Delete the rule**
 - DELETE `{{base}}/auto-pull/{slug}` : expect `deleted: true`.
