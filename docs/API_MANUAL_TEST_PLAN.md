@@ -66,20 +66,22 @@ on the account whose key you use. All spends are small (1 to 4 credits each).
 - Expect: `total_contacts`, `contacts_with_email`, `unlocked_count` (0 if you
   have not bought from this event), `user_balance`.
 
-**7. Facets (the "who is here" breakdown)**
-- GET `{{base}}/events/{slug}/facets`
+**7. Filter (the "who is here" breakdown)**
+- GET `{{base}}/events/{slug}/filter`
 - Expect: `matched`, `with_email`, `owned`, plus breakdowns by seniority,
   function, role, industry, size, country, top companies.
 - Now add filters and watch the numbers shrink:
-  GET `{{base}}/events/{slug}/facets?seniority=C-Suite,VP&has_email=true`
+  GET `{{base}}/events/{slug}/filter?seniority=C-Suite,VP&has_email=true`
 
 **8. Bad filter is rejected clearly**
-- GET `{{base}}/events/{slug}/facets?role=ceo`
+- GET `{{base}}/events/{slug}/filter?role=ceo`
 - Expect: 400 telling you the valid role values.
 
-**9. Preview**
-- GET `{{base}}/events/{slug}/preview?limit=5&seniority=C-Suite`
-- Expect: a few sample people, partially redacted, no emails anywhere.
+**9. Old facets path still works (compatibility alias)**
+- GET `{{base}}/events/{slug}/facets?seniority=C-Suite,VP&has_email=true`
+- Expect: exactly the same response as Test 7's filtered call. `/facets` is
+  the launch-day name; it stays alive unadvertised so nothing built against
+  the first docs breaks.
 
 ---
 
@@ -167,7 +169,7 @@ you call.
   call is always safe. It can never re-buy or overspend.
 
 **20. Know the cost before any run**
-- GET `{{base}}/events/{slug}/facets?seniority=C-Suite,VP,Director`
+- GET `{{base}}/events/{slug}/filter?seniority=C-Suite,VP,Director`
 - Expect: `matched` and `owned`. New people the next run would buy =
   matched minus owned. When they are equal, the next run costs nothing.
 

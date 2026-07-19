@@ -35,7 +35,7 @@ curl -H "Authorization: Bearer $WG_KEY" \
   "https://app.whogoes.co/api/v1/events/black-hat-usa-2026/contacts?limit=100"
 ```
 
-The unlock response tells you exactly what happened and what it cost:
+The unlock response tells you exactly what happened and what it cost (here: 25 identities + 25 verified emails = 50 credits):
 
 ```json
 {
@@ -48,10 +48,26 @@ The unlock response tells you exactly what happened and what it cost:
     "credits_spent": 50,
     "new_balance": 950,
     "batch_id": "85e0e828-90d6-4f42-97f2-b883d58e5615",
+    "no_icp": false,
     "has_more": true
   }
 }
 ```
+
+---
+
+## Endpoints at a glance
+
+| Method | Path | What it does | Costs credits? |
+|---|---|---|---|
+| GET | `/v1/events` | Browse events, same filters as the app | No |
+| GET | `/v1/events/{idOrSlug}/status` | Live totals for one event plus your position on it | No |
+| GET | `/v1/events/{idOrSlug}/filter` | Apply ICP filters, see matches and cost before buying | No |
+| POST | `/v1/events/{idOrSlug}/unlock` | Buy contacts | Yes |
+| POST | `/v1/events/{idOrSlug}/reveal-emails` | Buy emails for contacts you own | Yes |
+| GET | `/v1/events/{idOrSlug}/contacts` | Read what you own on one event | No |
+| GET | `/v1/contacts` | Read everything you own, or sync incrementally | No |
+| GET | `/v1/credits` | Balance and daily cap state | No |
 
 ---
 
@@ -99,22 +115,22 @@ Rules worth knowing:
 - `has_email: true` on its own is not an ICP filter. It just restricts the pool to contacts with verified emails and prices like an unfiltered unlock.
 - You are only charged for emails that exist: a filtered `include_emails` unlock charges +1 only for contacts that actually have a verified email.
 - You never pay twice. Unlocking again with any filters skips contacts you already own, and revealing never re-charges an unlocked email.
-- Partial fulfillment, never overdraft: if your balance (or a cap) covers less than you asked for, you get what fits and are charged only for that. Check `has_more` in the response.
+- Partial fulfillment, never overdraft: if your balance (or a cap) covers less than you asked for, you get what fits and are charged only for that.
 - Contacts are unlocked best first: verified email holders first, then most recent activity.
 
 ---
 
 ## ICP filters reference
 
-The same filter object works everywhere: unlock bodies, facet and preview queries, and contact reads. These are the same filters you see on an event page in the app.
+The same filter object works everywhere: unlock bodies, filter queries, and contact reads. These are the same filters you see on an event page in the app.
 
 | Key | Type | Values |
 |---|---|---|
 | `seniority` | array | `C-Suite`, `Owner/Founder`, `VP`, `Director`, `Manager`, `IC`, `Other`, `Unknown` |
 | `function` | array | `Sales/BD`, `Marketing`, `Operations`, `Finance`, `Engineering/Technical`, `Product`, `IT/Data`, `HR/People`, `Legal/Compliance`, `Procurement/Supply Chain`, `Customer Success`, `Creative & Content`, `Executive/General Mgmt`, `Other`, `Unknown` |
-| `industry` | array | Company industry buckets as shown in the app's Industry filter, e.g. `Software & IT Services`, `Industrial Machinery & Automation`, `Media & Entertainment`. Call the facets endpoint to see the buckets present on your event (`by_industry`). `Unknown` matches uncategorized. |
+| `industry` | array | Company industry buckets as shown in the app's Industry filter, e.g. `Software & IT Services`, `Industrial Machinery & Automation`, `Media & Entertainment`. Call the filter endpoint to see the buckets present on your event (`by_industry`). `Unknown` matches uncategorized. |
 | `size` | array | Company size buckets: `1-10`, `11-50`, `51-200`, `201-500`, `501-1000`, `1001-5000`, `5001-10000`, `10001+`, `Unknown` |
-| `country` | array | Contact country names as shown in facets. `Unknown` matches missing. |
+| `country` | array | Contact country names as returned by the filter endpoint (`by_country`). `Unknown` matches missing. |
 | `role` | array | `organizer`, `sponsor`, `exhibitor`, `attendee`, `expected_attendee` |
 | `speaker` | boolean | `true` limits to speakers |
 | `has_email` | boolean | `true` limits to contacts with a verified email |
@@ -129,7 +145,7 @@ Note that a contact's company `industry` (above) and an event's `industry` (on `
 **In GET requests** use query params. Array values are comma-separated and params are repeatable:
 
 ```
-GET /v1/events/black-hat-usa-2026/facets?seniority=C-Suite,VP&function=Sales/BD&has_email=true
+GET /v1/events/black-hat-usa-2026/filter?seniority=C-Suite,VP&function=Sales/BD&has_email=true
 ```
 
 If a value itself contains a comma, pass the whole object as URL-encoded JSON instead: `?filters=%7B%22seniority%22%3A%5B%22C-Suite%22%5D%7D`. The `filters` param replaces all individual params. Unknown keys return a 400 listing valid keys.
@@ -153,14 +169,17 @@ Browse events. Mirrors the app's Browse Events page exactly: same statuses, same
 | `status` | string | No | `active` (list still growing) or `completed` (event finished, list final). Same two values as the Status dropdown in the app. Omit for all events, active first. | `active` |
 | `q` | string | No | Search by event name or location, like the app search box. | `black hat` |
 | `year` | integer | No | Event year. | `2026` |
-| `region` | string | No | `US`, `EU`, `UK`, etc. | `US` |
+| `region` | string | No | `US`, `EU`, or `APAC`. UK and European events are under `EU`. | `US` |
 | `country` | string | No | Full country name. | `United States` |
-| `industry` | string | No | Event category, one of the 21 shown in the app's Browse filter: `Healthcare & Medical`, `Pharma & Life Sciences`, `Technology & SaaS`, `Cybersecurity`, `AI & Data`, `Manufacturing & Industrial`, `Supply Chain & Logistics`, `Retail & E-commerce`, `Finance & FinTech`, `Marketing, Sales & MarTech`, `Legal & LegalTech`, `Construction & Real Estate`, `Energy, Sustainability & CleanTech`, `Automotive & Mobility`, `Aerospace & Defense`, `Food, Beverage & Agriculture`, `Hospitality, Travel & Events`, `Media, Entertainment & Gaming`, `Education & HR`, `Beauty, Fashion & Consumer Goods`, `Cannabis`. Remember to URL-encode `&` as `%26`. | `Technology %26 SaaS` |
+| `industry` | string | No | One of the 21 event categories listed below. Remember to URL-encode `&` as `%26`. | `Technology %26 SaaS` |
 | `min_contacts` | integer | No | Only events with at least this many contacts. | `300` |
 | `starts_after` | date | No | `YYYY-MM-DD`. | `2026-08-01` |
 | `starts_before` | date | No | `YYYY-MM-DD`. | `2026-12-31` |
 | `limit` | integer | No | Page size, default 50, max 200. | `20` |
 | `offset` | integer | No | Pagination offset, default 0. | `0` |
+
+The 21 event categories (same list as the Browse page's Industry dropdown):
+`Healthcare & Medical`, `Pharma & Life Sciences`, `Technology & SaaS`, `Cybersecurity`, `AI & Data`, `Manufacturing & Industrial`, `Supply Chain & Logistics`, `Retail & E-commerce`, `Finance & FinTech`, `Marketing, Sales & MarTech`, `Legal & LegalTech`, `Construction & Real Estate`, `Energy, Sustainability & CleanTech`, `Automotive & Mobility`, `Aerospace & Defense`, `Food, Beverage & Agriculture`, `Hospitality, Travel & Events`, `Media, Entertainment & Gaming`, `Education & HR`, `Beauty, Fashion & Consumer Goods`, `Cannabis`.
 
 **Example request**
 
@@ -214,7 +233,7 @@ curl -H "Authorization: Bearer $WG_KEY" \
 }
 ```
 
-List counts are refreshed on a schedule (see `counts_cached_at`); the facets endpoint is the live truth for a specific event. Completed events stay fully usable: you can still check facets, unlock, and read contacts on them, exactly like in the app.
+List counts are refreshed on a schedule (see `counts_cached_at`); the filter endpoint is the live truth for a specific event. Completed events stay fully usable: you can still filter, unlock, and read contacts on them, exactly like in the app.
 
 ### `GET /v1/events/{idOrSlug}/status`
 
@@ -242,17 +261,28 @@ curl -H "Authorization: Bearer $WG_KEY" \
 }
 ```
 
-### `GET /v1/events/{idOrSlug}/facets`
+**Response fields**
 
-The pre-purchase workhorse: the same "who is here" breakdown you see on an event page in the app. Takes any filter params and returns live counts, so you know exactly what an unlock would deliver and cost before you spend.
+| Field | Meaning |
+|---|---|
+| `total_contacts` | Everyone on this event's list |
+| `contacts_with_email` | How many of them have a verified email |
+| `unlocked_count` | Contacts you own on this event |
+| `emails_unlocked` | How many of your contacts have their email unlocked |
+| `remaining_count` | Contacts you do not own yet |
+| `user_balance` | Your current credit balance |
 
-**Query parameters**: any ICP filter (see the reference above).
+### `GET /v1/events/{idOrSlug}/filter`
+
+Apply ICP filters and see exactly what you would get before spending anything: live match counts, how many you already own, and the same breakdowns you see on an event page in the app.
+
+**Query parameters**: any ICP filter (see the reference above). No filters = the whole event.
 
 **Example request**
 
 ```bash
 curl -H "Authorization: Bearer $WG_KEY" \
-  "https://app.whogoes.co/api/v1/events/black-hat-usa-2026/facets?seniority=C-Suite,VP&has_email=true"
+  "https://app.whogoes.co/api/v1/events/black-hat-usa-2026/filter?seniority=C-Suite,VP&has_email=true"
 ```
 
 **Example response** (200, abbreviated)
@@ -286,7 +316,7 @@ curl -H "Authorization: Bearer $WG_KEY" \
 }
 ```
 
-`matched` minus `owned` is how many new contacts an unlock with these filters would deliver. Cost for a filtered unlock with emails is at most `(matched - owned) + with_email` among the new ones; the unlock response reports the exact spend.
+How to read it: `matched` minus `owned` is how many new contacts an unlock with these filters would deliver. Cost for a filtered unlock with emails is at most `(matched - owned) + with_email` among the new ones; the unlock response reports the exact spend.
 
 An invalid filter value returns a 400 that lists the valid values:
 
@@ -299,65 +329,13 @@ An invalid filter value returns a 400 that lists the valid values:
 }
 ```
 
-### `GET /v1/events/{idOrSlug}/preview`
-
-A redacted sample of matching contacts (partial identities, no emails), same as the public event page.
-
-**Query parameters**: any ICP filter, plus `limit` (max 25).
-
-**Example request**
-
-```bash
-curl -H "Authorization: Bearer $WG_KEY" \
-  "https://app.whogoes.co/api/v1/events/black-hat-usa-2026/preview?seniority=C-Suite&limit=2"
-```
-
-**Example response** (200)
-
-```json
-{
-  "data": {
-    "matched": 23,
-    "with_email": 18,
-    "sample": {
-      "full_name": "Jordan Reyes",
-      "current_title": "Chief Information Security Officer",
-      "company_name": "Meridian Security",
-      "company_industry": "Software & IT Services",
-      "company_size": "51-200",
-      "country": "United States",
-      "seniority": "C-Suite",
-      "function": "Executive/General Mgmt",
-      "role": "attendee",
-      "is_speaker": false,
-      "has_email": true,
-      "contact_linkedin_url": "https://www.linkedin.com/in/jordan-reyes",
-      "post_url": "https://www.linkedin.com/posts/activity-7483880826611412992-uBzz"
-    },
-    "rows": [
-      {
-        "current_title": "CEO",
-        "seniority": "C-Suite",
-        "function": "Executive/General Mgmt",
-        "industry": "Computer & Network Security",
-        "size": "11-50",
-        "country": "United States",
-        "role": "exhibitor",
-        "is_speaker": false,
-        "has_email": true
-      }
-    ]
-  }
-}
-```
-
 ---
 
 ## Unlocking and revealing
 
 ### `POST /v1/events/{idOrSlug}/unlock`
 
-Spends credits. Unlocks up to `count` contacts you do not own yet, best first (verified email holders first, then most recent activity).
+Spends credits. Unlocks up to `count` contacts you do not own yet on this event, best first (verified email holders first, then most recent activity). An unlock is always scoped to one event.
 
 **Headers**
 
@@ -403,12 +381,24 @@ curl -X POST \
     "credits_spent": 187,
     "new_balance": 4365,
     "batch_id": "0f2e602e-4766-4f55-b289-d4858ebe0bb7",
+    "no_icp": false,
     "has_more": true
   }
 }
 ```
 
-`emails_included` counts free emails on the unfiltered path; `emails_revealed` counts charged emails on the filtered path. The unlock is recorded as a batch; the same batch history is visible in the dashboard.
+**Response fields**
+
+| Field | Meaning |
+|---|---|
+| `contacts_unlocked` | New contacts you now own from this call |
+| `emails_included` | Emails that came free (unfiltered pricing path) |
+| `emails_revealed` | Emails charged at +1 credit (filtered pricing path) |
+| `credits_spent` | Exact total charged for this call |
+| `new_balance` | Your balance after this call |
+| `batch_id` | This unlock as a batch; the same history is visible in the dashboard |
+| `no_icp` | `true` when the request priced as an unfiltered unlock (no filters, or only `has_email`) |
+| `has_more` | `true` while contacts matching your filters remain that you do not own yet |
 
 **Example response** when the filter pool is used up (400, nothing charged)
 
@@ -541,7 +531,7 @@ The proof is always attached: `post_url` links the LinkedIn post where this pers
 
 ### `GET /v1/contacts`
 
-Everything you own across all events, same payload as above plus `event_id`, `event_slug`, `event_name` on each row. Free. This is the sync feed for getting contacts into your own system; see the recipe below.
+Everything you own across all events, same contact payload as above plus `event_id`, `event_slug`, `event_name` on each row. Free. With `since` it becomes the incremental sync feed (see Syncing on a schedule below).
 
 **Query parameters**
 
@@ -559,12 +549,25 @@ curl -H "Authorization: Bearer $WG_KEY" \
   "https://app.whogoes.co/api/v1/contacts?since=2026-07-18T00:00:00Z&limit=200"
 ```
 
-**Example response** (200, contacts omitted for brevity)
+**Example response** (200, abbreviated)
 
 ```json
 {
   "data": {
-    "contacts": [ "..." ],
+    "contacts": [
+      {
+        "contact_id": "9b0708e8-7b74-453f-a69a-2f6a95ce46be",
+        "full_name": "Jordan Reyes",
+        "current_title": "Chief Information Security Officer",
+        "company_name": "Meridian Security",
+        "email": "jordan@meridiansecurity.com",
+        "email_unlocked": true,
+        "event_id": "01109f9a-5aa0-47fc-9ef8-9d59b75936e1",
+        "event_slug": "black-hat-usa-2026",
+        "event_name": "Black Hat USA 2026",
+        "unlocked_at": "2026-07-19T06:48:19.34118+00:00"
+      }
+    ],
     "total": 431,
     "limit": 200,
     "offset": 0,
@@ -579,29 +582,46 @@ When many contacts were unlocked in the same instant (one bulk unlock), a page c
 
 ---
 
-## Keeping new matches coming
+## Syncing on a schedule
 
-Events on WhoGoes keep growing as more people post that they are attending. Because a contact can never be bought twice, staying in sync is simply re-running your unlock on your own schedule:
+Events on WhoGoes keep growing as more people post that they are attending. There is no subscribe call and nothing runs on our side on a clock. Staying in sync is two calls that you schedule yourself (cron, n8n, Zapier, anything), and they are both safe to re-run forever:
 
-1. Unlock everyone who matches your ICP today (set `count` high enough to cover the full match).
-2. Schedule the exact same call (cron, n8n, Zapier, anything). Every future run buys only people who arrived since your last run, and spends nothing when nobody new matches.
-3. Follow each run with `GET /v1/contacts?since=<watermark>` to collect what you now own.
+1. **Re-run your unlock, per event.** An unlock is always scoped to one event. Because you never pay twice, re-sending the exact same unlock buys only people who arrived since your last run, and spends nothing when nobody new matches. Working three events? That is three scheduled unlocks, one per event.
+2. **Drain everything new with one account-wide call.** `GET /v1/contacts?since=<watermark>` returns every contact you gained since your last drain, across all events, whichever unlock bought them.
 
-Cost stays fully in your hands: the facets endpoint tells you before any run how many new matches exist (`matched` minus `owned`), and a per-key daily credit cap is a hard stop no matter what your scheduler does. Use a fresh `Idempotency-Key` per scheduled run (or omit the header); reusing one replays the earlier response instead of buying again, which is also your safety net for retries.
-
-The sync loop itself:
+A concrete run. Say your saved search on Black Hat is C-Suite and VP with emails. Check what a run would do (free):
 
 ```bash
-# First run: everything you own
+curl -H "Authorization: Bearer $WG_KEY" \
+  "https://app.whogoes.co/api/v1/events/black-hat-usa-2026/filter?seniority=C-Suite,VP&has_email=true"
+# -> { "matched": 40, "owned": 25, ... }   15 new people since your last run
+```
+
+Buy the newcomers (same call as your first unlock, just re-sent):
+
+```bash
+curl -X POST -H "Authorization: Bearer $WG_KEY" -H "Content-Type: application/json" \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -d '{"count": 500, "filters": {"seniority": ["C-Suite", "VP"], "has_email": true}}' \
+  https://app.whogoes.co/api/v1/events/black-hat-usa-2026/unlock
+# -> { "contacts_unlocked": 15, "credits_spent": 15, "has_more": false, ... }
+```
+
+Set `count` to more than you expect (500 here); you are only charged for what is actually delivered, 15 in this run. When nothing new matches, the same call returns a 400 with `"No more contacts to unlock"` and charges nothing, which is exactly what most scheduled runs will do. Then collect what you now own into your system:
+
+```bash
+# First ever run: everything you own
 curl -H "Authorization: Bearer $WG_KEY" \
   "https://app.whogoes.co/api/v1/contacts?since=1970-01-01T00:00:00Z&limit=200"
 
-# Store the "watermark" value from the response. Next runs:
+# Every later run: only what is new since the stored watermark
 curl -H "Authorization: Bearer $WG_KEY" \
   "https://app.whogoes.co/api/v1/contacts?since=$LAST_WATERMARK&limit=200"
 ```
 
-Keep requesting with the new watermark until you get an empty page, then persist the last `watermark`. Re-running is always safe: the feed never duplicates and never skips. The complete hourly pipeline is two calls: your filtered unlock (buys only newcomers) then the drain above.
+Keep requesting with each response's new `watermark` until you get an empty page, then store the last watermark for the next run. The feed never duplicates and never skips.
+
+Cost stays fully in your hands: the filter endpoint tells you before any run how many new matches exist, and a per-key daily credit cap (set in the dashboard) is a hard stop no matter what your scheduler does. Use a fresh `Idempotency-Key` per scheduled run; reusing one replays the earlier response instead of buying again, which is also your safety net for retries.
 
 ---
 
@@ -671,27 +691,11 @@ Business outcomes that are not errors come back as 400 with `success: false` and
 
 ---
 
-## Endpoints at a glance
-
-| Method | Path | Costs credits? |
-|---|---|---|
-| GET | `/v1/credits` | No |
-| GET | `/v1/events` | No |
-| GET | `/v1/events/{idOrSlug}/status` | No |
-| GET | `/v1/events/{idOrSlug}/facets` | No |
-| GET | `/v1/events/{idOrSlug}/preview` | No |
-| POST | `/v1/events/{idOrSlug}/unlock` | Yes |
-| POST | `/v1/events/{idOrSlug}/reveal-emails` | Yes |
-| GET | `/v1/events/{idOrSlug}/contacts` | No |
-| GET | `/v1/contacts` | No |
-
----
-
 ## Versioning
 
 Additive changes (new fields, new endpoints, new filter keys) ship in `/v1` without notice; breaking changes would ship as `/v2` with at least 90 days of `/v1` support.
 
 ## Changelog
 
-- **2026-07-19**: `/v1/events` now mirrors the Browse Events page exactly: new `status` filter (`active` / `completed`, same values as the app), every event listed (completed events included), `status` field on each row, browse-page ordering, `q` matches location too, new `min_contacts` param. Sync feed watermark hardened for bulk unlocks (a page can exceed `limit` to keep the watermark exact).
+- **2026-07-19**: The pre-purchase counts endpoint is now `GET /v1/events/{idOrSlug}/filter` (the old `/facets` path still works). `/v1/events` now mirrors the Browse Events page exactly: new `status` filter (`active` / `completed`, same values as the app), every event listed, `status` field on each row, browse-page ordering, `q` matches location too, new `min_contacts` param. Sync feed watermark hardened for bulk unlocks (a page can exceed `limit` to keep the watermark exact).
 - **2026-07**: Initial public release. ICP filters on every surface, 2-tier pricing (identities + verified emails), single-call bundled email reveal, scheduler-friendly syncing with the incremental watermark feed.

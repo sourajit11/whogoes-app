@@ -169,21 +169,24 @@ assert_contains "4.3 status has emails_unlocked" "emails_unlocked" "$body"
 status=$(call GET "/api/v1/events/this-slug-does-not-exist/status" "$WG_KEY")
 assert_status "4.4 unknown event 404" 404 "$status" "$(read_body)"
 
-# --- 5. Facets ---
-status=$(call GET "/api/v1/events/$WG_EVENT/facets" "$WG_KEY")
+# --- 5. Filter (canonical name; /facets kept as silent alias) ---
+status=$(call GET "/api/v1/events/$WG_EVENT/filter" "$WG_KEY")
 body=$(read_body)
-assert_status "5.1 facets 200" 200 "$status" "$body"
-assert_contains "5.2 facets has matched" "matched" "$body"
-assert_contains "5.3 facets has owned" "owned" "$body"
+assert_status "5.1 filter 200" 200 "$status" "$body"
+assert_contains "5.2 filter has matched" "matched" "$body"
+assert_contains "5.3 filter has owned" "owned" "$body"
 
-status=$(call GET "/api/v1/events/$WG_EVENT/facets?seniority=C-Suite,VP&has_email=true" "$WG_KEY")
-assert_status "5.4 facets with filter params 200" 200 "$status" "$(read_body)"
+status=$(call GET "/api/v1/events/$WG_EVENT/filter?seniority=C-Suite,VP&has_email=true" "$WG_KEY")
+assert_status "5.4 filter with filter params 200" 200 "$status" "$(read_body)"
 
-status=$(call GET "/api/v1/events/$WG_EVENT/facets?bogus_key=1&filters=%7B%22bogus%22%3A1%7D" "$WG_KEY")
+status=$(call GET "/api/v1/events/$WG_EVENT/filter?bogus_key=1&filters=%7B%22bogus%22%3A1%7D" "$WG_KEY")
 assert_status "5.5 unknown filter key 400" 400 "$status" "$(read_body)"
 
-status=$(call GET "/api/v1/events/$WG_EVENT/facets?role=ceo" "$WG_KEY")
+status=$(call GET "/api/v1/events/$WG_EVENT/filter?role=ceo" "$WG_KEY")
 assert_status "5.6 invalid role value 400" 400 "$status" "$(read_body)"
+
+status=$(call GET "/api/v1/events/$WG_EVENT/facets" "$WG_KEY")
+assert_status "5.7 facets alias still 200" 200 "$status" "$(read_body)"
 
 # --- 6. Preview ---
 status=$(call GET "/api/v1/events/$WG_EVENT/preview?limit=3" "$WG_KEY")
