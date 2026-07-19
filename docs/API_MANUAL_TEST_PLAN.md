@@ -188,6 +188,9 @@ you call.
 **22. The watermark loop**
 - GET `{{base}}/contacts?since=1970-01-01T00:00:00Z&limit=200`
 - Expect: every contact you own, oldest first, plus a `watermark` timestamp.
+  A page can exceed `limit` when many contacts were unlocked in the same
+  instant (one bulk unlock); that is by design, so the watermark always
+  covers everything delivered. Pass the watermark back exactly as received.
 - Save the watermark, then call again with `since=<that watermark>`.
 - Expect: empty list (nothing new yet).
 - Unlock 1 more contact anywhere (Test 15), repeat the call.
