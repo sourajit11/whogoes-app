@@ -151,6 +151,14 @@ assert_eq "3.4 name search narrows" "0" "$(jsonget data total)"
 status=$(call GET "/api/v1/events?year=notanumber" "$WG_KEY")
 assert_status "3.5 bad year 400" 400 "$status" "$(read_body)"
 
+status=$(call GET "/api/v1/events?status=active&limit=1" "$WG_KEY")
+body=$(read_body)
+assert_status "3.6 status=active 200" 200 "$status" "$body"
+assert_contains "3.7 rows carry status field" '"status":"active"' "$body"
+
+status=$(call GET "/api/v1/events?status=banana" "$WG_KEY")
+assert_status "3.8 bad status 400" 400 "$status" "$(read_body)"
+
 # --- 4. Event status ---
 status=$(call GET "/api/v1/events/$WG_EVENT/status" "$WG_KEY")
 body=$(read_body)

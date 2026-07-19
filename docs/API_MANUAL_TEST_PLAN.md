@@ -45,17 +45,21 @@ on the account whose key you use. All spends are small (1 to 4 credits each).
 
 **4. Browse events**
 - GET `{{base}}/events?limit=10`
-- Expect: list of events with `event_slug`, dates, `total_contacts`,
-  `contacts_with_email`.
+- Expect: list of events with `event_slug`, `status`, dates, `total_contacts`,
+  `contacts_with_email`. Order matches the app's Browse page: `active` events
+  first (upcoming first, biggest list first), then `completed`.
 
 **5. Browse with filters**
 - GET `{{base}}/events?year=2026&industry=Technology %26 SaaS`
   (the `&` inside the industry name must be sent as `%26`; in Postman use the
   Params tab with value `Technology & SaaS` and it encodes for you)
-- GET `{{base}}/events?q=fintech` (or any event name you saw in Test 4 —
-  search only returns events that are still active, so past events will
-  come back empty)
-- Expect: the list narrows. Pick your test event here.
+- GET `{{base}}/events?status=active` then `?status=completed`
+  (same two values as the Status dropdown in the app)
+- GET `{{base}}/events?q=modex` (name or location search; MODEX is a finished
+  event so it comes back with `status: "completed"`)
+- GET `{{base}}/events?status=banana`
+- Expect: the first three narrow the list; the last returns 400 naming the
+  valid values. Pick your test event here.
 
 **6. Event status**
 - GET `{{base}}/events/{slug}/status`

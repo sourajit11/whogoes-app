@@ -10,7 +10,7 @@ import { mdxComponents } from "@/components/mdx-components";
 export const metadata: Metadata = {
   title: "WhoGoes Public API Documentation",
   description:
-    "REST API for programmatic access to WhoGoes attendee contact data: ICP filters, unlocks with verified emails, saved pull rules, idempotency, rate limits, and examples.",
+    "REST API for programmatic access to WhoGoes attendee contact data: ICP filters, unlocks with verified emails, incremental sync, idempotency, rate limits, and examples.",
 };
 
 export const revalidate = 3600;
