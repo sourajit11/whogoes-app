@@ -261,7 +261,7 @@ curl -H "Authorization: Bearer $WG_KEY" \
   "https://app.whogoes.co/api/v1/contacts?since=$LAST_WATERMARK&limit=200"
 ```
 
-With `since`, rows come oldest first and strictly newer than the timestamp; keep requesting with `offset` (or the new watermark) until `has_more` is false, then persist the last `watermark`. The complete hourly pipeline is two calls: your filtered unlock (buys only newcomers) then `GET /v1/contacts?since=<watermark>` (drains them into your system).
+With `since`, rows come oldest first and strictly newer than the timestamp; keep requesting with the new watermark until `has_more` is false, then persist the last `watermark`. Pass the watermark back exactly as you received it (it carries microsecond precision). When many contacts were unlocked in the same instant (one bulk unlock), a page can exceed `limit` so the watermark always covers everything delivered; size your client buffers accordingly. The complete hourly pipeline is two calls: your filtered unlock (buys only newcomers) then `GET /v1/contacts?since=<watermark>` (drains them into your system).
 
 ---
 

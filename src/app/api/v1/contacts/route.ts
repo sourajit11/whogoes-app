@@ -37,11 +37,13 @@ export async function GET(request: NextRequest) {
   const sinceParam = url.searchParams.get("since");
   let since: string | null = null;
   if (sinceParam) {
-    const d = new Date(sinceParam);
-    if (Number.isNaN(d.getTime())) {
+    if (Number.isNaN(new Date(sinceParam).getTime())) {
       return badRequest("since must be a valid ISO 8601 timestamp");
     }
-    since = d.toISOString();
+    // Pass the raw value through: the watermark we hand out has microsecond
+    // precision, and Date#toISOString would truncate it to milliseconds,
+    // making `charged_at > since` re-match the final rows forever.
+    since = sinceParam;
   }
 
   let eventId: string | null = null;

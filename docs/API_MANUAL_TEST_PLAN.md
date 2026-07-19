@@ -49,8 +49,12 @@ on the account whose key you use. All spends are small (1 to 4 credits each).
   `contacts_with_email`.
 
 **5. Browse with filters**
-- GET `{{base}}/events?year=2026&industry=Software %26 Technology`
-- GET `{{base}}/events?q=modex`
+- GET `{{base}}/events?year=2026&industry=Technology %26 SaaS`
+  (the `&` inside the industry name must be sent as `%26`; in Postman use the
+  Params tab with value `Technology & SaaS` and it encodes for you)
+- GET `{{base}}/events?q=fintech` (or any event name you saw in Test 4 —
+  search only returns events that are still active, so past events will
+  come back empty)
 - Expect: the list narrows. Pick your test event here.
 
 **6. Event status**
