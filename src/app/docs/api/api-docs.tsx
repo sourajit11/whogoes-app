@@ -720,6 +720,7 @@ const RESP_EVENT_CONTACTS = `{
         "event_role": "attendee",
         "is_speaker": false,
         "post_url": "https://www.linkedin.com/posts/activity-7483880826611412992-uBzz",
+        "post_content": "Las Vegas bound! I will be at Black Hat USA this August with the Meridian team. If you want to talk security operations, my DMs are open. #BlackHat2026",
         "post_date": "2026-07-17T13:50:32.846+00:00",
         "source": "post_author",
         "unlocked_at": "2026-07-19T06:48:19.34118+00:00",
@@ -1344,7 +1345,7 @@ export default function ApiDocs() {
               id="get-v1-events-idorslug-contacts"
               method="GET"
               path="/v1/events/{idOrSlug}/contacts"
-              summary="Your unlocked contacts for one event. The proof is always attached: `post_url` links the LinkedIn post where this person said they are going. `email`, `email_status`, `email_provider` are present only when `email_unlocked` is true; `has_email: true` with `email_unlocked: false` means a verified email exists and one reveal credit buys it."
+              summary="Your unlocked contacts for one event. The proof is always attached: `post_url` links the LinkedIn post where this person said they are going, and `post_content` carries the full text of that post, never truncated: ready-made personalization for your outreach. `email`, `email_status`, `email_provider` are present only when `email_unlocked` is true; `has_email: true` with `email_unlocked: false` means a verified email exists and one reveal credit buys it."
               left={
                 <ParamBlock
                   title="Query Parameters"
@@ -1525,7 +1526,7 @@ export default function ApiDocs() {
               <ul className="mt-4 max-w-3xl list-disc space-y-2 pl-5 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
                 <li>
                   <T>
-                    {"**2026-07-19**: The pre-purchase counts endpoint is now `GET /v1/events/{idOrSlug}/filter` (the old `/facets` path still works). `/v1/events` now mirrors the Browse Events page exactly: `status` filter (`active` / `completed`), every event listed, `status` field on each row, browse-page ordering, `q` matches location too, `min_contacts` param. Sync feed watermark hardened for bulk unlocks."}
+                    {"**2026-07-19**: Contact payloads now include `post_content`, the full text of the proof post, never truncated. The pre-purchase counts endpoint is now `GET /v1/events/{idOrSlug}/filter` (the old `/facets` path still works). `/v1/events` now mirrors the Browse Events page exactly: `status` filter (`active` / `completed`), every event listed, `status` field on each row, browse-page ordering, `q` matches location too, `min_contacts` param. Sync feed watermark hardened for bulk unlocks."}
                   </T>
                 </li>
                 <li>

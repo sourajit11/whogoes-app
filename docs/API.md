@@ -510,6 +510,7 @@ curl -H "Authorization: Bearer $WG_KEY" \
         "event_role": "attendee",
         "is_speaker": false,
         "post_url": "https://www.linkedin.com/posts/activity-7483880826611412992-uBzz",
+        "post_content": "Las Vegas bound! I will be at Black Hat USA this August with the Meridian team. If you want to talk security operations, my DMs are open. #BlackHat2026",
         "post_date": "2026-07-17T13:50:32.846+00:00",
         "source": "post_author",
         "unlocked_at": "2026-07-19T06:48:19.34118+00:00",
@@ -524,7 +525,7 @@ curl -H "Authorization: Bearer $WG_KEY" \
 }
 ```
 
-The proof is always attached: `post_url` links the LinkedIn post where this person said they are going. Email handling:
+The proof is always attached: `post_url` links the LinkedIn post where this person said they are going, and `post_content` carries the full text of that post, never truncated (ready-made personalization for your outreach). Email handling:
 
 - `email`, `email_status`, `email_provider` are present only when `email_unlocked` is `true`.
 - `has_email: true` with `email_unlocked: false` means a verified email exists and one reveal credit buys it.
@@ -697,5 +698,5 @@ Additive changes (new fields, new endpoints, new filter keys) ship in `/v1` with
 
 ## Changelog
 
-- **2026-07-19**: The pre-purchase counts endpoint is now `GET /v1/events/{idOrSlug}/filter` (the old `/facets` path still works). `/v1/events` now mirrors the Browse Events page exactly: new `status` filter (`active` / `completed`, same values as the app), every event listed, `status` field on each row, browse-page ordering, `q` matches location too, new `min_contacts` param. Sync feed watermark hardened for bulk unlocks (a page can exceed `limit` to keep the watermark exact).
+- **2026-07-19**: Contact payloads now include `post_content`, the full text of the proof post, never truncated. The pre-purchase counts endpoint is now `GET /v1/events/{idOrSlug}/filter` (the old `/facets` path still works). `/v1/events` now mirrors the Browse Events page exactly: new `status` filter (`active` / `completed`, same values as the app), every event listed, `status` field on each row, browse-page ordering, `q` matches location too, new `min_contacts` param. Sync feed watermark hardened for bulk unlocks (a page can exceed `limit` to keep the watermark exact).
 - **2026-07**: Initial public release. ICP filters on every surface, 2-tier pricing (identities + verified emails), single-call bundled email reveal, scheduler-friendly syncing with the incremental watermark feed.
