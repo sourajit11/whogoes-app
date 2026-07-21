@@ -20,24 +20,20 @@ async function handle(request: NextRequest) {
   }
 
   const supabase = createAdminClient();
-  const since = new Date(Date.now() - 8 * 86_400_000).toISOString();
-  const { data: doneRows, error } = await supabase
-    .from("whogoes_cold_company_done")
-    .select("processed_at, people_found, people_sent")
-    .gte("processed_at", since);
+  // Aggregate in the DB (one row per IST day). A raw-row select here silently hit
+  // PostgREST's row cap once the table passed ~1000 rows/2 days and dropped today's
+  // rows, producing a false 0/0/0 "outage" report every day.
+  const { data: dayRows, error } = await supabase.rpc("get_whogoes_cold_daily_stats", {
+    p_days: 8,
+  });
   if (error) {
     return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
   }
 
   const today = istDate(new Date());
   const byDay = new Map<string, DayStats>();
-  for (const r of doneRows ?? []) {
-    const day = istDate(r.processed_at as string);
-    const b = byDay.get(day) ?? { companies: 0, found: 0, sent: 0 };
-    b.companies += 1;
-    b.found += r.people_found ?? 0;
-    b.sent += r.people_sent ?? 0;
-    byDay.set(day, b);
+  for (const r of (dayRows ?? []) as { ist_day: string; companies: number; found: number; sent: number }[]) {
+    byDay.set(r.ist_day, { companies: r.companies, found: r.found, sent: r.sent });
   }
 
   const todayStats = byDay.get(today) ?? { companies: 0, found: 0, sent: 0 };

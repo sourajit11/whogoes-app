@@ -335,16 +335,19 @@ export async function runColdDiscovery(supabase, { limit = 25, env = process.env
   // the next run. Normal zero-yield runs ~20-45% of a batch, so 85% cleanly flags an outage.
   // Two independent degradation signals, because Moltsets' 404-for-empty means a partial
   // outage looks like a batch of mostly-empty companies, not a hard error:
-  //   (a) zero-yield ratio >= 70% (normal runs sit at 20-45%), and
-  //   (b) average people/company < 0.8 (healthy days run 1.8-3.7; a degraded day like
+  //   (a) zero-yield ratio >= 60% (normal runs sit at 20-45%), and
+  //   (b) average people/company < 1.2 (healthy days run 1.8-3.7; a degraded day like
   //       2026-07-14 ran 0.14). The avg floor catches "bad but not total" days where
   //       per-batch zero-ratios hover just under the ratio threshold and would otherwise burn.
+  // Tightened from 70%/0.8 after 2026-07-16: a PARTIAL Moltsets outage kept batches at
+  // ~60-69% zero AND avg ~0.8-0.9 (just inside both old thresholds), so 395 companies were
+  // burned. Healthy per-batch avg is 2-4, so 1.2 stays clear of false positives.
   const zeroYield = outcomes.filter((o) => o.peopleFound === 0).length;
   const avgYield = outcomes.length
     ? outcomes.reduce((sum, o) => sum + o.peopleFound, 0) / outcomes.length
     : 0;
   const vendorLikelyDown =
-    companies.length >= 8 && (zeroYield >= 0.7 * companies.length || avgYield < 0.8);
+    companies.length >= 8 && (zeroYield >= 0.6 * companies.length || avgYield < 1.2);
 
   let done = 0, skippedVendorError = 0;
   const doneRows = [];
