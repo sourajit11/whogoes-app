@@ -8,11 +8,18 @@
  * whogoes_cold_company_done so it is never re-selected.
  *
  * Vendors: Moltsets + Dropleads only (GetLeads dropped — 0 incremental coverage).
+ * ESG gate (FIRST): a company whose MX points at an enterprise security gateway
+ * (Proofpoint/Mimecast/Sophos/IronPort/Barracuda/...) is skipped before any discovery
+ * or verification — those gateways 5.7.1-block our sending domains so mail never lands.
  * Accept rule (HARD): every candidate email is Reoon power-mode verified, and only
- * Reoon `is_safe_to_send === true` is marked contactable / eligible for Plusvibe. No
- * vendor's own "valid" is ever trusted (Dropleads calls catch-alls valid → they bounce).
+ * `is_safe_to_send === true AND is_catch_all !== true` is marked contactable / eligible
+ * for Plusvibe. Reoon can flag a catch-all mailbox "safe" and it still bounces, so
+ * catch-all is excluded explicitly. No vendor's own "valid" is ever trusted (Dropleads
+ * calls catch-alls valid → they bounce).
  * See WHOGOES_COLD_OUTREACH_PIPELINE_PLAN.md.
  */
+
+import dns from "node:dns/promises";
 
 const MOLTSETS = "https://api.moltsets.com/api/v1/tools";
 const DL_PRIME = "https://prime.dropleads.io/api/v1/prime-db";
@@ -104,6 +111,42 @@ async function mapLimit(items, limit, fn) {
   return results;
 }
 
+// --- MX / ESG gateway detection ---
+// Our sending domains are blocklisted at third-party enterprise email gateways, which
+// blanket-reject them with 5.7.1. You cannot get past those gateways, so route AROUND
+// them: skip any company whose MX points at one, BEFORE spending discovery/verify credits.
+// Plain Google / Microsoft recipients are the target and are intentionally not gated.
+const ESG_PATTERNS = [
+  [/mimecast/i, "mimecast"],
+  [/pphosted\.com|ppe-hosted\.com|proofpoint/i, "proofpoint"],
+  [/barracuda|cudasvc/i, "barracuda"],
+  [/iphmx\.com|ironport/i, "cisco-ironport"],
+  [/messagelabs\.com|symanteccloud/i, "symantec-messagelabs"],
+  [/mailcontrol\.com|forcepoint|websense/i, "forcepoint"],
+  [/fortimail|fortinet/i, "fortinet"],
+  [/tmes\.trendmicro|trendmicro/i, "trendmicro"],
+  [/sophos|reflexion/i, "sophos"],
+  [/spamtitan|mailchannels|mxthunder/i, "other-esg"],
+];
+const mxCache = new Map();
+// Returns the ESG provider name gating this domain (e.g. "proofpoint"), or null if the MX
+// is a plain provider we can send to. A DNS miss returns null (fail-open — let the verifier
+// decide) so a transient lookup error never skips a real company.
+async function esgProvider(domain) {
+  if (!domain) return null;
+  if (mxCache.has(domain)) return mxCache.get(domain);
+  let hit = null;
+  try {
+    const mx = await dns.resolveMx(domain);
+    outer: for (const r of mx) {
+      const exchange = r.exchange || "";
+      for (const [re, name] of ESG_PATTERNS) { if (re.test(exchange)) { hit = name; break outer; } }
+    }
+  } catch { hit = null; }
+  mxCache.set(domain, hit);
+  return hit;
+}
+
 // --- vendor clients ---
 function makeVendors(env) {
   const msH = { accept: "application/json", "content-type": "application/json", authorization: `Bearer ${env.MOLTSETS_API_KEY}` };
@@ -126,18 +169,19 @@ function makeVendors(env) {
     dlSearch: async (filters, limit = 10) => { await dlGate(); return postJson(`${DL_PRIME}/leads/search`, dlH, { filters, pagination: { page: 1, limit } }); },
     dlUnlock: async (leadId) => { await dlGate(); return postJson(`${DL_PRIME}/leads/unlock`, dlH, { leadId }); },
     dlFinder: async (first, last, domain) => { await dlGate(); return postJson(DL_FINDER, dlH, { first_name: first, last_name: last, company_domain: domain ? `https://${domain}` : "", company_name: "" }); },
-    // Power-mode verify. Returns { status, safe } where `safe` is Reoon's own
-    // is_safe_to_send boolean — true only for genuinely deliverable inboxes
-    // (excludes catch-all, disabled, role, spamtrap...). RULE: only `safe` emails
-    // may ever be marked contactable / pushed to Plusvibe.
+    // Power-mode verify. Returns { status, safe, catchAll }. `safe` is Reoon's own
+    // is_safe_to_send boolean; `catchAll` is is_catch_all. RULE: only emails that are
+    // safe AND not catch-all may be marked contactable — Reoon sometimes flags a
+    // catch-all mailbox "safe" (score ~88) and it still hard-bounces, so we exclude
+    // catch-all explicitly rather than trusting is_safe_to_send alone.
     reoon: async (email) => {
       const url = `${REOON}?email=${encodeURIComponent(email)}&key=${encodeURIComponent(env.REOON_API_KEY)}&mode=power`;
       try {
         const res = await fetch(url, { signal: AbortSignal.timeout(30000) });
         const j = await res.json();
         const status = String(j?.status ?? j?.result ?? "unknown").trim().toLowerCase().replace(/\s+/g, "_");
-        return { status, safe: j?.is_safe_to_send === true };
-      } catch { return { status: "error", safe: false }; }
+        return { status, safe: j?.is_safe_to_send === true, catchAll: j?.is_catch_all === true };
+      } catch { return { status: "error", safe: false, catchAll: false }; }
     },
   };
 }
@@ -146,6 +190,10 @@ function makeVendors(env) {
 async function discoverPeople(V, company) {
   const domain = normDomain(company.website);
   if (!domain) return { domain, people: [], vendorError: false };
+  // ESG/MX gate FIRST — skip enterprise-gateway domains before any discovery or Reoon
+  // spend; those gateways 5.7.1-block our sending domains so mail can never land.
+  const esg = await esgProvider(domain);
+  if (esg) return { domain, people: [], esg };
   const byKey = new Map();
   const add = (p, foundBy, dlLeadId) => {
     const li = normLinkedin(p.linkedin_url);
@@ -236,7 +284,7 @@ async function resolveEmail(V, p) {
   }
   if (isEmail(msEmail)) {
     const v = await V.reoon(msEmail);
-    if (v.safe) return { email: msEmail.toLowerCase(), provider: "moltsets", status: v.status, contactable: true };
+    if (v.safe && !v.catchAll) return { email: msEmail.toLowerCase(), provider: "moltsets", status: v.status, contactable: true };
     var best = { email: msEmail.toLowerCase(), provider: "moltsets", status: v.status, contactable: false };
   }
 
@@ -251,7 +299,7 @@ async function resolveEmail(V, p) {
     const dbEmail = deepEmail(u.json?.data?.lead) || deepEmail(u.json);
     if (isEmail(dbEmail)) {
       const v = await V.reoon(dbEmail);
-      if (v.safe) return { email: dbEmail.toLowerCase(), provider: "dropleads", status: v.status, contactable: true };
+      if (v.safe && !v.catchAll) return { email: dbEmail.toLowerCase(), provider: "dropleads", status: v.status, contactable: true };
       if (!best) best = { email: dbEmail.toLowerCase(), provider: "dropleads", status: v.status, contactable: false };
     }
   }
@@ -263,7 +311,7 @@ async function resolveEmail(V, p) {
     const gEmail = f.json?.email;
     if (isEmail(gEmail)) {
       const v = await V.reoon(gEmail);
-      if (v.safe) return { email: gEmail.toLowerCase(), provider: "dropleads_finder", status: v.status, contactable: true };
+      if (v.safe && !v.catchAll) return { email: gEmail.toLowerCase(), provider: "dropleads_finder", status: v.status, contactable: true };
       if (!best) best = { email: gEmail.toLowerCase(), provider: "dropleads_finder", status: v.status, contactable: false };
     }
   }
@@ -280,11 +328,11 @@ export async function runColdDiscovery(supabase, { limit = 25, env = process.env
   const V = makeVendors(env);
   const { data: companies, error } = await supabase.rpc("get_whogoes_cold_companies", { p_limit: limit });
   if (error) throw new Error(`get_whogoes_cold_companies: ${error.message}`);
-  if (!companies?.length) return { companies: 0, discovered: 0, contactable: 0, done: 0, skippedVendorError: 0, vendorLikelyDown: false, detail: [] };
+  if (!companies?.length) return { companies: 0, discovered: 0, contactable: 0, done: 0, skippedVendorError: 0, esgSkipped: 0, vendorLikelyDown: false, detail: [] };
 
   const nowIso = new Date().toISOString();
   const detail = [];
-  const outcomes = []; // { company, peopleFound, peopleContactable, hardError }
+  const outcomes = []; // { company, peopleFound, peopleContactable, hardError, esg }
   let discovered = 0, contactable = 0;
 
   // Process several companies concurrently; the Dropleads start-gate keeps all of
@@ -293,10 +341,11 @@ export async function runColdDiscovery(supabase, { limit = 25, env = process.env
   // first and decide which companies to mark "done" afterward, so a batch-wide vendor
   // outage can be detected before anything is burned.
   await mapLimit(companies, 4, async (company) => {
-    let peopleFound = 0, peopleContactable = 0, hardError = false;
+    let peopleFound = 0, peopleContactable = 0, hardError = false, esg = null;
     try {
-      const { people, moltsetsHardError } = await discoverPeople(V, company);
+      const { people, moltsetsHardError, esg: esgHit } = await discoverPeople(V, company);
       hardError = moltsetsHardError;
+      esg = esgHit || null;
       // people within a company run concurrently too
       const found = await mapLimit(people, people.length, async (p) => {
         const li = p.linkedin_url;
@@ -325,7 +374,7 @@ export async function runColdDiscovery(supabase, { limit = 25, env = process.env
       hardError = true; // an unexpected throw is also an unreliable result — don't burn the company
       detail.push({ company: company.name, error: String(e) });
     }
-    outcomes.push({ company, peopleFound, peopleContactable, hardError });
+    outcomes.push({ company, peopleFound, peopleContactable, hardError, esg });
   });
 
   // Batch-level outage guard. Moltsets signals "no results" with an HTTP 404, which per
@@ -342,12 +391,15 @@ export async function runColdDiscovery(supabase, { limit = 25, env = process.env
   // Tightened from 70%/0.8 after 2026-07-16: a PARTIAL Moltsets outage kept batches at
   // ~60-69% zero AND avg ~0.8-0.9 (just inside both old thresholds), so 395 companies were
   // burned. Healthy per-batch avg is 2-4, so 1.2 stays clear of false positives.
-  const zeroYield = outcomes.filter((o) => o.peopleFound === 0).length;
-  const avgYield = outcomes.length
-    ? outcomes.reduce((sum, o) => sum + o.peopleFound, 0) / outcomes.length
+  // ESG-gated companies count as a legitimate zero-yield (they are correctly skipped), so
+  // they must NOT inflate the outage signal — exclude them from both ratio and average.
+  const scored = outcomes.filter((o) => !o.esg);
+  const zeroYield = scored.filter((o) => o.peopleFound === 0).length;
+  const avgYield = scored.length
+    ? scored.reduce((sum, o) => sum + o.peopleFound, 0) / scored.length
     : 0;
   const vendorLikelyDown =
-    companies.length >= 8 && (zeroYield >= 0.6 * companies.length || avgYield < 1.2);
+    scored.length >= 8 && (zeroYield >= 0.6 * scored.length || avgYield < 1.2);
 
   let done = 0, skippedVendorError = 0;
   const doneRows = [];
@@ -355,8 +407,9 @@ export async function runColdDiscovery(supabase, { limit = 25, env = process.env
     // Skip marking done (leave in pool) only when we found nobody AND the miss is
     // attributable to a vendor problem — a hard transport error or a batch-wide outage.
     // An isolated empty result in an otherwise-healthy batch is a real "no people" company
-    // and IS marked done, so it is never re-processed forever.
-    if (o.peopleFound === 0 && (o.hardError || vendorLikelyDown)) {
+    // and IS marked done, so it is never re-processed forever. ESG-gated companies are
+    // always marked done (the skip is deliberate, not a vendor miss).
+    if (!o.esg && o.peopleFound === 0 && (o.hardError || vendorLikelyDown)) {
       skippedVendorError++;
       detail.push({ company: o.company.name, skipped: vendorLikelyDown ? "vendor_outage" : "vendor_error" });
       continue;
@@ -366,10 +419,11 @@ export async function runColdDiscovery(supabase, { limit = 25, env = process.env
       people_sent: o.peopleContactable, processed_at: nowIso,
     });
     done++;
-    detail.push({ company: o.company.name, found: o.peopleFound, contactable: o.peopleContactable });
+    detail.push({ company: o.company.name, found: o.peopleFound, contactable: o.peopleContactable, ...(o.esg ? { esg: o.esg } : {}) });
   }
   if (doneRows.length) {
     await supabase.from("whogoes_cold_company_done").upsert(doneRows, { onConflict: "company_id" });
   }
-  return { companies: companies.length, discovered, contactable, done, skippedVendorError, vendorLikelyDown, avgYield: Number(avgYield.toFixed(2)), detail };
+  const esgSkipped = outcomes.filter((o) => o.esg).length;
+  return { companies: companies.length, discovered, contactable, done, skippedVendorError, esgSkipped, vendorLikelyDown, avgYield: Number(avgYield.toFixed(2)), detail };
 }
